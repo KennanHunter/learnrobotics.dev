@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["release-*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run cargo tests
+        run: cargo test --workspace
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+          targets: wasm32-wasip2
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build compiler wasm (release)
+        env:
+          RUSTC_BOOTSTRAP: "1"
+          CARGO_TARGET_WASM32_WASIP2_RUSTFLAGS: "-C link-arg=-zstack-size=8388608"
+        run: cargo build --release -p compiler --target wasm32-wasip2
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: compiler-wasm
+          path: target/wasm32-wasip2/release/compiler.wasm
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: compiler-wasm
+          path: target/wasm32-wasip2/release
+
+      - name: Install JS deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Transpile compiler component
+        run: pnpm --filter '@learnrobotics/compiler' build
+
+      # Requires repo secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
+      - name: Deploy preview (main)
+        if: github.ref == 'refs/heads/main'
+        working-directory: web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: pnpm run deploy
+
+      - name: Deploy production (release tag)
+        if: startsWith(github.ref, 'refs/tags/release-')
+        working-directory: web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: pnpm run deploy:production
+
+      - name: Build only (PR)
+        if: github.event_name == 'pull_request'
+        working-directory: web
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: pnpm run build

@@ -1,0 +1,7 @@
+target/
+node_modules/
+.DS_Store
+*.log
+
+# Transpiled wasm packages — rebuilt from crates/ on CI.
+webassembly/*/dist/

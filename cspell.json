@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "words": [
+    "bindgen",
+    "cdylib",
+    "learnrobotics",
+    "ristretto",
+    "rlib",
+    "rustls"
+  ],
+  "ignorePaths": [
+    "node_modules"
+  ]
+}

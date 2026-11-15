@@ -1,0 +1,25 @@
+{
+  "name": "@learnrobotics/compiler",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/compiler.js",
+  "types": "./dist/compiler.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/compiler.d.ts",
+      "import": "./dist/compiler.js"
+    },
+    "./*": "./dist/*"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "@bytecodealliance/jco-transpile": "0.24.0"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "learnrobotics.dev",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Kennan Hunter",
+  "license": "ISC",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate:logos": "tsx logos/generate.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.6.0"
+  }
+}

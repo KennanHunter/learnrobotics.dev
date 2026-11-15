@@ -1,0 +1,51 @@
+import type { JSX } from "solid-js";
+import { Show } from "solid-js";
+import { Logo } from "./Logo";
+
+type ErrorPageProps = {
+  code: string;
+  title: string;
+  message?: string;
+  detail?: string;
+  action?: JSX.Element;
+};
+
+export function ErrorPage(props: ErrorPageProps): JSX.Element {
+  return (
+    <main class="min-h-screen flex flex-col items-center justify-center px-6 py-16 text-center">
+      <a href="/" class="block w-72 max-w-full mb-10 text-inherit" aria-label="Learn Robotics home">
+        <Logo />
+      </a>
+      <p class="font-mono text-sm tracking-widest text-blue uppercase mb-3">
+        Error {props.code}
+      </p>
+      <h1 class="text-4xl sm:text-5xl font-semibold tracking-tight mb-4">
+        {props.title}
+      </h1>
+      <Show when={props.message}>
+        <p class="max-w-xl text-base text-gray dark:text-white/70 mb-8">
+          {props.message}
+        </p>
+      </Show>
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <a
+          href="/"
+          class="rounded bg-black px-4 py-2 text-sm text-white hover:bg-gray dark:bg-white dark:text-black"
+        >
+          Back to home
+        </a>
+        {props.action}
+      </div>
+      <Show when={props.detail}>
+        <details class="mt-10 max-w-xl w-full text-left">
+          <summary class="cursor-pointer text-xs uppercase tracking-widest text-gray dark:text-white/50">
+            Technical details
+          </summary>
+          <pre class="mt-3 overflow-auto rounded border border-gray/40 bg-black/5 dark:bg-white/5 p-3 text-xs">
+            {props.detail}
+          </pre>
+        </details>
+      </Show>
+    </main>
+  );
+}

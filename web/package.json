@@ -1,0 +1,48 @@
+{
+  "name": "learnrobotics-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "preview": "vite preview",
+    "deploy": "pnpm run build && wrangler deploy",
+    "deploy:production": "pnpm run build && wrangler deploy --env production",
+    "cf-typegen": "wrangler types",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "wrangler d1 migrations apply learnrobotics --local",
+    "db:migrate:remote": "wrangler d1 migrations apply learnrobotics --remote"
+  },
+  "dependencies": {
+    "@learnrobotics/compiler": "workspace:*",
+    "@monaco-editor/loader": "^1.7.0",
+    "@tanstack/solid-router": "^1.170.43",
+    "@tanstack/solid-start": "^1.169.5",
+    "better-auth": "^1.7.23",
+    "drizzle-orm": "^0.45.4",
+    "monaco-editor": "^0.57.0",
+    "solid-icons": "github:KennanHunter/solid-icons#main",
+    "solid-js": "^1.9.19",
+    "valibot": "^1.5.0"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.69.1",
+    "@cloudflare/vitest-plugin": "^1.8.2",
+    "@cloudflare/workers-types": "^5.20261114.1",
+    "@tailwindcss/vite": "^4.3.5",
+    "@tanstack/solid-router-devtools": "^1.167.3",
+    "@types/node": "^26.6.6",
+    "drizzle-kit": "^0.31.11",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vite-plugin-pwa": "^2.0.0",
+    "vite-plugin-solid": "^2.11.16",
+    "vitest": "^4.1.12",
+    "workbox-window": "^7.4.1",
+    "wrangler": "^4.162.0"
+  }
+}

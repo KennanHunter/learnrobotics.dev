@@ -1,0 +1,43 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "learnrobotics-preview",
+  "compatibility_date": "2026-01-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/solid-start/server-entry",
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    // this is only for development
+    {
+      "binding": "DB",
+      "database_name": "learnrobotics",
+      "database_id": "1bf952ff-b171-4482-ad37-56be7c4d5362",
+      "migrations_dir": "./drizzle"
+    }
+  ],
+  "vars": {
+    "BETTER_AUTH_URL": "http://localhost:5173"
+  },
+  "env": {
+    "production": {
+      "name": "learnrobotics",
+      "assets": {
+        "directory": "./dist/client",
+        "binding": "ASSETS"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "learnrobotics",
+          "database_id": "07f8d523-1113-4147-9e26-ca40e96e9c88",
+          "migrations_dir": "./drizzle"
+        }
+      ],
+      "vars": {
+        "BETTER_AUTH_URL": "https://learnrobotics.dev"
+      }
+    }
+  }
+}
