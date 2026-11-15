@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./logos/learnrobotics.dev.svg" alt="learnrobotics.dev" width="400" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./logos/learnrobotics.dev-dark.svg" />
+    <img src="./logos/learnrobotics.dev-light.svg" alt="learnrobotics.dev" width="400" />
+  </picture>
 </p>
 
 <p align="center">
