@@ -1,6 +1,20 @@
-# learnrobotics.dev
+<p align="center">
+  <img src="./logos/learnrobotics.dev.svg" alt="learnrobotics.dev" width="400" />
+</p>
 
-this is a in development project for teaching FIRST programming
+<p align="center">
+  <a href="https://learnrobotics.dev">learnrobotics.dev</a> · preview at <a href="https://preview.learnrobotics.dev">preview.learnrobotics.dev</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/license-PolyForm_NC_1.0.0-blue?style=for-the-badge" alt="License: PolyForm NC 1.0.0" />
+  <img src="https://img.shields.io/badge/rust-%23000000.svg?style=for-the-badge&logo=rust&logoColor=white" alt="Rust" />
+  <img src="https://img.shields.io/badge/WebAssembly-654FF0?style=for-the-badge&logo=webassembly&logoColor=white" alt="WebAssembly" />
+  <img src="https://img.shields.io/badge/SolidJS-2C4F7C?style=for-the-badge&logo=solid&logoColor=white" alt="SolidJS" />
+  <img src="https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge" alt="PRs welcome" />
+</p>
+
+This is a in development project for teaching FIRST programming
 
 # Contributing
 
@@ -8,7 +22,7 @@ Contributions welcome! Approved changes will need to sign a CLA. Make an issue a
 
 ## AI
 
-Ai is allowed, but you gotta understand it and be transparent about usage.
+LLM Agents are allowed, but you gotta understand the code and be transparent about usage.
 
 Exactly how much slop is allowed will change depending on page, ex: the compiler has to be solid, some random frontend page doesn't.
 
