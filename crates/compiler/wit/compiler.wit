@@ -1,5 +1,11 @@
 package learnrobotics:compiler;
 
+interface host {
+    log: func(message: string);
+}
+
 world compiler {
+    import host;
+    export ping: func();
     export compile: func(source: string) -> result<list<u8>, string>;
 }

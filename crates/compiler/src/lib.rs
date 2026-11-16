@@ -1,23 +1,141 @@
-//! Minimal wasm-targeted Java compiler.
+//! Wasm-targeted Java compiler wrapper around ristretto_vm.
 //!
-//! Exposes a single `compile(source) -> result<list<u8>, string>` entry point via
-//! the WASI component model. This is a scaffold: it wires up the wit interface
-//! so the artifact can be transpiled and consumed from /web.
+//! Exposes `ping` and `compile(source) -> result<list<u8>, string>` via the WASI
+//! component model. Only compiled under `target_family = "wasm"` — on the host,
+//! this crate is intentionally empty so `cargo check` doesn't drag in
+//! ristretto's toolchain.
 
-pub fn run_compile(_source: &str) -> Result<Vec<u8>, String> {
-    Err("compile not yet implemented".to_string())
+#![cfg(target_family = "wasm")]
+
+use std::io::{self, Write};
+use std::sync::Once;
+
+use ristretto_vm::{Compiler, ConfigurationBuilder};
+use tracing_subscriber::fmt::MakeWriter;
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::EnvFilter;
+
+wit_bindgen::generate!({
+    path: "wit",
+    world: "compiler",
+});
+
+use learnrobotics::compiler::host;
+
+struct Component;
+
+impl Guest for Component {
+    fn ping() {
+        init_logging();
+        tracing::info!(target: env!("CARGO_PKG_NAME"), "ping invoked");
+        tracing::debug!(target: env!("CARGO_PKG_NAME"), wasm_target = "wasm32-wasip2", "ping details");
+        host::log("hello world");
+        tracing::info!(target: env!("CARGO_PKG_NAME"), "ping complete");
+    }
+
+    fn compile(source: String) -> Result<Vec<u8>, String> {
+        init_logging();
+        run_compile(&source)
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+export!(Component);
 
-    #[test]
-    fn stub_compile_returns_not_implemented() {
-        let err = run_compile("class A {}").unwrap_err();
-        assert!(
-            err.contains("not yet implemented"),
-            "unexpected error: {err}"
-        );
+fn run_compile(source: &str) -> Result<Vec<u8>, String> {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .map_err(|e| e.to_string())?;
+    runtime.block_on(compile_async(source))
+}
+
+async fn compile_async(source: &str) -> Result<Vec<u8>, String> {
+    let class_name = extract_class_name(source)
+        .ok_or_else(|| "no class declaration found in source".to_string())?;
+    let configuration = ConfigurationBuilder::new()
+        .build()
+        .map_err(|e| e.to_string())?;
+    let compiler = Compiler::new(configuration)
+        .await
+        .map_err(|e| e.to_string())?;
+    let compiled = compiler
+        .compile_source(&class_name, source)
+        .await
+        .map_err(|e| e.to_string())?;
+    compiled
+        .get(&class_name)
+        .map(<[u8]>::to_vec)
+        .ok_or_else(|| format!("compiled output missing class {class_name}"))
+}
+
+fn extract_class_name(source: &str) -> Option<String> {
+    let mut tokens = source.split_whitespace();
+    while let Some(tok) = tokens.next() {
+        if tok == "class" {
+            let name = tokens.next()?;
+            let end = name
+                .find(|c: char| !c.is_alphanumeric() && c != '_' && c != '$')
+                .unwrap_or(name.len());
+            if end > 0 {
+                return Some(name[..end].to_string());
+            }
+        }
+    }
+    None
+}
+
+// -- logging bridge ---------------------------------------------------------
+//
+// ristretto emits via the `tracing` facade. We install a json-formatting
+// subscriber once per instance, routing each event through the wit `host::log`
+// import as a single JSON line. The JS caller parses the line and feeds it to
+// its own logger (pino).
+
+static LOG_INIT: Once = Once::new();
+
+fn init_logging() {
+    LOG_INIT.call_once(|| {
+        let filter = EnvFilter::try_from_default_env()
+            .unwrap_or_else(|_| EnvFilter::new("info,ristretto_vm=debug"));
+        let fmt_layer = tracing_subscriber::fmt::layer()
+            .json()
+            .with_writer(HostMakeWriter)
+            .with_ansi(false);
+        let _ = tracing_subscriber::registry()
+            .with(filter)
+            .with(fmt_layer)
+            .try_init();
+    });
+}
+
+struct HostMakeWriter;
+
+impl<'a> MakeWriter<'a> for HostMakeWriter {
+    type Writer = HostWriter;
+    fn make_writer(&'a self) -> Self::Writer {
+        HostWriter(Vec::new())
+    }
+}
+
+/// Per-event buffer that flushes the full line to `host::log` on drop.
+struct HostWriter(Vec<u8>);
+
+impl Write for HostWriter {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.0.extend_from_slice(buf);
+        Ok(buf.len())
+    }
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+
+impl Drop for HostWriter {
+    fn drop(&mut self) {
+        if self.0.is_empty() {
+            return;
+        }
+        let text = String::from_utf8_lossy(&self.0);
+        host::log(text.trim_end_matches('\n'));
     }
 }

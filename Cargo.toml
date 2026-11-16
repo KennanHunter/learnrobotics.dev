@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/compiler"]
+members = ["crates/compiler", "crates/profile"]
 exclude = ["crates/ristretto"]
 
 [profile.release]
