@@ -9,7 +9,5 @@
     "rlib",
     "rustls"
   ],
-  "ignorePaths": [
-    "node_modules"
-  ]
+  "ignorePaths": ["node_modules"]
 }

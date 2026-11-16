@@ -18,7 +18,8 @@
     }
   ],
   "vars": {
-    "BETTER_AUTH_URL": "http://localhost:5173"
+    "DEPLOYMENT_URL": "https://preview.learnrobotics.dev",
+    "ENVIRONMENT": "preview"
   },
   "env": {
     "production": {
@@ -36,7 +37,8 @@
         }
       ],
       "vars": {
-        "BETTER_AUTH_URL": "https://learnrobotics.dev"
+        "DEPLOYMENT_URL": "https://learnrobotics.dev",
+        "ENVIRONMENT": "alpha"
       }
     }
   }

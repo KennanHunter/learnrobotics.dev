@@ -6,7 +6,7 @@ declare module "cloudflare:test" {
   interface ProvidedEnv {
     DB: D1Database;
     BETTER_AUTH_SECRET: string;
-    BETTER_AUTH_URL: string;
+    DEPLOYMENT_URL: string;
     GITHUB_CLIENT_ID: string;
     GITHUB_CLIENT_SECRET: string;
     TEST_MIGRATIONS: D1Migration[];

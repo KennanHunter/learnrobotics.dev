@@ -6,13 +6,29 @@ import {
 } from "@tanstack/solid-router";
 import { createEffect } from "solid-js";
 import { HydrationScript, isServer } from "solid-js/web";
+import { createServerFn } from "@tanstack/solid-start";
 import { ErrorPage } from "~/components/ErrorPage/ErrorPage";
 import { ModalProvider } from "~/components/ModalManager/ModalManager";
 import { getSession } from "~/lib/session";
 import { SessionProvider } from "~/lib/session-context";
+import { ThemeProvider, useTheme } from "~/lib/theme-context";
+import {
+  EnvironmentProvider,
+  type Environment,
+} from "~/lib/environment-context";
 import { getLocale } from "~/paraglide/runtime";
 import { m } from "~/paraglide/messages";
 import styles from "~/styles.css?url";
+
+const getEnvironment = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Environment | undefined> => {
+    const { getEnv } = await import("~/server/env");
+    const raw = getEnv().ENVIRONMENT;
+    return raw === "development" || raw === "preview" || raw === "alpha"
+      ? raw
+      : undefined;
+  },
+);
 
 export const Route = createRootRoute({
   head: () => ({
@@ -29,8 +45,11 @@ export const Route = createRootRoute({
     ],
   }),
   beforeLoad: async () => {
-    const session = await getSession();
-    return { session };
+    const [session, environment] = await Promise.all([
+      getSession(),
+      getEnvironment(),
+    ]);
+    return { session, environment };
   },
   component: RootDocument,
   notFoundComponent: () => (
@@ -71,29 +90,39 @@ export const Route = createRootRoute({
 
 function RootDocument() {
   const ctx = Route.useRouteContext();
-  const themeClass = () => {
+  const initialThemeClass = () => {
     const t = ctx().session?.theme;
     return t === "dark" || t === "light" ? t : "";
   };
-  if (!isServer) {
-    createEffect(() => {
-      document.documentElement.className = themeClass();
-    });
-  }
   return (
-    <html lang={getLocale()} class={themeClass()}>
+    <html lang={getLocale()} class={initialThemeClass()}>
       <head>
         <HydrationScript />
         <HeadContent />
       </head>
       <body>
         <SessionProvider session={() => ctx().session}>
-          <ModalProvider>
-            <Outlet />
-          </ModalProvider>
+          <ThemeProvider>
+            <HtmlThemeClassSync />
+            <EnvironmentProvider environment={() => ctx().environment}>
+              <ModalProvider>
+                <Outlet />
+              </ModalProvider>
+            </EnvironmentProvider>
+          </ThemeProvider>
         </SessionProvider>
         <Scripts />
       </body>
     </html>
   );
+}
+
+function HtmlThemeClassSync() {
+  const { effectiveTheme } = useTheme();
+  if (!isServer) {
+    createEffect(() => {
+      document.documentElement.className = effectiveTheme();
+    });
+  }
+  return null;
 }

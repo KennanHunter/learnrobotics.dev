@@ -1,148 +1,90 @@
-# Known issue: client hydration renders `[object Object]`
+# Fixed: client hydration rendered `[object Object]`
+
+> Kept as a reference because the diagnosis took work and the fix is
+> non-obvious. The bug is no longer present.
 
 ## Symptom
 
-In `pnpm dev` on any route, SSR produces the correct HTML (course list, headings, nav), but once the client bundle runs, the entire `<body>` is replaced with the literal string `[object Object]`:
+SSR produced the correct HTML, but on client hydration the entire `<body>`
+collapsed to the literal text `[object Object]`. No `pageerror`,
+no `console.error`, just one warning:
 
-```html
-<body><!--$-->[object Object]<!--/--><!--$--><!--/--></body>
-```
+    Warning: Error in route match: __root__
 
-- `curl http://localhost:5173/en` → 7 KB of correct markup.
-- Playwright with `javaScriptEnabled: false` → correct markup.
-- Playwright with JS on → `document.body.innerText === "[object Object]"`.
-- No `pageerror`, no `console.error`, no unhandled rejection.
-- One console warning emitted by TanStack Router during the collapse:
-  `Warning: Error in route match: __root__`
-  (from `@tanstack/solid-router` `dist/source/Match.jsx:87`).
+## Root cause
 
-## Trace of the actual DOM write
+A hydration mismatch — not a component error.
 
-Wrapping `document.createTextNode` and `Node.prototype.insertBefore` in an
-`addInitScript` shows the text node that ends up in `<body>` is created by
-Solid's `normalizeIncomingArray` (`solid-js/web`, bundled into
-`.vite/deps/chunk-T7SG3QGM.js`):
+1. `paraglideMiddleware` in `src/ssr.tsx` strips the locale prefix
+   (`/en`, `/pirate`) from the request URL before TanStack Solid Start's
+   handler sees it. The server router therefore matched the
+   **delocalized** URL (`/en` → `/`), rendered the index route, and streamed
+   that HTML.
+2. On the client, `window.location.pathname` is still `/en`. TanStack Solid
+   Router has no `rewrite` option (that's a React-router feature), and its
+   route tree has `/`, `/playground`, etc. — not `/en/...`. So the client
+   router treated `/en` as unmatched and resolved the match to the root's
+   `notFoundComponent` (our `<ErrorPage code="404" …/>`).
+3. Solid-js then tried to hydrate `<ErrorPage>` against the DOM the server
+   had rendered for the index route. The hydration-key lookup failed:
 
-```
-at document.createTextNode
-at normalizeIncomingArray                (solid-js/web chunk:1056)
-at insertExpression                      (solid-js/web chunk:999)
-at Object.fn                             (solid-js/web chunk:993)
-at runComputation / createRenderEffect   (solid-js chunk:759/236)
-at insertExpression                      (solid-js/web chunk:990)
-```
+       Error: Hydration Mismatch. Unable to find DOM nodes for hydration key: …
+       <main>…<a …>…<h1 …>…
+         at ErrorPage (…/components/ErrorPage/ErrorPage.tsx:17)
 
-`normalizeIncomingArray` (`solid-js/web`):
+4. TanStack's `Match.jsx` caught the error in its `CatchBoundary` and
+   emitted the warning — but with two overlapping error boundaries
+   (`CatchBoundary` + `CatchNotFound`) and a non-rethrowing `onCatch`, the
+   caught error object leaked into a Solid render slot as `children`.
+   Solid's `normalizeIncomingArray` fell through to `String(item)` →
+   `"[object Object]"` and inserted that text at `<body>`.
 
-```js
-} else {
-  const value = String(item);   // ← object falls through here
-  ...
-  else normalized.push(document.createTextNode(value));
-}
-```
+Dropping the `notFoundComponent` changed the stringified object into an
+empty body (confirming that path). Adding `onCatch` to `createRootRoute` and
+dumping `err.stack` surfaced the "Hydration Mismatch" message that pointed
+at `ErrorPage.tsx` and sealed the diagnosis.
 
-The `item` is an object that:
+## Fix
 
-- is not `null`/`true`/`false`
-- has no `.nodeType` (not a DOM node Solid created)
-- is not an Array
-- is not a function
+Two coordinated changes so client and server agree on which route the URL
+resolves to:
 
-…so Solid stringifies it to `[object Object]` and inserts it as a text node.
-It then does `reconcileArrays` from the body's `<!--$-->…<!--/-->` SSR markers
-and replaces the entire hydrated subtree with that one text node.
+1. **`src/router.tsx`** — set `basepath: ``/${getLocale()}``` on
+`createTanStackRouter`. On the client this makes the router treat the
+locale prefix as the mount point, mapping `/en/foo`→`/foo`(and`/en`→`/`) when walking the route tree.
+2. **pnpm patch `@tanstack/start-client-core`** —
+   `patches/@tanstack__start-client-core.patch` removes the forced
+   `router.update({ basepath: process.env.TSS_ROUTER_BASEPATH })` inside
+   `hydrateStart`. Without the patch, that call wipes the basepath we
+   just set back to `"/"`. Registered in `pnpm-workspace.yaml` under
+   `patchedDependencies`.
 
-## What that object actually is
+The server leaves `basepath` as `/` — `createStartHandler` sets it to
+`TSS_ROUTER_BASEPATH` (default `/`) at request time, which lines up with
+the already-delocalized URL paraglide hands it.
 
-An object escaping into a Solid render usually means a React-style JSX element
-`{type, props, key, ...}` got passed where Solid expected a Solid node. In this
-repo that lines up with the prior finding in
-[[vite-cloudflare-solid-jsx-bug]] — the `solid` export condition on
-`@tanstack/solid-router` and `@tanstack/solid-start` makes resolution land on
-their `dist/source/*.jsx` files:
+No change to `paraglideMiddleware` wiring in `ssr.tsx`: it still uses the
+delocalized request (`({ request }) => startHandler(request, opts)`).
 
-```jsonc
-// @tanstack/solid-router/package.json
-"exports": {
-  ".": {
-    "solid":   { "default": "./dist/source/index.jsx" },
-    "import":  { "default": "./dist/esm/index.js" }
-  }
-}
-```
+## Verification
 
-In **dev**, `vite-plugin-solid` *does* transform those `.jsx` files for the
-client — fetching e.g.
-`http://localhost:5173/@fs/.../solid-router/dist/source/RouterProvider.jsx`
-returns Solid-compiled output that uses `_$createComponent` from
-`solid-js/web`. So the straightforward "React JSX runtime leaking into Solid"
-story doesn't fully explain the client failure.
+- `pnpm test:e2e` passes 7/7 with JS on (no more `javaScriptEnabled: false`).
+- Added `client-side nav keeps locale prefix` to `web/e2e/i18n.spec.ts`:
+  clicks a localized link and asserts the hydrated page navigates
+  client-side without dropping the locale.
+- `document.body.innerText` on `/en` is now the real landing page text.
 
-What we **have** confirmed:
+## When upgrading TanStack Start
 
-1. Only one copy of `solid-js` is installed (`.pnpm/solid-js@1.9.19`), so it's
-   not two-copies-of-Solid context mismatch.
-2. Two copies of `@tanstack/solid-router` exist in the pnpm store (`1.170.39`
-   as a direct dep and `1.168.26` pulled transitively). In dev the browser
-   loads `1.170.39` — verified via request URLs — but the duplicate is a
-   smell worth checking next time this comes up.
-3. TanStack Router's `Match.jsx` emits "Error in route match: __root__" via
-   its `CatchBoundary` `onCatch`. So an error IS being caught during the
-   initial client match of the root route, but it's swallowed to a warning
-   (not re-thrown) and some branch of the `Match` tree ends up returning the
-   caught value as children — which is what Solid is stringifying.
+The patch targets `@tanstack/start-client-core@1.170.35`'s
+`dist/esm/client/hydrateStart.js`. If pnpm complains the patch no longer
+applies on an upgrade:
 
-The most actionable suspect: the `__root__` match's client-side error path.
-`__root__.beforeLoad` runs `getSession()` (a server fn). On hydration the
-client reads the serialized `b: { session: {...} }` from the streamed match
-manifest instead of re-running `beforeLoad`. If that deserialization fails or
-the match state is shaped differently than what the `ResolvedCatchBoundary` in
-`Match.jsx` expects, the catch handler may end up receiving the error object
-where it expects a component result and forward it into `children`.
+- Check whether upstream now accepts a `basepath` override in
+  `getRouter()` (track https://github.com/TanStack/router for a fix/option).
+- If not, re-create the patch: `pnpm patch @tanstack/start-client-core`,
+  comment out the `basepath: process.env.TSS_ROUTER_BASEPATH` line in the
+  emitted `router.update` call, `pnpm patch-commit <path>`.
 
-## Repro
-
-```ts
-// web/e2e/_repro.spec.ts (not committed)
-import { test } from "@playwright/test";
-test("hydration eats body", async ({ page }) => {
-  await page.goto("/en");
-  await page.waitForTimeout(500);
-  console.log(await page.evaluate(() => document.body.innerText));
-  // → "[object Object]"
-});
-```
-
-With `javaScriptEnabled: false`, the same test prints the real page text.
-
-## Impact
-
-- Everything SSR-dependent works: locale routing, SEO-visible markup, crawlers.
-- Anything client-only breaks: TopBar sign-in button `onClick`, ProfileMenu,
-  settings page language picker (`setLanguage` + `setLocale`), playground run
-  button, theme toggle.
-
-## Workarounds in place
-
-- Playwright e2e tests pin `javaScriptEnabled: false` per-context in
-  `web/e2e/i18n.spec.ts`. SSR output is still the thing we care about for
-  Paraglide's URL strategy and 404 locale behavior, so this is a real test —
-  just a narrower one. Drop the flag once hydration is fixed.
-
-## Not yet tried
-
-- Reproducing on a bare TanStack Solid Start template (no Cloudflare plugin,
-  no PWA, no paraglide) with the same `solid-router`/`solid-start` versions
-  — would isolate whether this is a solid-router bug or a stack-interaction
-  bug like [[vite-cloudflare-solid-jsx-bug]].
-- Patching `@tanstack/solid-router/package.json` to drop the `"solid"`
-  condition so dev also loads `dist/esm/*.js`. The prior doc noted this
-  breaks SSR with `"Client-only API called on the server side"`, but that was
-  before `src/ssr.tsx` was in play — worth re-testing per-environment.
-- Inspecting the client match state (`$_TSR.router`) right before hydration
-  to see what shape it's in vs. what `Match.jsx` expects.
-- Printing `error.stack` from inside the `onCatch` in `Match.jsx` to see what
-  actually throws. Requires patching the dep temporarily.
-
-Related: [[vite-cloudflare-solid-jsx-bug]].
+Related: [[vite-cloudflare-solid-jsx-bug]] — unrelated bug in the same
+dep stack, kept for context.

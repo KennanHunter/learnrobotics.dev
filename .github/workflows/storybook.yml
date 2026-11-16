@@ -11,6 +11,13 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+          targets: wasm32-wasip2
+
+      - uses: Swatinem/rust-cache@v2
+
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -20,8 +27,10 @@ jobs:
           node-version: 24
           cache: pnpm
 
-      - name: Install JS deps
-        run: pnpm install --frozen-lockfile
+      - uses: extractions/setup-just@v2
+
+      - name: Install deps and build compiler
+        run: just
 
       # Requires repo secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
       - name: Build and deploy Storybook

@@ -8,10 +8,14 @@ import {
   UnsupportedLanguagesNotice,
   type LanguageCode,
 } from "~/i18n";
-import { setLanguage } from "~/lib/session";
+import { setMonacoTheme } from "~/lib/session";
 import { useSession } from "~/lib/session-context";
+import { THEMES, type ThemeId } from "~/lib/monaco-themes";
+import { logger } from "~/lib/logger";
 import { m } from "~/paraglide/messages";
 import { getLocale, setLocale } from "~/paraglide/runtime";
+
+const log = logger.child({ scope: "settings" });
 
 export const Route = createFileRoute("/settings")({
   component: Settings,
@@ -20,25 +24,42 @@ export const Route = createFileRoute("/settings")({
 function Settings() {
   const router = useRouter();
   const session = useSession();
-  const current = (): LanguageCode => {
-    const raw = session()?.language as LanguageCode | undefined;
-    if (raw && raw in LANGUAGES) return raw;
-    return getLocale() as LanguageCode;
-  };
+  const current = (): LanguageCode => getLocale() as LanguageCode;
   const [selected, setSelected] = createSignal<LanguageCode>(current());
   const [pending, setPending] = createSignal(false);
 
   async function pick(code: LanguageCode) {
+    log.info({ from: getLocale(), to: code }, "language pick");
     setSelected(code);
-    if (code === current() && code === getLocale()) return;
+    if (code === getLocale()) {
+      log.debug("language pick: same as current, no-op");
+      return;
+    }
     setPending(true);
     try {
-      await setLanguage({ data: { language: code } });
-      await router.invalidate();
-      // Paraglide handles navigation to the localized URL and cookie update.
       setLocale(code);
+      log.debug("setLocale invoked (Paraglide will navigate)");
     } finally {
       setPending(false);
+    }
+  }
+
+  const monacoSelection = (): ThemeId | null =>
+    (session()?.monacoTheme as ThemeId | undefined) ?? null;
+  const [monacoPending, setMonacoPending] = createSignal(false);
+
+  async function pickMonacoTheme(id: ThemeId | null) {
+    log.info({ from: monacoSelection(), to: id }, "monaco theme pick");
+    setMonacoPending(true);
+    try {
+      const res = await setMonacoTheme({ data: { monacoTheme: id } });
+      log.debug({ res }, "setMonacoTheme responded");
+      await router.invalidate();
+    } catch (err) {
+      log.error({ err }, "setMonacoTheme failed");
+      throw err;
+    } finally {
+      setMonacoPending(false);
     }
   }
 
@@ -46,9 +67,13 @@ function Settings() {
     <>
       <TopBar />
       <main class="mx-auto max-w-3xl px-6 py-12 space-y-10">
-        <h1 class="text-4xl font-semibold tracking-tight">{m.settings_heading()}</h1>
+        <h1 class="text-4xl font-semibold tracking-tight">
+          {m.settings_heading()}
+        </h1>
         <section>
-          <h2 class="text-xl font-medium mb-3">{m.settings_language_heading()}</h2>
+          <h2 class="text-xl font-medium mb-3">
+            {m.settings_language_heading()}
+          </h2>
           <div class="mb-4">
             <UnsupportedLanguagesNotice />
           </div>
@@ -81,6 +106,59 @@ function Settings() {
               <Dynamic component={LANGUAGES[selected()].description} />
             </div>
           </div>
+        </section>
+
+        <section>
+          <h2 class="text-xl font-medium mb-3">
+            {m.settings_editor_theme_heading()}
+          </h2>
+          <p class="mb-3 text-sm opacity-80">
+            {m.settings_editor_theme_auto_hint()}
+          </p>
+          <ul class="divide-y divide-background-offset rounded border border-background-offset">
+            <li>
+              <button
+                type="button"
+                disabled={monacoPending()}
+                class="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-background-offset disabled:opacity-60"
+                classList={{
+                  "bg-background-offset font-medium":
+                    monacoSelection() === null,
+                }}
+                onClick={() => pickMonacoTheme(null)}
+              >
+                <span>{m.settings_editor_theme_follow_app()}</span>
+              </button>
+            </li>
+            <For each={Object.values(THEMES)}>
+              {(entry) => {
+                const isActive = () => monacoSelection() === entry.id;
+                return (
+                  <li>
+                    <button
+                      type="button"
+                      disabled={monacoPending()}
+                      class="flex w-full items-center justify-between px-4 py-2 text-left text-sm hover:bg-background-offset disabled:opacity-60"
+                      classList={{
+                        "bg-background-offset font-medium": isActive(),
+                      }}
+                      onClick={() => pickMonacoTheme(entry.id as ThemeId)}
+                    >
+                      <span>{entry.label}</span>
+                      {entry.autoFor ? (
+                        <span
+                          aria-label={`auto-applied for ${entry.autoFor} app theme`}
+                          class="text-xs opacity-70"
+                        >
+                          ★ {entry.autoFor}
+                        </span>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              }}
+            </For>
+          </ul>
         </section>
       </main>
     </>

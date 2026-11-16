@@ -32,6 +32,11 @@ storybook:
 migrate-local:
     pnpm --filter learnrobotics-web db:migrate
 
+# Format Rust (cargo fmt) and JS/TS/etc (prettier).
+format:
+    cargo fmt --all
+    pnpm exec prettier --write .
+
 clean:
     cargo clean
     pnpm --filter @learnrobotics/compiler clean

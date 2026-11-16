@@ -1,5 +1,7 @@
 name: Release
 
+run-name: Release — ${{ inputs.commit && format('commit {0}', inputs.commit) || format('ref {0}', github.ref_name) }}
+
 on:
   workflow_dispatch:
     inputs:
@@ -32,3 +34,14 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Production release $TAG"
           git push origin "$TAG"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+          TARGET: ${{ inputs.commit || github.sha }}
+        run: |
+          gh release create "$TAG" \
+            --target "$TARGET" \
+            --title "$TAG" \
+            --generate-notes

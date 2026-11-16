@@ -1,26 +1,26 @@
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { transpileBytes } from '@bytecodealliance/jco-transpile';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { transpileBytes } from "@bytecodealliance/jco-transpile";
 
-const pkg = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const repoRoot = resolve(pkg, '..', '..');
+const pkg = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const repoRoot = resolve(pkg, "..", "..");
 const wasmPath = join(
   repoRoot,
-  'target',
-  'wasm32-wasip2',
-  'release',
-  'compiler.wasm',
+  "target",
+  "wasm32-wasip2",
+  "release",
+  "compiler.wasm",
 );
-const dist = join(pkg, 'dist');
+const dist = join(pkg, "dist");
 
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 
 const { files } = await transpileBytes(readFileSync(wasmPath), {
-  name: 'compiler',
-  instantiation: 'async',
-  asyncMode: 'sync',
+  name: "compiler",
+  instantiation: "async",
+  asyncMode: "sync",
   wasiShim: true,
   nodejsCompat: false,
   base64Cutoff: 0,

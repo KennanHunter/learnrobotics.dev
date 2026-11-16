@@ -3,66 +3,42 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --color-*: initial;
-    --color-red: #ed1c24;
-    --color-blue: #0066b3;
-    --color-primary: #121212;
-    --color-background: #fffbfc;
-    --color-background-offset: #e5e2e3;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --color-primary: #fffbfc;
-        --color-background: #121212;
-        --color-background-offset: #30332e;
-    }
-}
-
-:root.light {
-    --color-primary: #121212;
-    --color-background: #fffbfc;
-    --color-background-offset: #e5e2e3;
-}
-
-:root.dark {
-    --color-primary: #fffbfc;
-    --color-background: #121212;
-    --color-background-offset: #30332e;
+  --color-*: initial;
+  --color-red: #ed1c24;
+  --color-blue: #0066b3;
+  --color-green: light-dark(#0a8f3c, #34d27a);
+  --color-primary: light-dark(#121212, #fffbfc);
+  --color-background: light-dark(#fffbfc, #121212);
+  --color-background-offset: light-dark(#e5e2e3, #30332e);
 }
 
 @layer base {
-    :root {
-        color-scheme: light;
-    }
-    @media (prefers-color-scheme: dark) {
-        :root {
-            color-scheme: dark;
-        }
-    }
-    :root.light {
-        color-scheme: light;
-    }
-    :root.dark {
-        color-scheme: dark;
-    }
+  :root {
+    color-scheme: light dark;
+  }
+  :root.light {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
 
-    html,
-    body {
-        background-color: var(--color-background);
-        color: var(--color-primary);
-    }
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-primary);
+  }
 
-    body {
-        min-height: 100vh;
-    }
+  body {
+    min-height: 100vh;
+  }
 
-    /* Form controls inherit their containing color instead of browser defaults. */
-    button,
-    input,
-    select,
-    textarea {
-        color: inherit;
-        background-color: transparent;
-    }
+  /* Form controls inherit their containing color instead of browser defaults. */
+  button,
+  input,
+  select,
+  textarea {
+    color: inherit;
+    background-color: transparent;
+  }
 }

@@ -1,0 +1,16 @@
+diff --git a/dist/esm/client/hydrateStart.js b/dist/esm/client/hydrateStart.js
+index c8514005c7d271d4ce42580c8f678bc926de0777..86bb27af5ce8949472086009ba8ab1de9593b5fc 100644
+--- a/dist/esm/client/hydrateStart.js
++++ b/dist/esm/client/hydrateStart.js
+@@ -21,7 +21,10 @@ async function hydrateStart() {
+ 	serializationAdapters.push(ServerFunctionSerializationAdapter);
+ 	if (router.options.serializationAdapters) serializationAdapters.push(...router.options.serializationAdapters);
+ 	router.update({
+-		basepath: process.env.TSS_ROUTER_BASEPATH,
++		// Patched: do not force basepath here. The router sets it in getRouter()
++		// from the current locale prefix; forcing it to TSS_ROUTER_BASEPATH
++		// wipes that out and breaks hydration for localized URLs. See
++		// development/agent-output/client-hydration-renders-object-object.md.
+ 		serializationAdapters
+ 	});
+ 	if (!router.stores.ids.get().length) await hydrate(router);

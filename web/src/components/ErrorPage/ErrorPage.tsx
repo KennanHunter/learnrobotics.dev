@@ -29,9 +29,7 @@ export function ErrorPage(props: ErrorPageProps): JSX.Element {
         {props.title}
       </h1>
       <Show when={props.message}>
-        <p class="max-w-xl text-base text-primary/60 mb-8">
-          {props.message}
-        </p>
+        <p class="max-w-xl text-base text-primary/60 mb-8">{props.message}</p>
       </Show>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <a

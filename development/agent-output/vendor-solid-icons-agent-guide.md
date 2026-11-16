@@ -69,6 +69,7 @@ Delete everything else from the upstream repo: `lib/`, old `dist/`, other pack f
 ```
 
 Points to note:
+
 - **No `main`**, no `types`, no `build`/`prepare` scripts. pnpm's git installer won't run anything; it just checks out the files listed in `files`.
 - Keeping the name `solid-icons` means consumer imports stay as `solid-icons/md`, `solid-icons/ai` — no code changes beyond the lockfile.
 - `"solid"` condition is listed so `vite-plugin-solid` picks the TSX source. Fallback `"default"` points at the same file so other tooling behaves.
@@ -93,7 +94,9 @@ export type IconData = {
 export function IconBase(props: IconProps & { data: IconData }): JSX.Element {
   const [local, rest] = splitProps(props, ["size", "title", "data", "color"]);
   const html = () =>
-    local.title ? `${local.data.body}<title>${local.title}</title>` : local.data.body;
+    local.title
+      ? `${local.data.body}<title>${local.title}</title>`
+      : local.data.body;
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +119,12 @@ export function IconBase(props: IconProps & { data: IconData }): JSX.Element {
 Upstream prebuilt output is one-liner per icon:
 
 ```js
-export function MdLightMode(props){return IconTemplate({a:{"viewBox":"0 0 24 24"},c:'<path d="…"/>'},props)}
+export function MdLightMode(props) {
+  return IconTemplate(
+    { a: { viewBox: "0 0 24 24" }, c: '<path d="…"/>' },
+    props,
+  );
+}
 ```
 
 We regex-extract and emit one TSX per icon. Add `scripts/port.mjs` to the fork:
@@ -128,7 +136,8 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const [pack, srcJs] = process.argv.slice(2);
-if (!pack || !srcJs) throw new Error("usage: port.mjs <pack> <path-to-upstream-index.js>");
+if (!pack || !srcJs)
+  throw new Error("usage: port.mjs <pack> <path-to-upstream-index.js>");
 
 const here = dirname(fileURLToPath(import.meta.url));
 const outDir = resolve(here, `../src/${pack}`);
@@ -136,7 +145,8 @@ rmSync(outDir, { recursive: true, force: true });
 mkdirSync(outDir, { recursive: true });
 
 const text = readFileSync(srcJs, "utf8");
-const re = /export function (\w+)\(props\)\{return IconTemplate\((\{a:\{[^}]*\},c:'[^']*'\})/g;
+const re =
+  /export function (\w+)\(props\)\{return IconTemplate\((\{a:\{[^}]*\},c:'[^']*'\})/g;
 
 const names = [];
 for (const m of text.matchAll(re)) {
@@ -233,6 +243,7 @@ export default defineConfig({
 ```
 
 Why each line:
+
 - `optimizeDeps.exclude` — stops the client-side dep-optimizer from touching the TSX.
 - `environments.ssr.optimizeDeps.exclude` — same for the Workers SSR env (where the original crash was).
 - `ssr.noExternal` — forces Vite to run the files through its plugin pipeline (so `vite-plugin-solid` transforms the TSX) rather than externalizing them to the Workers runtime as bare imports.
@@ -262,6 +273,7 @@ pnpm dev
 ```
 
 Open the index in a browser. Confirm:
+
 - Theme toggle shows sun/moon.
 - GitHub button shows the chosen GitHub mark.
 - Info icon renders with tooltip.

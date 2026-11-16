@@ -1,3 +1,4 @@
 BETTER_AUTH_SECRET=replace-with-32-byte-random-string
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
+ENVIRONMENT=development

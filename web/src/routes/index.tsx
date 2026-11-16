@@ -17,7 +17,9 @@ function Landing() {
       <TopBar />
       <main class="mx-auto max-w-3xl px-6 py-12 space-y-10">
         <section>
-          <h1 class="text-4xl font-semibold tracking-tight">{m.home_heading()}</h1>
+          <h1 class="text-4xl font-semibold tracking-tight">
+            {m.home_heading()}
+          </h1>
         </section>
         <section>
           <h2 class="text-2xl font-medium mb-3">{m.home_courses()}</h2>
@@ -41,7 +43,9 @@ function Landing() {
           </ul>
         </section>
         <section>
-          <h2 class="text-2xl font-medium mb-3">{m.home_playground_heading()}</h2>
+          <h2 class="text-2xl font-medium mb-3">
+            {m.home_playground_heading()}
+          </h2>
           <a
             class="text-blue underline-offset-4 hover:underline"
             href={localizeHref("/playground")}

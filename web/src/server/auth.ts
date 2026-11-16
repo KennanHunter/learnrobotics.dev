@@ -4,6 +4,9 @@ import { anonymous } from "better-auth/plugins";
 import { getDb } from "./db";
 import { getEnv } from "./env";
 import { userConfig } from "./schema";
+import { logger } from "~/lib/logger";
+
+const log = logger.child({ scope: "auth" });
 
 let _auth: ReturnType<typeof betterAuth> | undefined;
 
@@ -11,7 +14,7 @@ export function getAuth() {
   if (_auth) return _auth;
   const env = getEnv();
   _auth = betterAuth({
-    baseURL: env.BETTER_AUTH_URL,
+    baseURL: env.DEPLOYMENT_URL,
     secret: env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(getDb(), { provider: "sqlite" }),
     socialProviders: {
@@ -32,12 +35,15 @@ export function getAuth() {
       user: {
         create: {
           after: async (newUser) => {
+            log.info(
+              { userId: newUser.id },
+              "user.create hook: seeding user_config",
+            );
             const now = new Date();
             await getDb()
               .insert(userConfig)
               .values({
                 userId: newUser.id,
-                language: "en",
                 createdAt: now,
                 updatedAt: now,
               })

@@ -3,30 +3,29 @@ import { useRouter } from "@tanstack/solid-router";
 import { MdFillLight_mode } from "solid-icons/md/MdFillLight_mode";
 import { MdFillDark_mode } from "solid-icons/md/MdFillDark_mode";
 import { setTheme, type Theme } from "~/lib/session";
-import { useSession } from "~/lib/session-context";
+import { useTheme } from "~/lib/theme-context";
+import { logger } from "~/lib/logger";
+
+const log = logger.child({ scope: "ThemeToggle" });
 
 export function ThemeToggle() {
   const router = useRouter();
-  const session = useSession();
+  const { effectiveTheme } = useTheme();
   const [pending, setPending] = createSignal(false);
 
-  const effective = (): Theme => {
-    const t = session()?.theme;
-    if (t) return t;
-    if (typeof window !== "undefined") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-    }
-    return "light";
-  };
-
   async function toggle() {
-    const next: Theme = effective() === "dark" ? "light" : "dark";
+    const current = effectiveTheme();
+    const next: Theme = current === "dark" ? "light" : "dark";
+    log.info({ from: current, to: next }, "toggle clicked");
     setPending(true);
     try {
-      await setTheme({ data: { theme: next } });
+      const res = await setTheme({ data: { theme: next } });
+      log.debug({ res }, "setTheme responded");
       await router.invalidate();
+      log.debug({ effectiveTheme: effectiveTheme() }, "after invalidate");
+    } catch (err) {
+      log.error({ err }, "setTheme failed");
+      throw err;
     } finally {
       setPending(false);
     }
@@ -40,7 +39,7 @@ export function ThemeToggle() {
       class="rounded border border-background-offset p-1.5 text-lg hover:bg-background-offset disabled:opacity-60"
       onClick={toggle}
     >
-      <Show when={effective() === "dark"} fallback={<MdFillDark_mode />}>
+      <Show when={effectiveTheme() === "dark"} fallback={<MdFillDark_mode />}>
         <MdFillLight_mode />
       </Show>
     </button>

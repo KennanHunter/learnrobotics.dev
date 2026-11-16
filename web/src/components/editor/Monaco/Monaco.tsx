@@ -43,6 +43,7 @@ import { Loader } from "../Loader/Loader";
 import { MonacoContainer } from "../MonacoContainer/MonacoContainer";
 import { getOrCreateModel } from "../utils";
 import type { LoaderParams } from "../types";
+import { registerThemes } from "~/lib/monaco-themes";
 
 const viewStates = new Map<
   string | undefined,
@@ -106,6 +107,8 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
 
     try {
       const m = await loadMonaco;
+      registerThemes(m);
+      if (props.theme) m.editor.setTheme(props.theme);
       const ed = createEditor(m);
       setMonaco(m);
       setEditor(ed);

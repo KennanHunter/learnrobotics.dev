@@ -1,0 +1,9 @@
+/* Storybook's preview wrapper (.sb-show-main) paints its own background,
+   overriding our html/body theming. Make it transparent so the themed
+   <html> background shows through. */
+.sb-show-main,
+.sb-main-padded,
+.sb-main-fullscreen,
+.sb-main-centered {
+  background: transparent !important;
+}

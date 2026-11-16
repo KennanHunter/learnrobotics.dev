@@ -1,5 +1,7 @@
 name: Migrate D1 (remote)
 
+run-name: Migrate D1 (remote) — ${{ inputs.environment }}
+
 on:
   workflow_dispatch:
     inputs:

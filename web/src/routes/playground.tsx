@@ -4,6 +4,7 @@ import { Dynamic } from "solid-js/web";
 import * as v from "valibot";
 import { TopBar } from "~/components/TopBar/TopBar";
 import type { MonacoEditorProps } from "~/components/editor/Monaco/Monaco";
+import { useTheme } from "~/lib/theme-context";
 import { m } from "~/paraglide/messages";
 
 const SearchSchema = v.object({});
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/playground")({
 });
 
 function Playground() {
+  const { monacoTheme } = useTheme();
   const [source, setSource] = createSignal(DEFAULT_SOURCE);
   const [running, setRunning] = createSignal(false);
   const [output, setOutput] = createSignal("");
@@ -58,7 +60,9 @@ function Playground() {
       <TopBar />
       <main class="mx-auto flex h-[calc(100vh-56px)] max-w-6xl flex-col gap-4 px-6 py-6">
         <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-semibold tracking-tight">{m.playground_heading()}</h1>
+          <h1 class="text-2xl font-semibold tracking-tight">
+            {m.playground_heading()}
+          </h1>
           <button
             type="button"
             disabled={running()}
@@ -70,11 +74,19 @@ function Playground() {
         </div>
         <div class="grid min-h-0 flex-1 grid-cols-2 gap-4">
           <div class="min-h-0 overflow-hidden rounded border border-background-offset">
-            <Show when={Editor()} fallback={<div class="p-3 text-xs text-primary/60">{m.playground_loading_editor()}</div>}>
+            <Show
+              when={Editor()}
+              fallback={
+                <div class="p-3 text-xs text-primary/60">
+                  {m.playground_loading_editor()}
+                </div>
+              }
+            >
               <Dynamic
                 component={Editor()!}
                 language="java"
                 value={source()}
+                theme={monacoTheme()}
                 onChange={(val: string) => setSource(val)}
                 options={{ minimap: { enabled: false }, fontSize: 13 }}
               />
@@ -86,7 +98,9 @@ function Playground() {
             </Show>
             <Show when={output()}>
               <div class="whitespace-pre-wrap">
-                <div class="mb-1 text-primary/60">{m.playground_classfile_label()}</div>
+                <div class="mb-1 text-primary/60">
+                  {m.playground_classfile_label()}
+                </div>
                 {output()}
               </div>
             </Show>

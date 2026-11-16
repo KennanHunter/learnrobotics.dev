@@ -5,7 +5,7 @@ import { getDb } from "~/server/db";
 import { userConfig } from "~/server/schema";
 
 describe("user create hook", () => {
-  it("inserts a user_config row with language='en' on user creation", async () => {
+  it("inserts a user_config row with null theme and monaco_theme on user creation", async () => {
     const auth = getAuth();
     const result = await auth.api.signInAnonymous({ headers: new Headers() });
     const userId = result?.user.id;
@@ -15,7 +15,7 @@ describe("user create hook", () => {
       where: eq(userConfig.userId, userId!),
     });
     expect(cfg).toBeDefined();
-    expect(cfg?.language).toBe("en");
     expect(cfg?.theme).toBeNull();
+    expect(cfg?.monacoTheme).toBeNull();
   });
 });

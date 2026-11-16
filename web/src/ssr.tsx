@@ -9,9 +9,11 @@ import { Register } from "@tanstack/solid-start";
 
 const startHandler = createStartHandler(defaultStreamHandler);
 
+// paraglide strips the locale prefix before TanStack sees the URL (server
+// router basepath is "/"). The client router (src/router.tsx) uses
+// basepath=`/${getLocale()}` so both sides agree on the matched route tree.
 const fetch: RequestHandler<Register> = (request, opts): Promise<Response> =>
   paraglideMiddleware(request, ({ request: localizedRequest }) =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     startHandler(localizedRequest, opts),
   );
 

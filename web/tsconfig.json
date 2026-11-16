@@ -13,11 +13,22 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": false,
     "noEmit": true,
-    "types": ["@cloudflare/workers-types", "vite/client", "@cloudflare/vitest-plugin/types"],
+    "types": [
+      "@cloudflare/workers-types",
+      "vite/client",
+      "@cloudflare/vitest-plugin/types"
+    ],
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "tests/**/*", "vite.config.ts", "vitest.config.ts", "drizzle.config.ts", "worker-configuration.d.ts"]
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "vite.config.ts",
+    "vitest.config.ts",
+    "drizzle.config.ts",
+    "worker-configuration.d.ts"
+  ]
 }
