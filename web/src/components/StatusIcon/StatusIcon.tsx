@@ -3,10 +3,7 @@ import { AiFillCheckCircle } from "solid-icons/ai/AiFillCheckCircle";
 import { AiOutlineCheckCircle } from "solid-icons/ai/AiOutlineCheckCircle";
 import type { LessonStatus } from "~/lib/courses-mock";
 
-export function StatusIcon(props: {
-  status: LessonStatus;
-  class?: string;
-}) {
+export function StatusIcon(props: { status: LessonStatus; class?: string }) {
   const base = () => `shrink-0 text-base ${props.class ?? ""}`;
   return (
     <Switch>

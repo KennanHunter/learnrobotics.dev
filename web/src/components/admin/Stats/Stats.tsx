@@ -13,9 +13,7 @@ export function Stats() {
       <div class="flex-1 overflow-auto p-6">
         <Switch>
           <Match when={stats.error}>
-            <p class="text-sm text-foreground-muted">
-              {m.admin_stats_error()}
-            </p>
+            <p class="text-sm text-foreground-muted">{m.admin_stats_error()}</p>
           </Match>
           <Match when={stats.loading}>
             <p class="text-sm text-foreground-muted">

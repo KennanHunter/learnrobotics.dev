@@ -126,9 +126,21 @@ function AITransparency() {
 
           <section class="space-y-4 border-t border-background-offset pt-8">
             <h2 class="text-xl font-semibold tracking-tight">
-              Catalog of AI use
+              Catalog of AI use (generated automatically)
             </h2>
             <ul class="space-y-5">
+              <TransparencyLogEntry
+                date="2026-11-16"
+                title="Playground compile + run moved off the main thread."
+              >
+                The Java compiler (teavm-javac) and the ristretto runtime now
+                run inside a dedicated Web Worker, so compiling and running user
+                code no longer freezes the editor. The playground UI reflects a
+                three-state phase (idle / compiling / running) on the Run
+                button, and logs stream from the worker as they are emitted.
+                Also mirrored the teavm-javac build artifacts to R2 so the build
+                stops depending on teavm.org being up.
+              </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-16"
                 title="About page AI Usage section."

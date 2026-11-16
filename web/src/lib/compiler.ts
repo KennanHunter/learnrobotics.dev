@@ -94,9 +94,9 @@ const coreModuleUrls: Record<string, string> = {
 let cached: Promise<CompilerRoot> | undefined;
 
 export function getCompiler(): Promise<CompilerRoot> {
-  if (typeof window === "undefined") {
+  if (typeof WebAssembly === "undefined") {
     return Promise.reject(
-      new Error("compiler can only be instantiated in the browser"),
+      new Error("compiler requires a WebAssembly-capable runtime"),
     );
   }
   if (cached) {
@@ -116,14 +116,13 @@ async function instantiateCompiler(): Promise<CompilerRoot> {
     import("@bytecodealliance/preview2-shim/instantiation"),
     import("@bytecodealliance/preview2-shim/cli"),
   ]);
-  (cli as unknown as { _setStderr: (h: (line: string) => void) => void })
-    ._setStderr((line) => logHook(line));
-  (cli as unknown as { _setStdout: (h: (line: string) => void) => void })
-    ._setStdout((line) => logHook(line));
-  log.debug(
-    { ms: Math.round(performance.now() - t0) },
-    "js bundles imported",
-  );
+  (
+    cli as unknown as { _setStderr: (h: (line: string) => void) => void }
+  )._setStderr((line) => logHook(line));
+  (
+    cli as unknown as { _setStdout: (h: (line: string) => void) => void }
+  )._setStdout((line) => logHook(line));
+  log.debug({ ms: Math.round(performance.now() - t0) }, "js bundles imported");
 
   const imports = {
     ...new WASIShim().getImportObject(),
@@ -162,10 +161,7 @@ async function instantiateCompiler(): Promise<CompilerRoot> {
       getCoreModule as never,
       imports as never,
     )) as CompilerRoot;
-    log.info(
-      { ms: Math.round(performance.now() - t0) },
-      "compiler ready",
-    );
+    log.info({ ms: Math.round(performance.now() - t0) }, "compiler ready");
     return root;
   } catch (err) {
     log.error({ err }, "compiler instantiation failed");
@@ -188,19 +184,13 @@ export async function runClasses(
 ): Promise<RunResult> {
   const root = await getCompiler();
   const start = performance.now();
-  log.info(
-    { classes: classes.length, mainClass },
-    "runClasses: invoking",
-  );
+  log.info({ classes: classes.length, mainClass }, "runClasses: invoking");
   try {
     root.run(
       classes.map((c) => [c.name, c.bytes]),
       mainClass,
     );
-    log.info(
-      { ms: Math.round(performance.now() - start) },
-      "runClasses: ok",
-    );
+    log.info({ ms: Math.round(performance.now() - start) }, "runClasses: ok");
     return { ok: true };
   } catch (err) {
     const error = errorMessage(err);

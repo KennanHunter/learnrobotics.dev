@@ -15,8 +15,8 @@ export function FirstCopyright(props: { class?: string }) {
     <p class={props.class}>
       © 2026 For Inspiration and Recognition of Science and Technology (
       <FIRST />
-      ). A 501(c)(3) nonprofit organization (EIN# 22-2990908). This course
-      is not affiliated with or endorsed by <FIRST />.
+      ). A 501(c)(3) nonprofit organization (EIN# 22-2990908). This course is
+      not affiliated with or endorsed by <FIRST />.
     </p>
   );
 }

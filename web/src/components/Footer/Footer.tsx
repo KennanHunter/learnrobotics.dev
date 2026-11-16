@@ -20,10 +20,10 @@ export function Footer() {
       </div>
       <FirstCopyright class="text-xs text-foreground-subtle" />
       <p class="text-xs text-foreground-subtle">
-        Lesson content is CC BY-NC-SA 4.0. Starter code is MIT-0. The
-        platform is PolyForm Noncommercial 1.0.0. See{" "}
-        <FooterLink href={localizeHref("/about")}>About</FooterLink> for
-        the full text and why it's licensed this way.
+        Lesson content is CC BY-NC-SA 4.0. Starter code is MIT-0. The platform
+        is PolyForm Noncommercial 1.0.0. See{" "}
+        <FooterLink href={localizeHref("/about")}>About</FooterLink> for the
+        full text and why it's licensed this way.
       </p>
     </footer>
   );

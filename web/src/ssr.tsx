@@ -6,6 +6,10 @@ import {
 import { createServerEntry } from "@tanstack/solid-start/server-entry";
 import { paraglideMiddleware } from "./paraglide/server.js";
 import { Register } from "@tanstack/solid-start";
+import { cleanupAnonymousUsers } from "./server/cleanup";
+import { logger } from "~/lib/logger";
+
+const log = logger.child({ scope: "worker" });
 
 const startHandler = createStartHandler(defaultStreamHandler);
 
@@ -17,4 +21,16 @@ const fetch: RequestHandler<Register> = (request, opts): Promise<Response> =>
     startHandler(localizedRequest, opts),
   );
 
-export default createServerEntry({ fetch });
+const entry = createServerEntry({ fetch });
+
+export default {
+  ...entry,
+  scheduled(event: ScheduledController, _env: unknown, ctx: ExecutionContext) {
+    log.info({ cron: event.cron }, "scheduled: tick");
+    ctx.waitUntil(
+      cleanupAnonymousUsers().catch((err) => {
+        log.error({ err }, "scheduled: cleanup failed");
+      }),
+    );
+  },
+};

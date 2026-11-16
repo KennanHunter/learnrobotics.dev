@@ -50,7 +50,9 @@ for (const r of results) {
     console.log(`  ${r.name}  (${r.bytes} bytes)`);
   } else {
     failed = true;
-    console.error(`  ${r.name}  FAILED  HTTP ${r.status}  r2://${R2_BUCKET}/${r.key}`);
+    console.error(
+      `  ${r.name}  FAILED  HTTP ${r.status}  r2://${R2_BUCKET}/${r.key}`,
+    );
   }
 }
 

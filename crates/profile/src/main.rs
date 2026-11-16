@@ -36,7 +36,10 @@ struct HostState {
 
 impl WasiView for HostState {
     fn ctx(&mut self) -> WasiCtxView<'_> {
-        WasiCtxView { ctx: &mut self.ctx, table: &mut self.table }
+        WasiCtxView {
+            ctx: &mut self.ctx,
+            table: &mut self.table,
+        }
     }
 }
 
@@ -71,10 +74,7 @@ async fn main() -> Result<()> {
 
     let t_engine = Instant::now();
     let engine = Engine::new(&config)?;
-    println!(
-        "engine init       {:>8.2?}",
-        t_engine.elapsed()
-    );
+    println!("engine init       {:>8.2?}", t_engine.elapsed());
 
     let t_load = Instant::now();
     let component = Component::from_file(&engine, &wasm_path)

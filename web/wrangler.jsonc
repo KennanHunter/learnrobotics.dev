@@ -20,6 +20,10 @@
   "r2_buckets": [
     { "binding": "R2", "bucket_name": "learn-robotics-dev-storage" }
   ],
+  "triggers": {
+    // Dev/preview: run every 5 min so cleanup is observable.
+    "crons": ["*/5 * * * *"]
+  },
   "vars": {
     "DEPLOYMENT_URL": "https://preview.learnrobotics.dev",
     "ENVIRONMENT": "preview",
@@ -44,6 +48,10 @@
       "r2_buckets": [
         { "binding": "R2", "bucket_name": "learn-robotics-dev-storage" }
       ],
+      "triggers": {
+        // Production: weekly, Sunday 03:00 UTC.
+        "crons": ["0 3 * * 0"]
+      },
       "vars": {
         "DEPLOYMENT_URL": "https://learnrobotics.dev",
         "ENVIRONMENT": "alpha",

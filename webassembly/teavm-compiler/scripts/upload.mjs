@@ -35,7 +35,9 @@ for (const name of TEAVM_FILES) {
   const upstreamUrl = `${TEAVM_UPSTREAM}/${name}`;
   const resp = await fetch(upstreamUrl);
   if (!resp.ok) {
-    console.error(`  ${name}  DOWNLOAD FAILED  HTTP ${resp.status}  ${upstreamUrl}`);
+    console.error(
+      `  ${name}  DOWNLOAD FAILED  HTTP ${resp.status}  ${upstreamUrl}`,
+    );
     failed = true;
     continue;
   }

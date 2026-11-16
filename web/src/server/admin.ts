@@ -40,16 +40,31 @@ export type AdminStats = {
 export type AdminUser = {
   id: string;
   name: string;
-  email: string;
+  // null for anonymous users — Better Auth generates a placeholder email to
+  // satisfy its NOT NULL constraint, but it isn't a real address so we strip
+  // it at the API boundary.
+  email: string | null;
   image: string | null;
   isAnonymous: boolean;
   createdAt: number;
 };
 
-export const listUsers = createServerFn({ method: "GET" }).handler(
-  async (): Promise<AdminUser[]> => {
+export type UsersPage = { rows: AdminUser[]; total: number };
+
+const ListUsersPageSchema = v.object({
+  start: v.pipe(v.number(), v.integer(), v.minValue(0)),
+  count: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(200)),
+});
+
+export const listUsersPage = createServerFn({ method: "GET" })
+  .validator((data: unknown) => v.parse(ListUsersPageSchema, data))
+  .handler(async ({ data }): Promise<UsersPage> => {
     await requireAdmin();
-    const rows = await getDb()
+    const db = getDb();
+    const [countRow] = await db
+      .select({ total: sql<number>`count(*)` })
+      .from(user);
+    const rows = await db
       .select({
         id: user.id,
         name: user.name,
@@ -60,19 +75,27 @@ export const listUsers = createServerFn({ method: "GET" }).handler(
       })
       .from(user)
       .orderBy(desc(user.createdAt))
-      .limit(500);
-    return rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      email: r.email,
-      image: r.image ?? null,
-      isAnonymous: Boolean(r.isAnonymous),
-      createdAt: r.createdAt instanceof Date ? r.createdAt.getTime() : Number(r.createdAt),
-    }));
-  },
-);
+      .limit(data.count)
+      .offset(data.start);
+    return {
+      total: Number(countRow?.total ?? 0),
+      rows: rows.map((r) => ({
+        id: r.id,
+        name: r.name,
+        email: r.isAnonymous ? null : r.email,
+        image: r.image ?? null,
+        isAnonymous: Boolean(r.isAnonymous),
+        createdAt:
+          r.createdAt instanceof Date
+            ? r.createdAt.getTime()
+            : Number(r.createdAt),
+      })),
+    };
+  });
 
-const DeleteUserSchema = v.object({ userId: v.pipe(v.string(), v.minLength(1)) });
+const DeleteUserSchema = v.object({
+  userId: v.pipe(v.string(), v.minLength(1)),
+});
 
 export const deleteUser = createServerFn({ method: "POST" })
   .validator((data: unknown) => v.parse(DeleteUserSchema, data))

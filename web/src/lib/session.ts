@@ -1,8 +1,5 @@
 import { createServerFn } from "@tanstack/solid-start";
-import {
-  getRequest,
-  setResponseHeader,
-} from "@tanstack/solid-start/server";
+import { getRequest, setResponseHeader } from "@tanstack/solid-start/server";
 import * as v from "valibot";
 import { and, eq, sql } from "drizzle-orm";
 import { getAuth } from "~/server/auth";
@@ -103,7 +100,7 @@ async function summarize(user: AuthUser): Promise<SessionSummary> {
   // `adminAccountId` is non-null iff this user is the admin. If
   // ADMIN_GITHUB_USER_ID is unset, force the join to miss. Anonymous users
   // can't match either way, but we still fetch their config.
-  const adminId = user.isAnonymous ? "" : getEnv().ADMIN_GITHUB_USER_ID ?? "";
+  const adminId = user.isAnonymous ? "" : (getEnv().ADMIN_GITHUB_USER_ID ?? "");
   const rows = await getDb()
     .select({
       theme: userConfig.theme,

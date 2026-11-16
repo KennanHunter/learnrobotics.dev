@@ -48,8 +48,8 @@ let cached: Promise<Compiler> | undefined;
 let currentDiagnostics: Diagnostic[] | null = null;
 
 async function getCompiler(): Promise<Compiler> {
-  if (typeof window === "undefined") {
-    throw new Error("teavm compiler can only be instantiated in the browser");
+  if (typeof WebAssembly === "undefined") {
+    throw new Error("teavm compiler requires a WebAssembly-capable runtime");
   }
   if (!cached) {
     cached = instantiate().catch((err) => {
@@ -68,9 +68,8 @@ async function instantiate(): Promise<Compiler> {
   // need any special handling — but it's a /node_modules/ file so we route
   // through a dynamic import by relative path. Using the published export
   // via the @learnrobotics/teavm-compiler package keeps bundling honest.
-  const runtime = (await import(
-    "@learnrobotics/teavm-compiler/compiler.wasm-runtime.js"
-  )) as TeavmRuntime;
+  const runtime =
+    (await import("@learnrobotics/teavm-compiler/compiler.wasm-runtime.js")) as TeavmRuntime;
 
   const [teavm, sdkBytes] = await Promise.all([
     runtime.load(wasmUrl),
@@ -135,8 +134,12 @@ export async function compileJava(
 
   const classes: CompiledClass[] = compiler.listOutputFiles().map((name) => {
     const bytes = compiler.getOutputFile(name);
-    if (!bytes) throw new Error(`teavm listed ${name} but getOutputFile returned null`);
-    return { name, bytes: new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength) };
+    if (!bytes)
+      throw new Error(`teavm listed ${name} but getOutputFile returned null`);
+    return {
+      name,
+      bytes: new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength),
+    };
   });
 
   log.info(

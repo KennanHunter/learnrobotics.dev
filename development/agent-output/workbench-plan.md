@@ -40,6 +40,26 @@ is captured below.
   - **Ask AI** — placeholder button that logs TODO on click, visibly
     disabled with a tooltip. Icon-only; ready to light up when we have
     an endpoint.
+  - **Fullscreen toggle** (rightmost) — collapses the app chrome. See
+    Fullscreen mode below.
+- **Fullscreen mode** — toggling it hides `TopBar` and lets the
+  `Workbench` take the full viewport (`h-screen`, no 56px offset for the
+  banner). A small floating "exit fullscreen" chip appears top-right,
+  along with the `Esc` keyboard shortcut. State lives in the
+  `PlaygroundStore` so panels can react if they want (Monaco doesn't
+  need to — `automaticLayout` picks up the height delta). The toggle
+  state persists to localStorage so refresh stays in whatever mode the
+  user last used.
+- **Interpreter state tab** in the Console panel's TabGroup, alongside
+  Output. Renders a placeholder read-only view of ristretto VM state:
+  thread list, loaded-class count, stack frame for the active thread,
+  last exception. For this slice it's wired to an in-memory store
+  that `runClasses` populates with a snapshot before/after invocation
+  (stub: `{ threads: ["main"], classesLoaded: compiled.classes.length,
+lastError: result.ok ? null : result.error }`). Later we'll add a
+  real `inspect()` wit export on ristretto that returns a structured
+  snapshot. The point of this slice is to carve out the tab and the
+  rendering surface so wiring real data is a drop-in.
 - Layout persistence to localStorage per route (solid-resizable-panels
   handles this with an `autoSaveId`).
 - A `Workbench` component that owns playground state (`source`, `output`,
@@ -106,8 +126,10 @@ PlaygroundRoute
             ├── PanelResizeHandle
             └── Panel defaultSize=30 minSize=15                 // CONSOLE
                 └── TabGroup
-                    └── Tab id="output" title="Output"
-                        └── ConsolePanel (consumes store, renders output/error)
+                    ├── Tab id="output" title="Output"
+                    │   └── ConsolePanel (consumes store, renders output/error)
+                    └── Tab id="interp" title="Interpreter"
+                        └── InterpreterStatePanel (reads store.interpState)
 ```
 
 Nested group example (for the "sim + console side-by-side" case we'll
@@ -134,6 +156,17 @@ type PlaygroundStore = {
   lesson: Accessor<{ title: string; body: string; audioSrc?: string }>;
   audioPlaying: Accessor<boolean>;
   togglePlayAudio: () => void;
+  // Fullscreen (hides TopBar); persists to localStorage.
+  fullscreen: Accessor<boolean>;
+  toggleFullscreen: () => void;
+  // Interpreter state snapshot — populated by `onRun`. Real wit-backed
+  // inspect() is a follow-up; the shape here is what the panel renders.
+  interpState: Accessor<{
+    threads: string[];
+    classesLoaded: number;
+    lastError: string | null;
+    lastRunAt: number | null;
+  }>;
 };
 ```
 
@@ -172,6 +205,11 @@ per pane, revisit with `aria-selected`, arrow-key cycling.
 - `web/src/components/workbench/panels/ConsolePanel.tsx` — renders
   `output()` / `error()` / idle hint. Moves the JSX from
   `playground.tsx:132-147` verbatim.
+- `web/src/components/workbench/panels/InterpreterStatePanel.tsx` —
+  read-only view of `store.interpState()`. Key/value rows for
+  `classesLoaded`, `lastRunAt`, `lastError`; `<ul>` of thread names.
+  Styled with the same `font-mono text-xs` as the console pane for
+  consistency.
 - `web/src/components/workbench/panels/LessonPanel.tsx` — sticky header
   row with the audio toggle button, a scrollable prose article below.
   Placeholder content from the store for now; renders `lesson().title`
@@ -189,8 +227,10 @@ per pane, revisit with `aria-selected`, arrow-key cycling.
 
 - `web/src/routes/playground.tsx` — becomes a thin shell:
   `<PlaygroundProvider><Workbench /></PlaygroundProvider>`. All signals
-  and `onRun` move into the store. `TopBar` stays in the shell (route
-  chrome).
+  and `onRun` move into the store. `TopBar` stays in the shell but is
+  wrapped in `<Show when={!fullscreen()}>` so fullscreen hides it; the
+  main container swaps `h-[calc(100vh-56px)]` for `h-screen` on the
+  same flag.
 - `web/src/components/editor/Monaco/Monaco.tsx` — already resize-aware
   (`automaticLayout: true`, confirmed in the exploration). We'll wire a
   new `onMount` consumer in `CodeEditorPanel` to capture the editor
@@ -198,10 +238,11 @@ per pane, revisit with `aria-selected`, arrow-key cycling.
 - `web/messages/en.json` and `web/messages/pirate.json` — add keys
   `playground_format`, `playground_ask_ai`, `playground_output_tab`,
   `playground_editor_tab`, `playground_lesson_tab`,
-  `playground_play_audio`, `playground_pause_audio`,
-  `playground_ask_ai_todo`, plus `playground_lesson_placeholder_title`
-  / `_body` for the stub lesson content so it's translator-aware from
-  day one.
+  `playground_interpreter_tab`, `playground_play_audio`,
+  `playground_pause_audio`, `playground_ask_ai_todo`,
+  `playground_enter_fullscreen`, `playground_exit_fullscreen`, plus
+  `playground_lesson_placeholder_title` / `_body` for the stub lesson
+  content so it's translator-aware from day one.
 - `web/package.json` — add `solid-resizable-panels` (or corvu if the
   former no longer exists).
 - `web/src/styles.css` — add a tiny splitter-handle style hook (a
@@ -225,6 +266,8 @@ active:bg-background-offset/80`. Icons from `solid-icons/fi` (or
   `running()`.
 - Format: `FiAlignLeft`.
 - Ask AI: `FiZap` or similar, `disabled` + tooltip "Coming soon".
+- Fullscreen: `FiMaximize2` / `FiMinimize2`. Aligned to the right end
+  of the toolbar with `ml-auto`.
 
 Keyboard:
 
@@ -232,12 +275,16 @@ Keyboard:
   so it works no matter which panel is focused).
 - `Shift+Alt+F` → Format (Monaco already uses this; just ensure it's
   not swallowed).
+- `F11` → toggle fullscreen; `Esc` → exit fullscreen if active.
+  Bound at the Workbench root with `preventDefault()` for F11 only
+  (so it doesn't fight the browser's native fullscreen — we're
+  controlling app chrome, not the window).
 
 ## Shared-component note
 
 We don't have a design-system button today — playground uses an inline
 `<button class="rounded bg-primary …">`. Rather than inventing a design
-system in this PR, the toolbar buttons will be a *local*
+system in this PR, the toolbar buttons will be a _local_
 `ToolbarButton` component in `EditorToolbar.tsx`. When we eventually
 have real UI primitives (kobalte / corvu), we lift this. Flagging it
 so a later reader doesn't think it's load-bearing.
@@ -259,6 +306,11 @@ so a later reader doesn't think it's load-bearing.
    - Click Ask AI: nothing happens, console shows the TODO log.
    - Click the Lesson audio button: icon flips play↔pause, console
      logs TODO. Scroll the lesson text — header stays stuck.
+   - Click the Fullscreen button (or press `F11`): TopBar disappears,
+     panels take the whole viewport, exit chip appears top-right.
+     Press `Esc` or re-click: TopBar returns. Refresh: state persists.
+   - Switch to the Interpreter tab after a Run: panel shows the stub
+     snapshot (classesLoaded = N, lastError, lastRunAt).
    - Keyboard: `Cmd+Enter` from inside the editor triggers Run.
 2. `pnpm --filter learnrobotics-web test:e2e compiler.spec.ts` — the
    existing "javac diagnostics" test should still pass (it only
@@ -280,6 +332,10 @@ so a later reader doesn't think it's load-bearing.
   existing `<audio>` element driven by `audioPlaying()`.
 - Second tab in the output panel for a "Diagnostics" view, separating
   teavm's parse errors from runtime stdout.
+- Real `inspect()` wit export on ristretto: returns structured
+  `{ threads: [{name, state, frames: [...]}], classes: [...],
+  exception: ... }`. The `InterpreterStatePanel` swaps its stubbed
+  data source for this with no visual changes.
 - Controller input panel: registers under `panels/ControllerPanel.tsx`,
   uses the Gamepad API. Drop into the Workbench's right column as a
   new `Tab`.

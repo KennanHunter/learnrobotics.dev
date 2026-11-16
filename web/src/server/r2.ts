@@ -77,7 +77,11 @@ function clampTtl(seconds: number) {
   return seconds;
 }
 
-async function signDownload(kind: ArtifactKind, key: string, ttlSeconds: number) {
+async function signDownload(
+  kind: ArtifactKind,
+  key: string,
+  ttlSeconds: number,
+) {
   const cfg = ARTIFACT_KINDS[kind];
   const url = objectUrl(cfg.bucket, cfg.prefix, key);
   url.searchParams.set("X-Amz-Expires", String(ttlSeconds));
@@ -124,7 +128,10 @@ export async function presignPublicDownload(
   const cacheKey = `${kind}:${key}`;
   const now = Date.now();
   const cached = publicUrlCache.get(cacheKey);
-  if (cached && cached.expiresAtMs - now > CACHE_REFRESH_MARGIN_SECONDS * 1000) {
+  if (
+    cached &&
+    cached.expiresAtMs - now > CACHE_REFRESH_MARGIN_SECONDS * 1000
+  ) {
     return cached.url;
   }
   const url = await signDownload(kind, key, PUBLIC_DOWNLOAD_TTL_SECONDS);

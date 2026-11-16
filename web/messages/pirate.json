@@ -60,6 +60,7 @@
   "playground_heading": "Riggin' Yard",
   "playground_run": "Set sail",
   "playground_running": "Underway…",
+  "playground_compiling": "Forgin' the plans…",
   "playground_loading_editor": "Fetchin' the quill…",
   "playground_classfile_label": "classfile (first 64 bytes, in scurvy hex):",
   "playground_idle_hint": "Press Set sail t' compile. For now the Rust side mutters \"compile not yet implemented\" — this page proves the riggin' loads and the hatch be reachable.",

@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { createSignal, onMount, Show, type Component } from "solid-js";
+import { createSignal, onCleanup, onMount, Show, type Component } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import * as v from "valibot";
 import { TopBar } from "~/components/TopBar/TopBar";
 import type { MonacoEditorProps } from "~/components/editor/Monaco/Monaco";
 import { useTheme } from "~/lib/theme-context";
 import { m } from "~/paraglide/messages";
+import type { RunEvent, RunRequest } from "~/workers/code-runner.worker";
 
 const SearchSchema = v.object({});
 
@@ -16,6 +17,8 @@ const DEFAULT_SOURCE = `class Main {
 }
 `;
 
+type Phase = "idle" | "compiling" | "running";
+
 export const Route = createFileRoute("/playground")({
   validateSearch: (search) => v.parse(SearchSchema, search),
   component: Playground,
@@ -24,72 +27,73 @@ export const Route = createFileRoute("/playground")({
 function Playground() {
   const { monacoTheme } = useTheme();
   const [source, setSource] = createSignal(DEFAULT_SOURCE);
-  const [running, setRunning] = createSignal(false);
+  const [phase, setPhase] = createSignal<Phase>("idle");
   const [output, setOutput] = createSignal("");
   const [error, setError] = createSignal("");
   const [Editor, setEditor] = createSignal<Component<MonacoEditorProps> | null>(
     null,
   );
 
+  let worker: Worker | null = null;
+
+  function ensureWorker(): Worker {
+    if (worker) return worker;
+    worker = new Worker(
+      new URL("../workers/code-runner.worker.ts", import.meta.url),
+      { type: "module" },
+    );
+    worker.addEventListener("message", (event: MessageEvent<RunEvent>) => {
+      const msg = event.data;
+      switch (msg.type) {
+        case "phase":
+          setPhase(msg.phase);
+          break;
+        case "log":
+          setOutput((prev) => prev + msg.message + "\n");
+          break;
+        case "error":
+          setError(msg.message);
+          setPhase("idle");
+          break;
+        case "done":
+          setPhase("idle");
+          break;
+      }
+    });
+    worker.addEventListener("error", (event: ErrorEvent) => {
+      setError(event.message || "worker crashed");
+      setPhase("idle");
+    });
+    return worker;
+  }
+
   onMount(async () => {
     const m = await import("~/components/editor/Monaco/Monaco");
     setEditor(() => m.MonacoEditor);
   });
 
-  async function onRun() {
-    setRunning(true);
+  onCleanup(() => {
+    worker?.terminate();
+    worker = null;
+  });
+
+  function onRun() {
+    if (phase() !== "idle") return;
     setOutput("");
     setError("");
-    try {
-      const [{ compileJava }, { runClasses, setLogHook }] = await Promise.all([
-        import("~/lib/teavm"),
-        import("~/lib/compiler"),
-      ]);
-
-      // Route ristretto's stdout/stderr + tracing into the output pane.
-      setLogHook((message) => setOutput((prev) => prev + message + "\n"));
-
-      const compiled = await compileJava(source());
-      if (!compiled.ok) {
-        setError(
-          compiled.diagnostics
-            .map(
-              (d) =>
-                `${d.fileName}:${d.lineNumber}${d.columnNumber ? ":" + d.columnNumber : ""} ${d.severity}: ${d.message}`,
-            )
-            .join("\n") || "compile failed (no diagnostics)",
-        );
-        return;
-      }
-
-      const mainClass = pickMainClass(compiled.classes);
-      if (!mainClass) {
-        setError(
-          "compile ok, but could not find a .class to run. Output: " +
-            compiled.classes.map((c) => c.name).join(", "),
-        );
-        return;
-      }
-
-      const result = await runClasses(compiled.classes, mainClass);
-      if (!result.ok) setError(result.error);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setRunning(false);
-    }
+    setPhase("compiling");
+    ensureWorker().postMessage({ type: "run", source: source() } satisfies RunRequest);
   }
 
-  function pickMainClass(
-    classes: { name: string; bytes: Uint8Array }[],
-  ): string | null {
-    // Prefer a top-level (non-inner) class whose file is `Foo.class`. Strip
-    // package path and `.class` suffix.
-    const outer = classes.find(
-      (c) => c.name.endsWith(".class") && !c.name.includes("$"),
-    );
-    if (!outer) return null;
-    return outer.name.replace(/\.class$/, "").replace(/\//g, ".");
+  function buttonLabel() {
+    switch (phase()) {
+      case "compiling":
+        return m.playground_compiling();
+      case "running":
+        return m.playground_running();
+      default:
+        return m.playground_run();
+    }
   }
 
   return (
@@ -102,11 +106,13 @@ function Playground() {
           </h1>
           <button
             type="button"
-            disabled={running()}
+            data-testid="playground-run"
+            data-phase={phase()}
+            disabled={phase() !== "idle"}
             onClick={onRun}
             class="rounded bg-primary px-4 py-2 text-sm text-background hover:opacity-80 disabled:opacity-60"
           >
-            {running() ? m.playground_running() : m.playground_run()}
+            {buttonLabel()}
           </button>
         </div>
         <div class="grid min-h-0 flex-1 grid-cols-2 gap-4">
@@ -129,7 +135,10 @@ function Playground() {
               />
             </Show>
           </div>
-          <div class="min-h-0 overflow-auto rounded border border-background-offset p-3 font-mono text-xs">
+          <div
+            class="min-h-0 overflow-auto rounded border border-background-offset p-3 font-mono text-xs"
+            data-testid="playground-output"
+          >
             <Show when={error()}>
               <div class="text-red whitespace-pre-wrap">{error()}</div>
             </Show>
@@ -142,7 +151,9 @@ function Playground() {
               </div>
             </Show>
             <Show when={!error() && !output()}>
-              <div class="text-foreground-muted">{m.playground_idle_hint()}</div>
+              <div class="text-foreground-muted">
+                {m.playground_idle_hint()}
+              </div>
             </Show>
           </div>
         </div>
@@ -150,4 +161,3 @@ function Playground() {
     </>
   );
 }
-

@@ -28,21 +28,20 @@ function About() {
             About Learn Robotics
           </h1>
           <p class="text-foreground-muted">
-            Programming for <FIRST /> is a difficult environment to learn
-            in. You get maybe a couple hours a week with the actual robot,
-            and half of that gets eaten fighting syntax instead of figuring
-            out why your autos are inconsistent.
+            Programming for <FIRST /> is a difficult environment to learn in.
+            You get maybe a couple hours a week with the actual robot, and half
+            of that gets eaten fighting syntax instead of figuring out why your
+            autos are inconsistent.
           </p>
           <p class="text-foreground-muted">
-            Learn Java here with a fast compiler, so robot time goes to
-            robot problems.
+            Learn Java here with a fast compiler, so robot time goes to robot
+            problems.
           </p>
           <p class="text-foreground-muted">
-            It starts at the beginning and goes further than most teams
-            expect. When you master the fundamentals, writing code stops
-            being the hard part. That frees you up to focus on the real
-            problems, like integrating with vendors and debugging actual
-            robot behavior.
+            It starts at the beginning and goes further than most teams expect.
+            When you master the fundamentals, writing code stops being the hard
+            part. That frees you up to focus on the real problems, like
+            integrating with vendors and debugging actual robot behavior.
           </p>
           <FirstCopyright class="text-xs text-foreground-subtle pt-2" />
         </section>
@@ -59,8 +58,8 @@ function About() {
         <section class="space-y-3 border-t border-background-offset pt-8">
           <h2 class="text-xl font-semibold tracking-tight">AI Usage</h2>
           <p class="text-foreground-muted">
-            All articles are hand written. For the full policy on how and
-            where AI is used across the site, read{" "}
+            All articles are hand written. For the full policy on how and where
+            AI is used across the site, read{" "}
             <a
               href="/ai-transparency"
               class="underline underline-offset-4 hover:text-primary"
@@ -74,61 +73,58 @@ function About() {
         <section class="space-y-4 border-t border-background-offset pt-8">
           <h2 class="text-xl font-semibold tracking-tight">Licensing</h2>
           <p class="text-foreground-muted">
-            learnrobotics.dev isn't open source. The reasoning is simple:
-            we never want to prevent someone from doing something cool with
-            this work. We do want to prevent someone taking it without
-            effort and making money off it.
+            learnrobotics.dev isn't open source. The reasoning is simple: we
+            never want to prevent someone from doing something cool with this
+            work. We do want to prevent someone taking it without effort and
+            making money off it.
           </p>
           <p class="text-foreground-muted">
-            Just want your students to use the site? Go ahead, even for a
-            paid camp or class. Licensing only matters if you want to{" "}
-            <span class="font-medium text-primary">
-              copy, adapt, or host
-            </span>{" "}
+            Just want your students to use the site? Go ahead, even for a paid
+            camp or class. Licensing only matters if you want to{" "}
+            <span class="font-medium text-primary">copy, adapt, or host</span>{" "}
             our content or code yourself.
           </p>
           <ul class="space-y-3 text-foreground-muted">
             <li>
               <span class="font-medium text-primary">No license needed:</span>{" "}
-              using the site with students (camps, teams, classes), or
-              linking to any lesson.
+              using the site with students (camps, teams, classes), or linking
+              to any lesson.
             </li>
             <li>
               <span class="font-medium text-primary">
                 Free with credit (noncommercial):
               </span>{" "}
-              copying or adapting lessons for things like team training
-              docs or class handouts. Credit us and share your version
-              under the same license.
+              copying or adapting lessons for things like team training docs or
+              class handouts. Credit us and share your version under the same
+              license.
             </li>
             <li>
               <span class="font-medium text-primary">
                 Commercial license needed:
               </span>{" "}
-              hosting your own paid, subscription, or ad-supported
-              instance, or using our content in a paid product (book, paid
-              course, and so on).
+              hosting your own paid, subscription, or ad-supported instance, or
+              using our content in a paid product (book, paid course, and so
+              on).
             </li>
           </ul>
           <p class="text-foreground-muted">
-            Doing something we'd probably get behind, like a nonprofit
-            program, a community event, or <FIRST /> outreach? Reach out to{" "}
+            Doing something we'd probably get behind, like a nonprofit program,
+            a community event, or <FIRST /> outreach? Reach out to{" "}
             <a
               href="mailto:licensing@kennan.dev"
               class="underline underline-offset-4 hover:text-primary"
             >
               licensing@kennan.dev
             </a>{" "}
-            and we'll work something out, most likely for free. Same
-            address for questions or commercial licenses.
+            and we'll work something out, most likely for free. Same address for
+            questions or commercial licenses.
           </p>
           <p class="text-sm text-foreground-subtle">
-            Summaries above; the files below are what actually count.
-            Content is{" "}
-            <span class="font-medium">CC BY-NC-SA 4.0</span>, starter code
-            is <span class="font-medium">MIT-0</span>, and the platform is{" "}
-            <span class="font-medium">PolyForm Noncommercial 1.0.0</span>.
-            You own the code you write on the site.
+            Summaries above; the files below are what actually count. Content is{" "}
+            <span class="font-medium">CC BY-NC-SA 4.0</span>, starter code is{" "}
+            <span class="font-medium">MIT-0</span>, and the platform is{" "}
+            <span class="font-medium">PolyForm Noncommercial 1.0.0</span>. You
+            own the code you write on the site.
           </p>
 
           <div class="space-y-4 pt-4">

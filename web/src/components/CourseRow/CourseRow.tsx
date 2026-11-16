@@ -78,7 +78,8 @@ export function CourseRow(props: { course: MockCourse }) {
           <div
             class="grid grid-cols-1 gap-6"
             classList={{
-              "md:grid-cols-2": props.course.chapters.length > 1,
+              "md:grid-cols-2 md:[&>*:last-child:nth-child(odd)]:col-span-2":
+                props.course.chapters.length > 1,
             }}
           >
             <For each={props.course.chapters}>
@@ -119,7 +120,6 @@ function ChapterBox(props: { chapter: MockChapter }) {
     <div
       id={`chapter-${props.chapter.id}`}
       class="scroll-mt-20 rounded-lg border border-background-offset p-7"
-      classList={{ "md:col-span-2": props.chapter.span === 2 }}
     >
       <h3 class="text-xs font-semibold uppercase tracking-wider text-foreground-muted">
         {props.chapter.title}
@@ -146,7 +146,7 @@ function LessonRow(props: { lesson: MockLesson }) {
       <span class="w-10 shrink-0 font-mono text-[10px] uppercase tracking-wider text-foreground-subtle">
         {kindLabel[props.lesson.kind]}
       </span>
-      <span class="flex-1 whitespace-nowrap">{props.lesson.title}</span>
+      <span class="min-w-0 flex-1 truncate">{props.lesson.title}</span>
       <span
         class={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${importanceClass[props.lesson.importance]}`}
       >
@@ -158,4 +158,3 @@ function LessonRow(props: { lesson: MockLesson }) {
     </li>
   );
 }
-

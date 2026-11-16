@@ -133,6 +133,13 @@ as its mount point. Requires the pnpm patch on `@tanstack/start-client-core`
 
 ## Playwright (e2e)
 
+**Frontend changes must be verified with Playwright.** Type checks and unit
+tests don't exercise the running app — if you touch a route, component, or
+anything a user clicks, either add/extend a spec in `web/e2e/` and run
+`pnpm --filter learnrobotics-web test:e2e`, or drive the dev server through
+Playwright manually. Don't call a frontend change done because `tsc` and
+`vitest` passed.
+
 - Config: `web/playwright.config.ts`. Chromium project only.
   `webServer: { command: "pnpm dev", url: http://localhost:5173, reuseExistingServer: !CI }`.
 - Specs: `web/e2e/*.spec.ts`. Vitest excludes this dir

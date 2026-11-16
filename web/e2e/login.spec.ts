@@ -38,9 +38,7 @@ test("sign-in POST returns a github.com authorize URL", async ({ request }) => {
   );
   expect(res.ok(), `sign-in POST failed: ${res.status()}`).toBeTruthy();
   const body = (await res.json()) as { url?: string };
-  expect(body.url).toMatch(
-    /^https:\/\/github\.com\/login\/oauth\/authorize\?/,
-  );
+  expect(body.url).toMatch(/^https:\/\/github\.com\/login\/oauth\/authorize\?/);
   const authorize = new URL(body.url!);
   expect(authorize.searchParams.get("client_id")).toBeTruthy();
   expect(authorize.searchParams.get("redirect_uri") ?? "").toContain(

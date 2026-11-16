@@ -23,7 +23,6 @@ export type MockChapter = {
   id: string;
   title: string;
   description: string;
-  span?: 1 | 2;
   lessons: MockLesson[];
 };
 
@@ -43,8 +42,7 @@ export const mockCourses: MockCourse[] = [
       {
         id: "orientation",
         title: "Orientation",
-        description:
-          "The tools and the structure of the curriculum.",
+        description: "The tools and the structure of the curriculum.",
         lessons: [
           {
             id: "editor-tour",
@@ -97,14 +95,13 @@ export const mockCourses: MockCourse[] = [
   {
     id: "intro-to-java",
     title: "Introduction to Java programming",
-    blurb: "The Java fundamentals, from syntax through object-oriented programming.",
+    blurb:
+      "The Java fundamentals, from syntax through object-oriented programming.",
     chapters: [
       {
         id: "hello-java",
         title: "Hello Java",
-        description:
-          "Java syntax, printing, comments, and naming conventions.",
-        span: 2,
+        description: "Java syntax, printing, comments, and naming conventions.",
         lessons: [
           {
             id: "java-history",
@@ -296,8 +293,7 @@ export const mockCourses: MockCourse[] = [
       {
         id: "oop",
         title: "Object Oriented Programming",
-        description:
-          "Classes, fields, methods, constructors, and inheritance.",
+        description: "Classes, fields, methods, constructors, and inheritance.",
         lessons: [
           {
             id: "classes-and-objects",
@@ -369,7 +365,6 @@ export const mockCourses: MockCourse[] = [
         title: "Final project: A text adventure",
         description:
           "A text adventure built with the OOP ideas from earlier chapters.",
-        span: 2,
         lessons: [
           {
             id: "ta-design",
@@ -433,7 +428,6 @@ export const mockCourses: MockCourse[] = [
         title: "The WPILib world",
         description:
           "WPILib, the Robot class, and the structure of a robot project.",
-        span: 2,
         lessons: [
           {
             id: "what-is-wpilib",
@@ -535,8 +529,7 @@ export const mockCourses: MockCourse[] = [
       {
         id: "driver-input",
         title: "Driver input",
-        description:
-          "Joysticks, controllers, axes, deadzones, and buttons.",
+        description: "Joysticks, controllers, axes, deadzones, and buttons.",
         lessons: [
           {
             id: "joysticks-vs-controllers",
@@ -623,8 +616,7 @@ export const mockCourses: MockCourse[] = [
       {
         id: "command-based-intro",
         title: "A taste of command-based",
-        description:
-          "Subsystems, commands, and the command scheduler.",
+        description: "Subsystems, commands, and the command scheduler.",
         lessons: [
           {
             id: "why-command-based",
@@ -665,7 +657,6 @@ export const mockCourses: MockCourse[] = [
         title: "Final project: drive forward auton",
         description:
           "A drivetrain subsystem, a working teleop, and a drive-forward autonomous.",
-        span: 2,
         lessons: [
           {
             id: "wiring-it-up",
@@ -753,7 +744,6 @@ export const mockCourses: MockCourse[] = [
         title: "Arms",
         description:
           "Rotating arms, joint encoders, soft limits, and gravity compensation.",
-        span: 2,
         lessons: [
           {
             id: "what-is-an-arm",
@@ -848,7 +838,6 @@ export const mockCourses: MockCourse[] = [
         title: "Mecanum drive",
         description:
           "Mecanum math, the MecanumDrive class, and field-relative control.",
-        span: 2,
         lessons: [
           {
             id: "what-is-mecanum",
@@ -913,7 +902,6 @@ export const mockCourses: MockCourse[] = [
         title: "Swerve drive",
         description:
           "Swerve module anatomy, kinematics, field-oriented control, and vendor templates.",
-        span: 2,
         lessons: [
           {
             id: "should-you-write-swerve",
@@ -994,7 +982,8 @@ export const mockCourses: MockCourse[] = [
   {
     id: "controls-theory",
     title: "Controls theory",
-    blurb: "The math behind closed-loop control: PID, feedforward, system identification, and motion profiles.",
+    blurb:
+      "The math behind closed-loop control: PID, feedforward, system identification, and motion profiles.",
     chapters: [
       {
         id: "linear-algebra-basics",
@@ -1080,7 +1069,6 @@ export const mockCourses: MockCourse[] = [
         title: "PID control",
         description:
           "Proportional, integral, and derivative terms, with tuning.",
-        span: 2,
         lessons: [
           {
             id: "what-pid-does",
@@ -1135,8 +1123,7 @@ export const mockCourses: MockCourse[] = [
       {
         id: "feedforward-control",
         title: "Feedforward control",
-        description:
-          "kS, kV, kA, and combining feedforward with PID.",
+        description: "kS, kV, kA, and combining feedforward with PID.",
         lessons: [
           {
             id: "feedforward-missing-piece",
@@ -1175,8 +1162,7 @@ export const mockCourses: MockCourse[] = [
       {
         id: "system-profiling",
         title: "System profiling",
-        description:
-          "SysId, data collection, and reading profiling output.",
+        description: "SysId, data collection, and reading profiling output.",
         lessons: [
           {
             id: "why-profile",

@@ -5,7 +5,9 @@ test.describe("teavm playground compile", () => {
   // hangs on JDK bootstrap over wasi:http — see
   // development/agent-output/compiler-wasm-performance.md. Unskip once that's
   // addressed (ship the JDK, or env-var it to a sideloaded blob).
-  test.fixme("compiles hello-world and attempts ristretto run", async ({ page }) => {
+  test.fixme("compiles hello-world and attempts ristretto run", async ({
+    page,
+  }) => {
     // First compile pays the wasm instantiation + SDK fetch — give it room.
     test.setTimeout(120_000);
 

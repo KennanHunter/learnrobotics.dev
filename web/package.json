@@ -29,6 +29,7 @@
     "@monaco-editor/loader": "^1.7.0",
     "@tanstack/solid-router": "1.170.39",
     "@tanstack/solid-start": "~1.168.0",
+    "@tanstack/solid-virtual": "^3.13.53",
     "aws4fetch": "^1.0.20",
     "better-auth": "^1.7.23",
     "drizzle-orm": "^0.45.4",

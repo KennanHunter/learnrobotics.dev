@@ -12,9 +12,9 @@ use std::sync::Once;
 
 use ristretto_classloader::{ClassPath, ClassPathEntry, Memory};
 use ristretto_vm::{Compiler, ConfigurationBuilder, VM};
+use tracing_subscriber::EnvFilter;
 use tracing_subscriber::fmt::MakeWriter;
 use tracing_subscriber::prelude::*;
-use tracing_subscriber::EnvFilter;
 
 wit_bindgen::generate!({
     path: "wit",
