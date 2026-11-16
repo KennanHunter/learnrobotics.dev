@@ -6,20 +6,3 @@ publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-
-[dependencies]
-ristretto_vm = { path = "../../ristretto/ristretto_vm", default-features = false, features = [
-    "tls-rustls-ring",
-] }
-tokio = { version = "1.54.1", default-features = false, features = [
-    "macros",
-    "rt",
-    "sync",
-    "time",
-] }
-
-[target.'cfg(target_family = "wasm")'.dependencies]
-wit-bindgen = { version = "0.57.1", default-features = false, features = [
-    "macros",
-    "realloc",
-] }

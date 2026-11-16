@@ -1,0 +1,125 @@
+# Known issue: Vite 8 + `@cloudflare/vite-plugin` + Solid `.jsx` source packages
+
+## Symptom
+
+`pnpm dev` fails at startup (worker-entry export inference phase):
+
+```
+error when starting dev server:
+Error: Cannot find module 'react/jsx-dev-runtime' imported from
+  <proj>/node_modules/.pnpm/@tanstack+solid-router@1.170.43_solid-js@1.9.19/
+    node_modules/@tanstack/solid-router/dist/source/awaited.jsx
+    at runInRunnerObject (workers/runner-worker/index.js:107:3)
+    at getWorkerEntryExportTypes (workers/runner-worker/index.js:252:24)
+```
+
+The `.jsx` file in question is valid Solid source (no actual JSX elements in `awaited.jsx` — just function declarations), but the loader synthesizes `import { jsx } from 'react/jsx-runtime'` because esbuild's default JSX transform is React.
+
+## Root cause
+
+Three packages interact, and the interaction has a hole in it:
+
+1. **`vite-plugin-solid`** (`configResolved`, `index.mjs` line 308) prepends `"solid"` to every environment's `resolve.conditions`:
+   ```js
+   config.resolve.conditions = ['solid',
+     ...(opts.isSsrTargetWebworker ? ['worker'] : []),
+     ...(replaceDev ? ['development'] : []),
+     ...config.resolve.conditions];
+   ```
+2. **`@tanstack/solid-router`'s `package.json`** advertises two builds via conditional exports:
+   ```json
+   "exports": {
+     ".": {
+       "import":  { "default": "./dist/esm/index.js" },     // pre-compiled (client JSX)
+       "solid":   { "default": "./dist/source/index.jsx" }  // raw source for Solid
+     }
+   }
+   ```
+   With the `"solid"` condition active, resolution picks `dist/source/index.jsx`.
+3. **`@cloudflare/vite-plugin`**'s Worker runner (`workers/runner-worker/index.js:252`, `getWorkerEntryExportTypes`) loads the worker entry's module graph through workerd. During this load, `.jsx` files are **not** routed through `vite-plugin-solid`'s transform — they land in Vite's module runner with esbuild/rolldown defaults, which emit React JSX imports.
+
+The two package pre-compilations (`dist/esm/*.js` for the `"import"` condition, `dist/source/*.jsx` for `"solid"`) are mutually exclusive escape hatches:
+
+- With `"solid"` kept → `.jsx` reaches the Workers runtime → esbuild defaults to React → missing `react/jsx-runtime`.
+- With `"solid"` removed (e.g. via `pnpm patch`) → falls through to pre-compiled `dist/esm/*.js`, which was compiled for the **browser DOM** target. Top-level calls like `var _tmpl$ = template('<script>')` in `dist/esm/Asset.js:7` then fire at module-eval time on the server, and `solid-js/web`'s SSR build stubs those primitives with `notSup`, throwing `"Client-only API called on the server side."`
+
+So neither leaving the condition nor removing it works — the design assumes the user's bundler sees the raw JSX and compiles it with the correct Solid target (DOM vs SSR) per environment. The Cloudflare plugin's module runner doesn't do that.
+
+## Everything we tried
+
+Chronological. "Result" is the status after the change was applied in isolation (on top of the stock stack: Vite 8.3.8 + CF plugin 1.69.1 + Solid Start 1.169.5 + Solid Router 1.170.43).
+
+| # | Attempted change | Outcome |
+|---|---|---|
+| 1 | `optimizeDeps.exclude: ["solid-icons", "solid-icons/md", "solid-icons/ai"]` + `environments.ssr.optimizeDeps.exclude` of same | ❌ Same error. Keeps deps out of the pre-bundler, but the Cloudflare Workers module runner still loads the raw `.jsx` directly. |
+| 2 | `ssr.noExternal: ["solid-icons"]` | ❌ No change. `ssr.noExternal` controls SSR **bundling**; the CF Workers runner has its own resolve layer below Vite's bundler semantics. |
+| 3 | `ssr.noExternal: ["@tanstack/solid-router", "@tanstack/solid-start"]` | ❌ Same shape as #2. Error still fires from `getWorkerEntryExportTypes`. |
+| 4 | `vite-plugin-solid` with `include: [/solid-icons/, /\.jsx$/]` and `include: [/@tanstack\/solid-(router\|start)\//]` to transform `.jsx` inside node_modules | ❌ Didn't fire. Transform includes/excludes only affect files Vite routes through the plugin pipeline — the CF Workers runner doesn't. |
+| 5 | `optimizeDeps.esbuildOptions: { jsx: "automatic", jsxImportSource: "solid-js" }` | ❌ Produced `Cannot find module 'react/jsx-dev-runtime' imported from @tanstack/solid-router/dist/source/awaited.jsx` instead — jsxImportSource wasn't honored for the specific files the CF runner pulled, and Vite warned that `esbuildOptions` is deprecated in favor of `rolldownOptions`. |
+| 6 | `resolve.alias` → force `@tanstack/solid-router` to `dist/esm/index.js` | ❌ Alias applied to the user-code graph but **not** the Workers module runner. Stack trace still showed resolution via the un-aliased pnpm store path. |
+| 7 | `resolve.alias` for both `@tanstack/solid-router` and `@tanstack/solid-start` ESM paths using `fileURLToPath` | ❌ Same as #6 — alias ignored by the Workers module runner. |
+| 8 | Custom Vite plugin with `enforce: "pre"` + `applyToEnvironment: () => true` + `resolveId` hook that rewrites `@tanstack/solid-{router,start}` imports to `dist/esm/*.js` | ❌ Neither `resolveId` nor `configResolved` ever logged. The CF plugin spins up its own Worker environment whose plugin container doesn't inherit top-level user plugins for the resolution path the module runner uses. |
+| 9 | `environments.ssr.resolve.conditions: ["worker", "workerd", "import", "default"]` (no `"solid"`) | ❌ `vite-plugin-solid`'s `configResolved` hook unconditionally re-prepends `"solid"` back onto `config.resolve.conditions`, undoing the override. |
+| 10 | `pnpm patch @tanstack/solid-router@1.170.43` — strip every `"solid"` key from the exports map, `pnpm patch-commit` | ❌ **Advanced one error, revealed the next.** Resolution fell through to `dist/esm/*.js`. The `jsx-dev-runtime` error vanished. Next startup error: `Cannot find module 'react/jsx-dev-runtime' imported from ... dist/source/awaited.jsx` **still** appeared because pnpm's `.pnpm/<pkg>@<ver>_<peer>` store copy was also referenced by `@tanstack/solid-router-devtools`'s nested install and that copy was not patched. After a clean `rm -rf node_modules && pnpm install`, re-patching, and verifying all symlinks pointed at the patched directory, the error moved to `"Client-only API called on the server side"` — the pre-compiled `dist/esm/*.js` is for the browser DOM target and calls `template()` at module top level, which `solid-js/web`'s SSR build stubs with `notSup`. |
+| 11 | Add `vite-plugin-solid` plugin option `include: [/solid-icons/, /\.jsx$/]` **together with** `ssr.noExternal` (#3) | ❌ Still hit the Workers-runner bypass. No change from #4. |
+| 12 | Try `optimizeDeps.esbuildOptions.jsx: "preserve"` + `jsxImportSource: "solid-js"` scoped to `environments.ssr.optimizeDeps.esbuildOptions` | ❌ No change. Plus deprecation warnings about `esbuildOptions`. |
+| 13 | Fork `@tanstack/solid-router` as a git submodule (`KennanHunter/router`) under `vendor/tanstack-router`, intended to delete the `"solid"` condition in source, build, and link via `pnpm workspace:` | ⚠️ **Abandoned.** Submodule cloned cleanly, but TanStack's monorepo ships `solid-router` as TSX source only (no `dist/` tracked). Making it consumable required running their build, which pulls in the rest of a 50+ package pnpm workspace. Heavier than the problem warranted. |
+| 14 | Downgrade `@cloudflare/vite-plugin` from 1.69.1 to 1.49.1 (keeping Vite 6.4.6) | ❌ Still has `validateWorkerEnvironmentOptions` check. TanStack Start 1.130.x sets `resolve.external` on the ssr environment, which the CF plugin rejects with `"The following environment options are incompatible with the Cloudflare Vite plugin"`. |
+| 15 | Downgrade `@cloudflare/vite-plugin` further, to 1.7.5 (the last release before `validateWorkerEnvironmentOptions` was added — determined by `tar xzOf` on the published tarballs and grepping) | ❌ Different wall: CF plugin 1.7.5 imports `experimental_maybeStartOrUpdateRemoteProxySession` from `wrangler`, which no longer exists in wrangler 4.x. Would need a wrangler downgrade too, pulling the whole chain to early-2025 versions. |
+| 16 | **✅ Final working combination.** Upgrade target to Vite 7 (one major behind the bug) and TanStack Start 1.168.x (latest line with `vite: ">=7.0.0"` peerDep). Keep `@cloudflare/vite-plugin` at `^1.69.1`. Pin `@tanstack/solid-router` to the exact version Solid Start 1.168.58 depends on (`1.170.39`) to avoid transitive drift. Add `tanstackStart({ customViteSolidPlugin: true })` so Start stops configuring its own `vite-plugin-solid`. | ✅ Dev server starts, HTTP 200 on `/`, page renders with `MdFillLight_mode`/`MdFillDark_mode`/`AiFillGithub`/`AiOutlineInfoCircle` icons from the forked `solid-icons`. |
+
+### What actually made #16 work vs. #1–15
+
+The bug is specific to Vite 8's module-runner integration in `@cloudflare/vite-plugin`. On Vite 7 the `getWorkerEntryExportTypes` codepath still goes through the plugin pipeline, so `vite-plugin-solid` sees the `.jsx` files and compiles them against the correct Solid target before the Workers runtime touches them. No config gymnastics required.
+
+## Resolved package versions
+
+Where the bug reproduces (bad):
+
+```
+vite                       8.3.8
+vite-plugin-solid          2.11.16
+@cloudflare/vite-plugin    1.69.1
+@tanstack/solid-start      1.169.5    (peerDep vite >=8.0.0)
+@tanstack/solid-router     1.170.43
+solid-js                   1.9.19
+```
+
+Current working pin (good):
+
+```
+vite                       ^7.1.0     (resolved 7.3.8)
+vite-plugin-solid          ^2.11.16
+@cloudflare/vite-plugin    ^1.69.1
+@tanstack/solid-start      ~1.168.0   (peerDep vite >=7.0.0; resolved 1.168.58)
+@tanstack/solid-router     1.170.39   (exact pin to match what solid-start depends on)
+@tanstack/solid-router-devtools  ~1.167.0
+solid-js                   ^1.9.19
+```
+
+## Config additions that stayed in `vite.config.ts`
+
+```ts
+tanstackStart({ customViteSolidPlugin: true }),
+solid({ ssr: true }),
+```
+
+The `customViteSolidPlugin: true` option tells TanStack Start not to also configure `vite-plugin-solid` (which Solid Start 1.168+ otherwise does by default, and complains about if you add it manually).
+
+Everything else from the experiments (`optimizeDeps.exclude`, `ssr.noExternal`, `environments.ssr.*`, custom `resolveId` plugin, aliases) was **removed** — none of it was carrying weight in the working config.
+
+## Workable paths forward if we want Vite 8 back
+
+- **File upstream against `@cloudflare/vite-plugin`**: "Workers module runner (`getWorkerEntryExportTypes`) bypasses user-registered plugin transforms for `.jsx` files loaded from node_modules under the `"solid"` export condition, starting in Vite 8 integration." Include this doc as the reproducer.
+- **Wait for a `@cloudflare/vite-plugin` release** that re-wires the Workers runner through the plugin pipeline, and a `@tanstack/solid-start` release that exposes a `resolve.external` opt-out.
+- **Drop `@cloudflare/vite-plugin`** entirely and run `wrangler dev` alongside a separate Vite process. Loses SSR HMR, complicates D1 bindings in local dev — but sidesteps the plugin interop.
+
+## Reproducer for the upstream issue
+
+Minimal shape:
+
+1. Scaffold a Vite 8 app with `@cloudflare/vite-plugin@1.69.1`, `vite-plugin-solid@2.11.16`, `@tanstack/solid-router` as a dep.
+2. Create `src/ssr.tsx` that imports anything from `@tanstack/solid-router`.
+3. `pnpm dev` → the error above fires at startup.
+
+The crash is independent of user source — all it takes is importing `@tanstack/solid-router` (or any package shipping `.jsx` source behind a `"solid"` export condition) from the worker entry.

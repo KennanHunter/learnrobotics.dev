@@ -5,48 +5,70 @@ import { eq } from "drizzle-orm";
 import { getAuth } from "~/server/auth";
 import { getDb } from "~/server/db";
 import { userConfig } from "~/server/schema";
-import { isLanguageCode, LANGUAGE_CODES } from "./languages";
+import { isLanguageCode, LANGUAGE_CODES } from "~/i18n";
 
 export type Theme = "light" | "dark";
 
 export type SessionSummary = {
   userId: string;
   name: string;
+  image: string | null;
   isAnonymous: boolean;
   language: string;
   theme: Theme | null;
 } | null;
 
+type AuthUser = {
+  id: string;
+  name: string;
+  image: string | null;
+  isAnonymous: boolean;
+};
+
+async function requireUser(): Promise<AuthUser> {
+  const req = getRequest();
+  const auth = getAuth();
+  const existing = await auth.api.getSession({ headers: req.headers });
+  if (existing) {
+    return {
+      id: existing.user.id,
+      name: existing.user.name,
+      image: existing.user.image ?? null,
+      isAnonymous: Boolean(existing.user.isAnonymous),
+    };
+  }
+  // `signInAnonymous` sets cookies on Better Auth's response context (which
+  // TanStack Start forwards to the HTTP response), and returns the new user
+  // directly — the request headers we passed in are NOT mutated, so we must
+  // use this return value rather than re-running `getSession`.
+  const created = await auth.api.signInAnonymous({ headers: req.headers });
+  if (!created) throw new Error("Failed to sign in anonymously");
+  return {
+    id: created.user.id,
+    name: created.user.name,
+    image: created.user.image ?? null,
+    isAnonymous: true,
+  };
+}
+
 export const getSession = createServerFn({ method: "GET" }).handler(
   async (): Promise<SessionSummary> => {
-    const req = getRequest();
-    const auth = getAuth();
-    let session = await auth.api.getSession({ headers: req.headers });
-    if (!session) {
-      // Issue an anonymous session. The client handles the response cookies
-      // when this fn is invoked from a route loader during SSR.
-      await auth.api.signInAnonymous({ headers: req.headers });
-      session = await auth.api.getSession({ headers: req.headers });
-      if (!session) return null;
-    }
-    return summarize(session.user.id, session.user.name, Boolean(session.user.isAnonymous));
+    const user = await requireUser();
+    return summarize(user);
   },
 );
 
-async function summarize(
-  userId: string,
-  name: string,
-  isAnonymous: boolean,
-): Promise<SessionSummary> {
+async function summarize(user: AuthUser): Promise<SessionSummary> {
   const cfg = await getDb().query.userConfig.findFirst({
-    where: eq(userConfig.userId, userId),
+    where: eq(userConfig.userId, user.id),
   });
   const theme: Theme | null =
     cfg?.theme === "light" || cfg?.theme === "dark" ? cfg.theme : null;
   return {
-    userId,
-    name,
-    isAnonymous,
+    userId: user.id,
+    name: user.name,
+    image: user.image,
+    isAnonymous: user.isAnonymous,
     language: cfg?.language ?? "en",
     theme,
   };
@@ -59,16 +81,13 @@ const SetLanguageSchema = v.object({
 export const setLanguage = createServerFn({ method: "POST" })
   .validator((data: unknown) => v.parse(SetLanguageSchema, data))
   .handler(async ({ data }) => {
-    const req = getRequest();
-    const auth = getAuth();
-    const session = await auth.api.getSession({ headers: req.headers });
-    if (!session) throw new Error("No session");
+    const user = await requireUser();
     const db = getDb();
     const lang = isLanguageCode(data.language) ? data.language : "en";
     const now = new Date();
     await db
       .insert(userConfig)
-      .values({ userId: session.user.id, language: lang, createdAt: now, updatedAt: now })
+      .values({ userId: user.id, language: lang, createdAt: now, updatedAt: now })
       .onConflictDoUpdate({
         target: userConfig.userId,
         set: { language: lang, updatedAt: now },
@@ -83,16 +102,13 @@ const SetThemeSchema = v.object({
 export const setTheme = createServerFn({ method: "POST" })
   .validator((data: unknown) => v.parse(SetThemeSchema, data))
   .handler(async ({ data }) => {
-    const req = getRequest();
-    const auth = getAuth();
-    const session = await auth.api.getSession({ headers: req.headers });
-    if (!session) throw new Error("No session");
+    const user = await requireUser();
     const db = getDb();
     const now = new Date();
     await db
       .insert(userConfig)
       .values({
-        userId: session.user.id,
+        userId: user.id,
         theme: data.theme,
         createdAt: now,
         updatedAt: now,

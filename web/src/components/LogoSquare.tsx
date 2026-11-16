@@ -25,7 +25,7 @@ const svg = (props: { class?: string }): JSX.Element => (
 export function LogoSquare(props: LogoSquareProps): JSX.Element {
   if (props.opaque) {
     return (
-      <div class={`bg-white dark:bg-black rounded-lg p-2 ${props.class ?? ""}`}>
+      <div class={`bg-background rounded-lg p-2 ${props.class ?? ""}`}>
         {svg({})}
       </div>
     );

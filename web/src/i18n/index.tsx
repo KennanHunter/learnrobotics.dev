@@ -7,7 +7,21 @@ export type LanguageEntry = {
 };
 
 const EnglishDescription: Component = () => (
-  <p class="text-sm">All content supported.</p>
+  <div class="space-y-2 text-sm">
+    <p class="font-medium">Support level: Full</p>
+    <p>All lessons, UI, and documentation are available in English.</p>
+  </div>
+);
+
+const PirateDescription: Component = () => (
+  <div class="space-y-2 text-sm">
+    <p class="font-medium">Support level: Experimental</p>
+    <p>
+      Arrr, this here be a test, a mighty voyage across the briny deep, or
+      somethin' like it, to make certain the translatin' riggin' holds fast for
+      every last lesson aboard this vessel.
+    </p>
+  </div>
 );
 
 export const LANGUAGES = {
@@ -15,6 +29,11 @@ export const LANGUAGES = {
     label: "English",
     flag: "🇺🇸",
     description: EnglishDescription,
+  },
+  pirate: {
+    label: "Pirate",
+    flag: "🏴‍☠️",
+    description: PirateDescription,
   },
 } satisfies Record<string, LanguageEntry>;
 

@@ -8,15 +8,8 @@ import { VitePWA } from "vite-plugin-pwa";
 export default defineConfig({
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
-    tanstackStart(),
-    solid({
-      ssr: true,
-      include: [
-        /\.[mc]?[jt]sx$/,
-        /@tanstack\/solid-(router|start)\//,
-        /solid-icons\//,
-      ],
-    }),
+    tanstackStart({ customViteSolidPlugin: true }),
+    solid({ ssr: true }),
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
@@ -55,10 +48,7 @@ export default defineConfig({
     exclude: ["solid-icons", "solid-icons/md", "solid-icons/ai"],
   },
   ssr: {
-    noExternal: [
-      "solid-icons",
-      /@tanstack\/solid-(router|start)/,
-    ],
+    noExternal: ["solid-icons"],
   },
   environments: {
     ssr: {

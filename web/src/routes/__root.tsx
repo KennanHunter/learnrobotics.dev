@@ -4,9 +4,12 @@ import {
   Outlet,
   Scripts,
 } from "@tanstack/solid-router";
+import { createEffect } from "solid-js";
+import { HydrationScript, isServer } from "solid-js/web";
 import { ErrorPage } from "~/components/ErrorPage";
 import { ModalProvider } from "~/components/ModalManager";
 import { getSession } from "~/lib/session";
+import { SessionProvider } from "~/lib/session-context";
 import styles from "~/styles.css?url";
 
 export const Route = createRootRoute({
@@ -58,7 +61,7 @@ export const Route = createRootRoute({
           <button
             type="button"
             onClick={() => window.location.reload()}
-            class="rounded border border-gray px-4 py-2 text-sm hover:bg-gray/10"
+            class="rounded border border-background-offset px-4 py-2 text-sm hover:bg-background-offset"
           >
             Reload
           </button>
@@ -72,17 +75,25 @@ function RootDocument() {
   const ctx = Route.useRouteContext();
   const themeClass = () => {
     const t = ctx().session?.theme;
-    return t === "dark" ? "dark" : "";
+    return t === "dark" || t === "light" ? t : "";
   };
+  if (!isServer) {
+    createEffect(() => {
+      document.documentElement.className = themeClass();
+    });
+  }
   return (
     <html lang="en" class={themeClass()}>
       <head>
+        <HydrationScript />
         <HeadContent />
       </head>
       <body>
-        <ModalProvider>
-          <Outlet />
-        </ModalProvider>
+        <SessionProvider session={() => ctx().session}>
+          <ModalProvider>
+            <Outlet />
+          </ModalProvider>
+        </SessionProvider>
         <Scripts />
       </body>
     </html>

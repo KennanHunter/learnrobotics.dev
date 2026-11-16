@@ -8,13 +8,46 @@ import {
   on,
 } from "solid-js";
 import * as monacoEditor from "monaco-editor";
+import EditorWorker from "monaco-editor/editor/editor.worker?worker";
+import JsonWorker from "monaco-editor/language/json/json.worker?worker";
+import CssWorker from "monaco-editor/language/css/css.worker?worker";
+import HtmlWorker from "monaco-editor/language/html/html.worker?worker";
+import TsWorker from "monaco-editor/language/typescript/ts.worker?worker";
 import loader, { type Monaco } from "@monaco-editor/loader";
+
+(
+  self as unknown as { MonacoEnvironment: monacoEditor.Environment }
+).MonacoEnvironment = {
+  getWorker(_workerId, label) {
+    switch (label) {
+      case "json":
+        return new JsonWorker();
+      case "css":
+      case "scss":
+      case "less":
+        return new CssWorker();
+      case "html":
+      case "handlebars":
+      case "razor":
+        return new HtmlWorker();
+      case "typescript":
+      case "javascript":
+        return new TsWorker();
+      default:
+        return new EditorWorker();
+    }
+  },
+};
+
 import { Loader } from "./Loader";
 import { MonacoContainer } from "./MonacoContainer";
 import { getOrCreateModel } from "./utils";
 import type { LoaderParams } from "./types";
 
-const viewStates = new Map<string | undefined, monacoEditor.editor.ICodeEditorViewState | null>();
+const viewStates = new Map<
+  string | undefined,
+  monacoEditor.editor.ICodeEditorViewState | null
+>();
 
 export interface MonacoEditorProps {
   language?: string;
@@ -29,9 +62,18 @@ export interface MonacoEditorProps {
   options?: monacoEditor.editor.IStandaloneEditorConstructionOptions;
   saveViewState?: boolean;
   loaderParams?: LoaderParams;
-  onChange?: (value: string, event: monacoEditor.editor.IModelContentChangedEvent) => void;
-  onMount?: (monaco: Monaco, editor: monacoEditor.editor.IStandaloneCodeEditor) => void;
-  onBeforeUnmount?: (monaco: Monaco, editor: monacoEditor.editor.IStandaloneCodeEditor) => void;
+  onChange?: (
+    value: string,
+    event: monacoEditor.editor.IModelContentChangedEvent,
+  ) => void;
+  onMount?: (
+    monaco: Monaco,
+    editor: monacoEditor.editor.IStandaloneCodeEditor,
+  ) => void;
+  onBeforeUnmount?: (
+    monaco: Monaco,
+    editor: monacoEditor.editor.IStandaloneCodeEditor,
+  ) => void;
 }
 
 export function MonacoEditor(inputProps: MonacoEditorProps) {
@@ -49,7 +91,8 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
   let containerRef!: HTMLDivElement;
 
   const [monaco, setMonaco] = createSignal<Monaco>();
-  const [editor, setEditor] = createSignal<monacoEditor.editor.IStandaloneCodeEditor>();
+  const [editor, setEditor] =
+    createSignal<monacoEditor.editor.IStandaloneCodeEditor>();
 
   let abortInitialization: (() => void) | undefined;
   let monacoOnChangeSubscription: monacoEditor.IDisposable | undefined;
@@ -170,7 +213,12 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
           return;
         }
 
-        const model = getOrCreateModel(_monaco, props.value ?? "", props.language, path);
+        const model = getOrCreateModel(
+          _monaco,
+          props.value ?? "",
+          props.language,
+          path,
+        );
 
         if (model !== editor()?.getModel()) {
           if (props.saveViewState) {
@@ -187,7 +235,12 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
   );
 
   const createEditor = (monaco: Monaco) => {
-    const model = getOrCreateModel(monaco, props.value ?? "", props.language, props.path);
+    const model = getOrCreateModel(
+      monaco,
+      props.value ?? "",
+      props.language,
+      props.path,
+    );
 
     return monaco.editor.create(
       containerRef,
@@ -201,7 +254,11 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
   };
 
   return (
-    <MonacoContainer class={props.class} width={props.width} height={props.height}>
+    <MonacoContainer
+      class={props.class}
+      width={props.width}
+      height={props.height}
+    >
       {!editor() && <Loader>{props.loadingState}</Loader>}
       <div style={{ width: "100%", height: "100%" }} ref={containerRef} />
     </MonacoContainer>

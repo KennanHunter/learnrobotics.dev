@@ -1,63 +1,39 @@
 import { Show } from "solid-js";
-import { useRouter } from "@tanstack/solid-router";
-import { AiFillGithub, AiOutlineInfoCircle } from "solid-icons/ai";
+import { AiFillGithub } from "solid-icons/ai/AiFillGithub";
+import { AiOutlineInfoCircle } from "solid-icons/ai/AiOutlineInfoCircle";
 import { authClient } from "~/lib/auth-client";
-import { LANGUAGES, type LanguageCode } from "~/lib/languages";
-import type { SessionSummary } from "~/lib/session";
+import { useSession } from "~/lib/session-context";
 import { Logo } from "./Logo";
-import { useModal } from "./ModalManager";
-import { LanguageModal } from "./LanguageModal";
 import { ThemeToggle } from "./ThemeToggle";
+import { ProfileMenu } from "./ProfileMenu";
 
-export function TopBar(props: { session: SessionSummary }) {
-  const router = useRouter();
-  const modal = useModal();
-
-  const lang = (): LanguageCode =>
-    (props.session?.language as LanguageCode) in LANGUAGES
-      ? (props.session!.language as LanguageCode)
-      : "en";
+export function TopBar() {
+  const session = useSession();
 
   async function onGithub() {
     await authClient.signIn.social({ provider: "github", callbackURL: "/" });
   }
 
-  async function onSignOut() {
-    await authClient.signOut();
-    await router.invalidate();
-  }
-
-  function openLanguageModal() {
-    modal.open(<LanguageModal current={lang()} />);
-  }
-
   return (
-    <header class="flex items-center justify-between gap-3 border-b border-gray px-4 py-3">
+    <header class="flex items-center justify-between gap-3 border-b border-background-offset px-4 py-3">
       <a href="/" class="block text-inherit">
         <Logo class="h-8 w-auto" />
       </a>
       <div class="flex items-center gap-3">
-        <ThemeToggle theme={props.session?.theme ?? null} />
-        <button
-          type="button"
-          class="rounded border border-gray px-3 py-1 text-sm hover:bg-gray/20"
-          onClick={openLanguageModal}
-        >
-          {LANGUAGES[lang()].label}
-        </button>
+        <ThemeToggle />
         <Show
-          when={props.session && !props.session.isAnonymous}
+          when={session() && !session()!.isAnonymous}
           fallback={
             <div class="flex items-center gap-2">
               <button
-                class="flex items-center gap-2 rounded bg-black px-3 py-1 text-sm text-white hover:bg-gray dark:bg-white dark:text-black dark:hover:bg-gray"
+                class="flex items-center gap-2 rounded bg-primary px-3 py-1 text-sm text-background hover:opacity-80"
                 onClick={onGithub}
               >
                 <AiFillGithub />
                 <span>Sign in with GitHub</span>
               </button>
               <span
-                class="text-lg text-gray dark:text-white/70"
+                class="text-lg text-primary/60"
                 title="All data is saved in your browser by default. To save across browsers, link your GitHub account."
                 aria-label="Account info"
               >
@@ -66,13 +42,7 @@ export function TopBar(props: { session: SessionSummary }) {
             </div>
           }
         >
-          <span class="text-sm">Signed in as {props.session!.name}</span>
-          <button
-            class="rounded border border-gray px-3 py-1 text-sm hover:bg-gray/20"
-            onClick={onSignOut}
-          >
-            Sign out
-          </button>
+          <ProfileMenu />
         </Show>
       </div>
     </header>

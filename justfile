@@ -6,9 +6,12 @@ default: install build
 install:
     pnpm install
 
-# Rust unit tests across the workspace.
+# Rust unit tests across the workspace (wasm32-wasip2).
 test:
-    cargo test --workspace
+    RUSTC_BOOTSTRAP=1 \
+    CARGO_TARGET_WASM32_WASIP2_RUSTFLAGS="-C link-arg=-zstack-size=8388608" \
+    CARGO_TARGET_WASM32_WASIP2_RUNNER=wasmtime \
+    cargo test --workspace --target wasm32-wasip2
 
 # Compile the compiler crate to wasm and transpile it into the JS package.
 build:

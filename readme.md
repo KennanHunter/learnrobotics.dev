@@ -19,6 +19,35 @@
 
 This is a in development project for teaching FIRST programming
 
+# Development
+
+## Requirements
+
+- [Rust](https://www.rust-lang.org/tools/install) (with the `wasm32-wasip2` target: `rustup target add wasm32-wasip2`)
+- [Node.js](https://nodejs.org/) (LTS)
+- [pnpm](https://pnpm.io/installation)
+- [just](https://github.com/casey/just#installation)
+- [Git](https://git-scm.com/downloads) (with submodule support)
+
+## Cloning
+
+```sh
+git clone git@github.com:KennanHunter/learnrobotics.dev.git
+```
+
+If you clone without recursive, run
+
+```sh
+git submodule init
+```
+
+## Building
+
+```sh
+just # builds all our dependencies
+just dev # runs a dev server on localhost:5173 
+```
+
 # Contributing
 
 Contributions welcome! Approved changes will need to sign a CLA. Make an issue and describe what you're working before you put in too much work.
@@ -47,4 +76,4 @@ If you want to make money off it (paid, subscription, or ad-supported), you'll n
 
 If you have any questions, or are interested in purchasing a commercial license, reach out to `licensing@kennan.dev`
 
-(this is just a summary, the [LICENSE](./LICENSE) is what actually counts)
+(this is just a summary, the [LICENSE](./LICENSE) is what actually matters)

@@ -23,14 +23,14 @@ export function ErrorPage(props: ErrorPageProps): JSX.Element {
         {props.title}
       </h1>
       <Show when={props.message}>
-        <p class="max-w-xl text-base text-gray dark:text-white/70 mb-8">
+        <p class="max-w-xl text-base text-primary/60 mb-8">
           {props.message}
         </p>
       </Show>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <a
           href="/"
-          class="rounded bg-black px-4 py-2 text-sm text-white hover:bg-gray dark:bg-white dark:text-black"
+          class="rounded bg-primary px-4 py-2 text-sm text-background hover:opacity-80"
         >
           Back to home
         </a>
@@ -38,10 +38,10 @@ export function ErrorPage(props: ErrorPageProps): JSX.Element {
       </div>
       <Show when={props.detail}>
         <details class="mt-10 max-w-xl w-full text-left">
-          <summary class="cursor-pointer text-xs uppercase tracking-widest text-gray dark:text-white/50">
+          <summary class="cursor-pointer text-xs uppercase tracking-widest text-primary/60">
             Technical details
           </summary>
-          <pre class="mt-3 overflow-auto rounded border border-gray/40 bg-black/5 dark:bg-white/5 p-3 text-xs">
+          <pre class="mt-3 overflow-auto rounded border border-background-offset bg-background-offset p-3 text-xs">
             {props.detail}
           </pre>
         </details>

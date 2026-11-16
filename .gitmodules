@@ -1,6 +1,0 @@
-[submodule "ristretto"]
-	path = crates/ristretto
-	url = git@github.com:KennanHunter/ristretto.git
-[submodule "crates/ristretto"]
-	path = crates/ristretto
-	url = git@github.com:KennanHunter/ristretto.git

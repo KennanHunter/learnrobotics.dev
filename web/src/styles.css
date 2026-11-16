@@ -3,10 +3,66 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-*: initial;
-  --color-black: #121212;
-  --color-gray: #30332e;
-  --color-white: #fffbfc;
-  --color-blue: #0066b3;
-  --color-red: #ed1c24;
+    --color-*: initial;
+    --color-red: #ed1c24;
+    --color-blue: #0066b3;
+    --color-primary: #121212;
+    --color-background: #fffbfc;
+    --color-background-offset: #e5e2e3;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-primary: #fffbfc;
+        --color-background: #121212;
+        --color-background-offset: #30332e;
+    }
+}
+
+:root.light {
+    --color-primary: #121212;
+    --color-background: #fffbfc;
+    --color-background-offset: #e5e2e3;
+}
+
+:root.dark {
+    --color-primary: #fffbfc;
+    --color-background: #121212;
+    --color-background-offset: #30332e;
+}
+
+@layer base {
+    :root {
+        color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: dark;
+        }
+    }
+    :root.light {
+        color-scheme: light;
+    }
+    :root.dark {
+        color-scheme: dark;
+    }
+
+    html,
+    body {
+        background-color: var(--color-background);
+        color: var(--color-primary);
+    }
+
+    body {
+        min-height: 100vh;
+    }
+
+    /* Form controls inherit their containing color instead of browser defaults. */
+    button,
+    input,
+    select,
+    textarea {
+        color: inherit;
+        background-color: transparent;
+    }
 }
