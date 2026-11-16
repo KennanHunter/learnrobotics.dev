@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/solid-router";
 import { createSignal, For } from "solid-js";
 import { Dynamic } from "solid-js/web";
-import { TopBar } from "~/components/TopBar";
+import { TopBar } from "~/components/TopBar/TopBar";
 import {
   LANGUAGES,
   LANGUAGE_CODES,
@@ -10,6 +10,8 @@ import {
 } from "~/i18n";
 import { setLanguage } from "~/lib/session";
 import { useSession } from "~/lib/session-context";
+import { m } from "~/paraglide/messages";
+import { getLocale, setLocale } from "~/paraglide/runtime";
 
 export const Route = createFileRoute("/settings")({
   component: Settings,
@@ -20,18 +22,21 @@ function Settings() {
   const session = useSession();
   const current = (): LanguageCode => {
     const raw = session()?.language as LanguageCode | undefined;
-    return raw && raw in LANGUAGES ? raw : "en";
+    if (raw && raw in LANGUAGES) return raw;
+    return getLocale() as LanguageCode;
   };
   const [selected, setSelected] = createSignal<LanguageCode>(current());
   const [pending, setPending] = createSignal(false);
 
   async function pick(code: LanguageCode) {
     setSelected(code);
-    if (code === current()) return;
+    if (code === current() && code === getLocale()) return;
     setPending(true);
     try {
       await setLanguage({ data: { language: code } });
       await router.invalidate();
+      // Paraglide handles navigation to the localized URL and cookie update.
+      setLocale(code);
     } finally {
       setPending(false);
     }
@@ -41,9 +46,9 @@ function Settings() {
     <>
       <TopBar />
       <main class="mx-auto max-w-3xl px-6 py-12 space-y-10">
-        <h1 class="text-4xl font-semibold tracking-tight">Settings</h1>
+        <h1 class="text-4xl font-semibold tracking-tight">{m.settings_heading()}</h1>
         <section>
-          <h2 class="text-xl font-medium mb-3">Language</h2>
+          <h2 class="text-xl font-medium mb-3">{m.settings_language_heading()}</h2>
           <div class="mb-4">
             <UnsupportedLanguagesNotice />
           </div>

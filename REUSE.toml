@@ -1,0 +1,13 @@
+version = 1
+
+# this is all
+[[annotations]]
+path = "content/**/*.mdx"
+SPDX-FileCopyrightText = "2026 Kennan Hunter"
+SPDX-License-Identifier = "CC-BY-NC-SA-4.0"
+
+# these are all code examples, completely free to use
+[[annotations]]
+path = ["content/**/*.java"]
+SPDX-FileCopyrightText = "2026 Kennan Hunter"
+SPDX-License-Identifier = "MIT-0"

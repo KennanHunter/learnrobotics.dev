@@ -39,10 +39,10 @@ import loader, { type Monaco } from "@monaco-editor/loader";
   },
 };
 
-import { Loader } from "./Loader";
-import { MonacoContainer } from "./MonacoContainer";
-import { getOrCreateModel } from "./utils";
-import type { LoaderParams } from "./types";
+import { Loader } from "../Loader/Loader";
+import { MonacoContainer } from "../MonacoContainer/MonacoContainer";
+import { getOrCreateModel } from "../utils";
+import type { LoaderParams } from "../types";
 
 const viewStates = new Map<
   string | undefined,

@@ -3,20 +3,25 @@ import { AiFillGithub } from "solid-icons/ai/AiFillGithub";
 import { AiOutlineInfoCircle } from "solid-icons/ai/AiOutlineInfoCircle";
 import { authClient } from "~/lib/auth-client";
 import { useSession } from "~/lib/session-context";
-import { Logo } from "./Logo";
-import { ThemeToggle } from "./ThemeToggle";
-import { ProfileMenu } from "./ProfileMenu";
+import { m } from "~/paraglide/messages";
+import { localizeHref } from "~/paraglide/runtime";
+import { Logo } from "../Logo/Logo";
+import { ThemeToggle } from "../ThemeToggle/ThemeToggle";
+import { ProfileMenu } from "../ProfileMenu/ProfileMenu";
 
 export function TopBar() {
   const session = useSession();
 
   async function onGithub() {
-    await authClient.signIn.social({ provider: "github", callbackURL: "/" });
+    await authClient.signIn.social({
+      provider: "github",
+      callbackURL: localizeHref("/"),
+    });
   }
 
   return (
     <header class="flex items-center justify-between gap-3 border-b border-background-offset px-4 py-3">
-      <a href="/" class="block text-inherit">
+      <a href={localizeHref("/")} class="block text-inherit">
         <Logo class="h-8 w-auto" />
       </a>
       <div class="flex items-center gap-3">
@@ -30,12 +35,12 @@ export function TopBar() {
                 onClick={onGithub}
               >
                 <AiFillGithub />
-                <span>Sign in with GitHub</span>
+                <span>{m.nav_sign_in_github()}</span>
               </button>
               <span
                 class="text-lg text-primary/60"
-                title="All data is saved in your browser by default. To save across browsers, link your GitHub account."
-                aria-label="Account info"
+                title={m.nav_account_info_tooltip()}
+                aria-label={m.nav_account_info_aria()}
               >
                 <AiOutlineInfoCircle />
               </span>

@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import * as v from "valibot";
-import { TopBar } from "~/components/TopBar";
+import { TopBar } from "~/components/TopBar/TopBar";
+import { m } from "~/paraglide/messages";
+import { localizeHref } from "~/paraglide/runtime";
 
 const SearchSchema = v.object({});
 
@@ -15,36 +17,36 @@ function Landing() {
       <TopBar />
       <main class="mx-auto max-w-3xl px-6 py-12 space-y-10">
         <section>
-          <h1 class="text-4xl font-semibold tracking-tight">Learn Robotics</h1>
+          <h1 class="text-4xl font-semibold tracking-tight">{m.home_heading()}</h1>
         </section>
         <section>
-          <h2 class="text-2xl font-medium mb-3">Courses</h2>
+          <h2 class="text-2xl font-medium mb-3">{m.home_courses()}</h2>
           <ul class="space-y-2">
             <li>
               <a
                 class="text-blue underline-offset-4 hover:underline"
-                href="/courses/intro-to-java"
+                href={localizeHref("/courses/intro-to-java")}
               >
-                Intro To Java (alpha)
+                {m.home_course_intro_java()}
               </a>
             </li>
             <li>
               <a
                 class="text-blue underline-offset-4 hover:underline"
-                href="/courses/program-a-tank-drive"
+                href={localizeHref("/courses/program-a-tank-drive")}
               >
-                Program a Tank Drive
+                {m.home_course_tank_drive()}
               </a>
             </li>
           </ul>
         </section>
         <section>
-          <h2 class="text-2xl font-medium mb-3">Playground</h2>
+          <h2 class="text-2xl font-medium mb-3">{m.home_playground_heading()}</h2>
           <a
             class="text-blue underline-offset-4 hover:underline"
-            href="/playground"
+            href={localizeHref("/playground")}
           >
-            Try the Java compiler
+            {m.home_playground_link()}
           </a>
         </section>
       </main>

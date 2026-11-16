@@ -4,3 +4,11 @@ dist
 .dev.vars
 worker-configuration.d.ts
 src/routeTree.gen.ts
+src/paraglide
+project.inlang/cache
+playwright-report
+test-results
+.playwright
+
+*storybook.log
+storybook-static

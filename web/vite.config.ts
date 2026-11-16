@@ -4,6 +4,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 import solid from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 
 export default defineConfig({
   plugins: [
@@ -11,6 +12,23 @@ export default defineConfig({
     tanstackStart({ customViteSolidPlugin: true }),
     solid({ ssr: true }),
     tailwindcss(),
+    paraglideVitePlugin({
+      project: "./project.inlang",
+      outdir: "./src/paraglide",
+      outputStructure: "message-modules",
+      emitTsDeclarations: true,
+      cookieName: "PARAGLIDE_LOCALE",
+      strategy: ["url", "cookie", "preferredLanguage", "baseLocale"],
+      urlPatterns: [
+        {
+          pattern: "/:path(.*)?",
+          localized: [
+            ["pirate", "/pirate/:path(.*)?"],
+            ["en", "/en/:path(.*)?"],
+          ],
+        },
+      ],
+    }),
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",

@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/solid-router";
 import { createSignal, onMount, Show, type Component } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import * as v from "valibot";
-import { TopBar } from "~/components/TopBar";
-import type { MonacoEditorProps } from "~/components/editor/Monaco";
+import { TopBar } from "~/components/TopBar/TopBar";
+import type { MonacoEditorProps } from "~/components/editor/Monaco/Monaco";
+import { m } from "~/paraglide/messages";
 
 const SearchSchema = v.object({});
 
@@ -29,7 +30,7 @@ function Playground() {
   );
 
   onMount(async () => {
-    const m = await import("~/components/editor/Monaco");
+    const m = await import("~/components/editor/Monaco/Monaco");
     setEditor(() => m.MonacoEditor);
   });
 
@@ -57,19 +58,19 @@ function Playground() {
       <TopBar />
       <main class="mx-auto flex h-[calc(100vh-56px)] max-w-6xl flex-col gap-4 px-6 py-6">
         <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-semibold tracking-tight">Playground</h1>
+          <h1 class="text-2xl font-semibold tracking-tight">{m.playground_heading()}</h1>
           <button
             type="button"
             disabled={running()}
             onClick={onRun}
             class="rounded bg-primary px-4 py-2 text-sm text-background hover:opacity-80 disabled:opacity-60"
           >
-            {running() ? "Running…" : "Run"}
+            {running() ? m.playground_running() : m.playground_run()}
           </button>
         </div>
         <div class="grid min-h-0 flex-1 grid-cols-2 gap-4">
           <div class="min-h-0 overflow-hidden rounded border border-background-offset">
-            <Show when={Editor()} fallback={<div class="p-3 text-xs text-primary/60">Loading editor…</div>}>
+            <Show when={Editor()} fallback={<div class="p-3 text-xs text-primary/60">{m.playground_loading_editor()}</div>}>
               <Dynamic
                 component={Editor()!}
                 language="java"
@@ -85,16 +86,12 @@ function Playground() {
             </Show>
             <Show when={output()}>
               <div class="whitespace-pre-wrap">
-                <div class="mb-1 text-primary/60">classfile (first 64 bytes, hex):</div>
+                <div class="mb-1 text-primary/60">{m.playground_classfile_label()}</div>
                 {output()}
               </div>
             </Show>
             <Show when={!error() && !output()}>
-              <div class="text-primary/60">
-                Click Run to compile. Today the Rust side returns "compile not yet
-                implemented" — this page proves the component loads and the
-                export is reachable.
-              </div>
+              <div class="text-primary/60">{m.playground_idle_hint()}</div>
             </Show>
           </div>
         </div>

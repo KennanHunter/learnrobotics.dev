@@ -1,11 +1,12 @@
 import { createSignal, onCleanup, Show } from "solid-js";
-import { useNavigate, useRouter } from "@tanstack/solid-router";
+import { useRouter } from "@tanstack/solid-router";
 import { authClient } from "~/lib/auth-client";
 import { useSession } from "~/lib/session-context";
+import { m } from "~/paraglide/messages";
+import { localizeHref } from "~/paraglide/runtime";
 
 export function ProfileMenu() {
   const router = useRouter();
-  const navigate = useNavigate();
   const session = useSession();
   const [open, setOpen] = createSignal(false);
 
@@ -40,7 +41,7 @@ export function ProfileMenu() {
 
   function onSettings() {
     setOpen(false);
-    navigate({ to: "/settings" });
+    window.location.href = localizeHref("/settings");
   }
 
   return (
@@ -79,7 +80,7 @@ export function ProfileMenu() {
             class="block w-full px-3 py-2 text-left hover:bg-background-offset"
             onClick={onSettings}
           >
-            Settings
+            {m.menu_settings()}
           </button>
           <button
             type="button"
@@ -87,7 +88,7 @@ export function ProfileMenu() {
             class="block w-full px-3 py-2 text-left hover:bg-background-offset"
             onClick={onSignOut}
           >
-            Logout
+            {m.menu_logout()}
           </button>
         </div>
       </Show>

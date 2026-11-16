@@ -6,10 +6,12 @@ import {
 } from "@tanstack/solid-router";
 import { createEffect } from "solid-js";
 import { HydrationScript, isServer } from "solid-js/web";
-import { ErrorPage } from "~/components/ErrorPage";
-import { ModalProvider } from "~/components/ModalManager";
+import { ErrorPage } from "~/components/ErrorPage/ErrorPage";
+import { ModalProvider } from "~/components/ModalManager/ModalManager";
 import { getSession } from "~/lib/session";
 import { SessionProvider } from "~/lib/session-context";
+import { getLocale } from "~/paraglide/runtime";
+import { m } from "~/paraglide/messages";
 import styles from "~/styles.css?url";
 
 export const Route = createRootRoute({
@@ -34,8 +36,8 @@ export const Route = createRootRoute({
   notFoundComponent: () => (
     <ErrorPage
       code="404"
-      title="This page took a wrong turn."
-      message="The page you’re looking for isn’t here. It may have moved, or the link might be out of date."
+      title={m.error_404_title()}
+      message={m.error_404_message()}
     />
   ),
   errorComponent: (props) => {
@@ -46,16 +48,12 @@ export const Route = createRootRoute({
         : typeof err === "string"
           ? err
           : undefined;
-    const detail =
-      err instanceof Error && err.stack ? err.stack : undefined;
+    const detail = err instanceof Error && err.stack ? err.stack : undefined;
     return (
       <ErrorPage
         code="500"
-        title="Something went wrong on our end."
-        message={
-          message ??
-          "An unexpected error occurred while loading this page. Try again in a moment."
-        }
+        title={m.error_500_title()}
+        message={message ?? m.error_500_message_fallback()}
         detail={import.meta.env.DEV ? detail : undefined}
         action={
           <button
@@ -63,7 +61,7 @@ export const Route = createRootRoute({
             onClick={() => window.location.reload()}
             class="rounded border border-background-offset px-4 py-2 text-sm hover:bg-background-offset"
           >
-            Reload
+            {m.error_reload()}
           </button>
         }
       />
@@ -83,7 +81,7 @@ function RootDocument() {
     });
   }
   return (
-    <html lang="en" class={themeClass()}>
+    <html lang={getLocale()} class={themeClass()}>
       <head>
         <HydrationScript />
         <HeadContent />

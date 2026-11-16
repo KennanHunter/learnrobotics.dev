@@ -24,6 +24,10 @@ build:
 dev:
     pnpm --filter learnrobotics-web dev
 
+# Run Storybook for the web app.
+storybook:
+    pnpm --filter learnrobotics-web storybook
+
 # Apply D1 migrations to the local dev database.
 migrate-local:
     pnpm --filter learnrobotics-web db:migrate

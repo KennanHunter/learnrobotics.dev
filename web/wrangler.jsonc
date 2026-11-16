@@ -3,7 +3,7 @@
   "name": "learnrobotics-preview",
   "compatibility_date": "2026-01-01",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "@tanstack/solid-start/server-entry",
+  "main": "./src/ssr.tsx",
   "assets": {
     "directory": "./dist/client",
     "binding": "ASSETS"
