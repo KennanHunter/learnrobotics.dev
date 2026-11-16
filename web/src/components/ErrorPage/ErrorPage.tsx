@@ -29,7 +29,7 @@ export function ErrorPage(props: ErrorPageProps): JSX.Element {
         {props.title}
       </h1>
       <Show when={props.message}>
-        <p class="max-w-xl text-base text-primary/60 mb-8">{props.message}</p>
+        <p class="max-w-xl text-base text-foreground-muted mb-8">{props.message}</p>
       </Show>
       <div class="flex flex-wrap items-center justify-center gap-3">
         <a
@@ -42,7 +42,7 @@ export function ErrorPage(props: ErrorPageProps): JSX.Element {
       </div>
       <Show when={props.detail}>
         <details class="mt-10 max-w-xl w-full text-left">
-          <summary class="cursor-pointer text-xs uppercase tracking-widest text-primary/60">
+          <summary class="cursor-pointer text-xs uppercase tracking-widest text-foreground-muted">
             {m.error_technical_details()}
           </summary>
           <pre class="mt-3 overflow-auto rounded border border-background-offset bg-background-offset p-3 text-xs">

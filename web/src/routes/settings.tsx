@@ -112,7 +112,7 @@ function Settings() {
           <h2 class="text-xl font-medium mb-3">
             {m.settings_editor_theme_heading()}
           </h2>
-          <p class="mb-3 text-sm opacity-80">
+          <p class="mb-3 text-sm text-foreground-muted">
             {m.settings_editor_theme_auto_hint()}
           </p>
           <ul class="divide-y divide-background-offset rounded border border-background-offset">
@@ -148,7 +148,7 @@ function Settings() {
                       {entry.autoFor ? (
                         <span
                           aria-label={`auto-applied for ${entry.autoFor} app theme`}
-                          class="text-xs opacity-70"
+                          class="text-xs text-foreground-muted"
                         >
                           ★ {entry.autoFor}
                         </span>

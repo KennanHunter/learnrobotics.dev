@@ -14,7 +14,7 @@ export const Default: Story = {
     height: "240px",
     class: "border border-background-offset",
     children: (
-      <div class="flex h-full items-center justify-center text-sm text-primary/60">
+      <div class="flex h-full items-center justify-center text-sm text-foreground-muted">
         Container content
       </div>
     ),

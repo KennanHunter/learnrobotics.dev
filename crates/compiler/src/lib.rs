@@ -10,7 +10,8 @@
 use std::io::{self, Write};
 use std::sync::Once;
 
-use ristretto_vm::{Compiler, ConfigurationBuilder};
+use ristretto_classloader::{ClassPath, ClassPathEntry, Memory};
+use ristretto_vm::{Compiler, ConfigurationBuilder, VM};
 use tracing_subscriber::fmt::MakeWriter;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::EnvFilter;
@@ -36,6 +37,11 @@ impl Guest for Component {
     fn compile(source: String) -> Result<Vec<u8>, String> {
         init_logging();
         run_compile(&source)
+    }
+
+    fn run(classes: Vec<(String, Vec<u8>)>, main_class: String) -> Result<(), String> {
+        init_logging();
+        run_classes(classes, &main_class)
     }
 }
 
@@ -66,6 +72,47 @@ async fn compile_async(source: &str) -> Result<Vec<u8>, String> {
         .get(&class_name)
         .map(<[u8]>::to_vec)
         .ok_or_else(|| format!("compiled output missing class {class_name}"))
+}
+
+fn run_classes(classes: Vec<(String, Vec<u8>)>, main_class: &str) -> Result<(), String> {
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .map_err(|e| e.to_string())?;
+    runtime.block_on(run_classes_async(classes, main_class))
+}
+
+async fn run_classes_async(
+    classes: Vec<(String, Vec<u8>)>,
+    main_class: &str,
+) -> Result<(), String> {
+    let memory = Memory::new("teavm-output");
+    for (name, bytes) in &classes {
+        tracing::debug!(
+            target: env!("CARGO_PKG_NAME"),
+            class = %name,
+            bytes = bytes.len(),
+            "registering teavm class",
+        );
+        memory.add_class(bytes).await.map_err(|e| e.to_string())?;
+    }
+    let class_path = ClassPath::new(vec![ClassPathEntry::Memory(memory)]);
+    let configuration = ConfigurationBuilder::new()
+        .class_path(class_path)
+        .main_class(main_class)
+        .build()
+        .map_err(|e| e.to_string())?;
+    tracing::info!(
+        target: env!("CARGO_PKG_NAME"),
+        main_class = %main_class,
+        classes = classes.len(),
+        "booting ristretto VM",
+    );
+    let vm = VM::new(configuration).await.map_err(|e| e.to_string())?;
+    vm.invoke_main(&[] as &[&str])
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(())
 }
 
 fn extract_class_name(source: &str) -> Option<String> {

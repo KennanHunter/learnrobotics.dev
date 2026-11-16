@@ -11,6 +11,9 @@ crate-type = ["cdylib", "rlib"]
 ristretto_vm = { path = "../ristretto/ristretto_vm", default-features = false, features = [
     "tls-rustls-ring",
 ] }
+ristretto_classloader = { path = "../ristretto/ristretto_classloader", default-features = false, features = [
+    "tls-rustls-ring",
+] }
 tokio = { version = "1.54.1", default-features = false, features = [
     "macros",
     "rt",

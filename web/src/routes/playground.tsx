@@ -41,18 +41,55 @@ function Playground() {
     setOutput("");
     setError("");
     try {
-      const { compileJava } = await import("~/lib/compiler");
-      const result = await compileJava(source());
-      if (result.ok) {
-        setOutput(formatBytes(result.bytes));
-      } else {
-        setError(result.error);
+      const [{ compileJava }, { runClasses, setLogHook }] = await Promise.all([
+        import("~/lib/teavm"),
+        import("~/lib/compiler"),
+      ]);
+
+      // Route ristretto's stdout/stderr + tracing into the output pane.
+      setLogHook((message) => setOutput((prev) => prev + message + "\n"));
+
+      const compiled = await compileJava(source());
+      if (!compiled.ok) {
+        setError(
+          compiled.diagnostics
+            .map(
+              (d) =>
+                `${d.fileName}:${d.lineNumber}${d.columnNumber ? ":" + d.columnNumber : ""} ${d.severity}: ${d.message}`,
+            )
+            .join("\n") || "compile failed (no diagnostics)",
+        );
+        return;
       }
+
+      const mainClass = pickMainClass(compiled.classes);
+      if (!mainClass) {
+        setError(
+          "compile ok, but could not find a .class to run. Output: " +
+            compiled.classes.map((c) => c.name).join(", "),
+        );
+        return;
+      }
+
+      const result = await runClasses(compiled.classes, mainClass);
+      if (!result.ok) setError(result.error);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setRunning(false);
     }
+  }
+
+  function pickMainClass(
+    classes: { name: string; bytes: Uint8Array }[],
+  ): string | null {
+    // Prefer a top-level (non-inner) class whose file is `Foo.class`. Strip
+    // package path and `.class` suffix.
+    const outer = classes.find(
+      (c) => c.name.endsWith(".class") && !c.name.includes("$"),
+    );
+    if (!outer) return null;
+    return outer.name.replace(/\.class$/, "").replace(/\//g, ".");
   }
 
   return (
@@ -77,7 +114,7 @@ function Playground() {
             <Show
               when={Editor()}
               fallback={
-                <div class="p-3 text-xs text-primary/60">
+                <div class="p-3 text-xs text-foreground-muted">
                   {m.playground_loading_editor()}
                 </div>
               }
@@ -98,14 +135,14 @@ function Playground() {
             </Show>
             <Show when={output()}>
               <div class="whitespace-pre-wrap">
-                <div class="mb-1 text-primary/60">
+                <div class="mb-1 text-foreground-muted">
                   {m.playground_classfile_label()}
                 </div>
                 {output()}
               </div>
             </Show>
             <Show when={!error() && !output()}>
-              <div class="text-primary/60">{m.playground_idle_hint()}</div>
+              <div class="text-foreground-muted">{m.playground_idle_hint()}</div>
             </Show>
           </div>
         </div>
@@ -114,7 +151,3 @@ function Playground() {
   );
 }
 
-function formatBytes(bytes: Uint8Array): string {
-  const slice = bytes.subarray(0, 64);
-  return Array.from(slice, (b) => b.toString(16).padStart(2, "0")).join(" ");
-}

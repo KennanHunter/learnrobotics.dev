@@ -2,12 +2,13 @@ import { createSignal, onCleanup, Show } from "solid-js";
 import { useRouter } from "@tanstack/solid-router";
 import { authClient } from "~/lib/auth-client";
 import { useSession } from "~/lib/session-context";
+import { useLocalizedNavigate } from "~/lib/use-localized-navigate";
 import { m } from "~/paraglide/messages";
-import { localizeHref } from "~/paraglide/runtime";
 
 export function ProfileMenu() {
   const router = useRouter();
   const session = useSession();
+  const navigate = useLocalizedNavigate();
   const [open, setOpen] = createSignal(false);
 
   let rootRef!: HTMLDivElement;
@@ -41,7 +42,12 @@ export function ProfileMenu() {
 
   function onSettings() {
     setOpen(false);
-    window.location.href = localizeHref("/settings");
+    navigate("/settings");
+  }
+
+  function onAdmin() {
+    setOpen(false);
+    navigate("/admin");
   }
 
   return (
@@ -82,6 +88,16 @@ export function ProfileMenu() {
           >
             {m.menu_settings()}
           </button>
+          <Show when={session()?.isAdmin}>
+            <button
+              type="button"
+              role="menuitem"
+              class="block w-full px-3 py-2 text-left hover:bg-background-offset"
+              onClick={onAdmin}
+            >
+              {m.menu_admin()}
+            </button>
+          </Show>
           <button
             type="button"
             role="menuitem"

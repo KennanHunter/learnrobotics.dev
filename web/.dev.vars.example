@@ -2,3 +2,11 @@ BETTER_AUTH_SECRET=replace-with-32-byte-random-string
 GITHUB_CLIENT_ID=
 GITHUB_CLIENT_SECRET=
 ENVIRONMENT=development
+# Must match the dev server origin so Better Auth's CSRF check passes.
+DEPLOYMENT_URL=http://localhost:5173
+# Numeric GitHub user ID. Resolve via `curl https://api.github.com/users/<login>` → `id`.
+ADMIN_GITHUB_USER_ID=
+# R2 S3 API credentials (Cloudflare dash → R2 → Manage API Tokens).
+# R2_ACCOUNT_ID is set as a var in wrangler.jsonc (same account every env).
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=

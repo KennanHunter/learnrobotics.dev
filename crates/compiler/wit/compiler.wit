@@ -8,4 +8,5 @@ world compiler {
     import host;
     export ping: func();
     export compile: func(source: string) -> result<list<u8>, string>;
+    export run: func(classes: list<tuple<string, list<u8>>>, main-class: string) -> result<_, string>;
 }

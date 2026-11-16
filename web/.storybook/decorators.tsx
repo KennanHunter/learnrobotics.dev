@@ -31,8 +31,16 @@ export const signedInSession: SessionSummary = {
   name: "Ada Lovelace",
   image: adaPfp,
   isAnonymous: false,
+  isAdmin: false,
   theme: "light",
   monacoTheme: null,
+};
+
+export const signedInAdminSession: SessionSummary = {
+  ...signedInSession!,
+  userId: "user_admin",
+  name: "Kennan Hunter",
+  isAdmin: true,
 };
 
 export const anonymousSession: SessionSummary = {
@@ -40,6 +48,7 @@ export const anonymousSession: SessionSummary = {
   name: "Guest",
   image: null,
   isAnonymous: true,
+  isAdmin: false,
   theme: null,
   monacoTheme: null,
 };

@@ -1,27 +1,41 @@
 {
-	"version": "7",
-	"dialect": "sqlite",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "6",
-			"when": 1794742196191,
-			"tag": "0000_aromatic_karnak",
-			"breakpoints": true
-		},
-		{
-			"idx": 1,
-			"version": "6",
-			"when": 1794743420387,
-			"tag": "0001_pretty_dracula",
-			"breakpoints": true
-		},
-		{
-			"idx": 2,
-			"version": "6",
-			"when": 1794826737022,
-			"tag": "0002_drop_language_add_monaco_theme",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1794742196191,
+      "tag": "0000_aromatic_karnak",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794743420387,
+      "tag": "0001_pretty_dracula",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794826737022,
+      "tag": "0002_drop_language_add_monaco_theme",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794848181481,
+      "tag": "0003_clever_the_fury",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794849262736,
+      "tag": "0004_square_black_widow",
+      "breakpoints": true
+    }
+  ]
 }

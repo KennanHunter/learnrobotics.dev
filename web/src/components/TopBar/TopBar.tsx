@@ -26,6 +26,12 @@ export function TopBar() {
         <a href={localizeHref("/")} class="block text-inherit">
           <Logo class="h-8 w-auto" />
         </a>
+        <a href={localizeHref("/playground")} class="text-sm hover:underline">
+          {m.nav_playground()}
+        </a>
+        <a href={localizeHref("/discord")} class="text-sm hover:underline">
+          {m.nav_discord()}
+        </a>
         <a href={localizeHref("/about")} class="text-sm hover:underline">
           {m.nav_about()}
         </a>
@@ -47,7 +53,7 @@ export function TopBar() {
               <div class="group relative flex items-center">
                 <button
                   type="button"
-                  class="flex items-center justify-center rounded-full p-1 text-primary/70 transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  class="flex items-center justify-center rounded-full p-1 text-foreground-muted transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   aria-label={m.nav_account_info_aria()}
                 >
                   <AiOutlineInfoCircle class="text-lg" />

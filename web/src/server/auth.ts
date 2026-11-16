@@ -17,6 +17,16 @@ export function getAuth() {
     baseURL: env.DEPLOYMENT_URL,
     secret: env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(getDb(), { provider: "sqlite" }),
+    session: {
+      // Better Auth serves user+session from a signed cookie for 5 min
+      // instead of reading them from D1 on every call. Our own follow-up
+      // queries (user_config, admin check) still run every time, which is
+      // intentional so theme changes propagate immediately.
+      cookieCache: {
+        enabled: true,
+        maxAge: 60 * 5,
+      },
+    },
     socialProviders: {
       github: {
         clientId: env.GITHUB_CLIENT_ID,

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { ProfileMenu } from "./ProfileMenu";
 import {
   anonymousSession,
+  signedInAdminSession,
   signedInSession,
   withSession,
 } from "../../../.storybook/decorators";
@@ -19,6 +20,10 @@ export const SignedIn: Story = {
 
 export const SignedInNoAvatar: Story = {
   decorators: [withSession({ ...signedInSession!, image: null })],
+};
+
+export const SignedInAdmin: Story = {
+  decorators: [withSession(signedInAdminSession)],
 };
 
 export const Anonymous: Story = {

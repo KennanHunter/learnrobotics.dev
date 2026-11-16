@@ -3,6 +3,16 @@
 Terse pointers for agent work. The user-facing readme lives in `readme.md`;
 this file is agent-only.
 
+## AI transparency log
+
+All major agent-driven changes (new features, meaningful refactors,
+anything a reader would want disclosed) must be appended to the AI
+transparency log at `web/src/routes/ai-transparency.tsx`, under the
+"Catalog of AI use" list. Use the `TransparencyLogEntry` component with a
+`date` prop (`YYYY-MM-DD`, today's day) and a short `title`; body text
+describes what was done. Newest entries go at the top. Trivial fixes
+(typos, grammar, small style tweaks) don't need an entry.
+
 ## Tone
 
 When the user makes a clear, self-inflicted mistake (forgot the env vars,
@@ -14,11 +24,22 @@ calls, not anything where blame is unclear.
 ## Repo shape
 
 - pnpm workspace. `pnpm-workspace.yaml` lists `web` and `webassembly/*`.
-- `justfile` orchestrates Rust + JS builds. Use `just` for the full flow,
-  `pnpm --filter <pkg>` for targeted work.
-- `crates/`: Rust compiler (target `wasm32-wasip2`).
-- `webassembly/compiler/`: JS wrapper around the wasm artifact. Workspace
-  package `@learnrobotics/compiler`.
+- `justfile` orchestrates Rust + JS + Gradle builds. Use `just` for the full
+  flow, `pnpm --filter <pkg>` for targeted work.
+- `crates/compiler`: ristretto-backed Rust compiler + runtime
+  (target `wasm32-wasip2`).
+- `just build-teavm` fetches prebuilt WASM-GC teavm-javac artifacts from
+  <https://teavm.org/playground> into `webassembly/teavm-compiler/dist/`.
+  We don't build teavm-javac locally — upstream's Gradle build depends on
+  an unpublished `org.teavm:teavm-* 0.17.0-SNAPSHOT`. WASM-GC requires
+  Chrome 119+ / Firefox 120+. Longer-term we'll mirror these to R2 (see
+  `web/src/server/r2.ts`) so the build doesn't depend on teavm.org.
+- `webassembly/compiler/`: JS wrapper around the ristretto wasm artifact.
+  Workspace package `@learnrobotics/compiler`.
+- `webassembly/teavm-compiler/`: raw TeaVM javac artifacts staged by
+  `webassembly/teavm-compiler/scripts/stage.mjs`. Workspace package
+  `@learnrobotics/teavm-compiler`. No `build` script of its own — the
+  justfile drives Gradle then runs the stage script.
 - `web/`: TanStack **Solid** Start app on Cloudflare Workers (not React).
 
 ## First-run
@@ -29,6 +50,7 @@ just dev        # pnpm --filter learnrobotics-web dev (port 5173)
 ```
 
 Prereqs: Rust with `wasm32-wasip2` target, Node LTS, pnpm, just, ImageMagick.
+(`just build-teavm` fetches prebuilt wasm from teavm.org — no JDK required.)
 
 ## pnpm specifics
 

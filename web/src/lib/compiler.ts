@@ -8,6 +8,7 @@ const log = logger.child({ scope: "compiler" });
 type CompilerRoot = {
   ping(): void;
   compile(source: string): Uint8Array;
+  run(classes: [string, Uint8Array][], mainClass: string): void;
   readonly _util: { stop(): void; whenIdle(): Promise<void> };
 };
 
@@ -177,6 +178,35 @@ export async function ping(): Promise<void> {
   const root = await getCompiler();
   log.info("ping: invoking");
   root.ping();
+}
+
+export type RunResult = { ok: true } | { ok: false; error: string };
+
+export async function runClasses(
+  classes: { name: string; bytes: Uint8Array }[],
+  mainClass: string,
+): Promise<RunResult> {
+  const root = await getCompiler();
+  const start = performance.now();
+  log.info(
+    { classes: classes.length, mainClass },
+    "runClasses: invoking",
+  );
+  try {
+    root.run(
+      classes.map((c) => [c.name, c.bytes]),
+      mainClass,
+    );
+    log.info(
+      { ms: Math.round(performance.now() - start) },
+      "runClasses: ok",
+    );
+    return { ok: true };
+  } catch (err) {
+    const error = errorMessage(err);
+    log.warn({ err: error }, "runClasses: failed");
+    return { ok: false, error };
+  }
 }
 
 export type CompileResult =

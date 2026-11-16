@@ -309,6 +309,7 @@ dependencies = [
 name = "compiler"
 version = "0.1.0"
 dependencies = [
+ "ristretto_classloader",
  "ristretto_vm",
  "tokio",
  "tracing",

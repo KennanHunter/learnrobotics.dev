@@ -5,3 +5,7 @@ node_modules/
 
 # Transpiled wasm packages — rebuilt from crates/ on CI.
 webassembly/*/dist/
+
+# Gradle output from the teavm-javac submodule.
+crates/teavm-javac/.gradle/
+crates/teavm-javac/**/build/

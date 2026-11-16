@@ -17,9 +17,14 @@
       "migrations_dir": "./drizzle"
     }
   ],
+  "r2_buckets": [
+    { "binding": "R2", "bucket_name": "learn-robotics-dev-storage" }
+  ],
   "vars": {
     "DEPLOYMENT_URL": "https://preview.learnrobotics.dev",
-    "ENVIRONMENT": "preview"
+    "ENVIRONMENT": "preview",
+    "ADMIN_GITHUB_USER_ID": "",
+    "R2_ACCOUNT_ID": "1de9d7646d10b16be16d4afc4ac9a19b"
   },
   "env": {
     "production": {
@@ -36,9 +41,14 @@
           "migrations_dir": "./drizzle"
         }
       ],
+      "r2_buckets": [
+        { "binding": "R2", "bucket_name": "learn-robotics-dev-storage" }
+      ],
       "vars": {
         "DEPLOYMENT_URL": "https://learnrobotics.dev",
-        "ENVIRONMENT": "alpha"
+        "ENVIRONMENT": "alpha",
+        "ADMIN_GITHUB_USER_ID": "",
+        "R2_ACCOUNT_ID": "1de9d7646d10b16be16d4afc4ac9a19b"
       }
     }
   }

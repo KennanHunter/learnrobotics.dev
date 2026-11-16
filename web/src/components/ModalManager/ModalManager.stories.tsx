@@ -12,7 +12,7 @@ function DemoContent() {
   return (
     <div class="p-6">
       <h2 class="mb-2 text-xl font-semibold">Hello from the modal</h2>
-      <p class="text-sm text-primary/60">
+      <p class="text-sm text-foreground-muted">
         Click the backdrop or press Escape to close.
       </p>
     </div>

@@ -4,10 +4,11 @@ import {
   setResponseHeader,
 } from "@tanstack/solid-start/server";
 import * as v from "valibot";
-import { eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { getAuth } from "~/server/auth";
 import { getDb } from "~/server/db";
-import { userConfig } from "~/server/schema";
+import { getEnv } from "~/server/env";
+import { account, userConfig } from "~/server/schema";
 import { THEME_IDS } from "~/lib/monaco-themes";
 import { logger } from "~/lib/logger";
 
@@ -20,6 +21,7 @@ export type SessionSummary = {
   name: string;
   image: string | null;
   isAnonymous: boolean;
+  isAdmin: boolean;
   theme: Theme | null;
   monacoTheme: string | null;
 } | null;
@@ -96,20 +98,42 @@ export const getSession = createServerFn({ method: "GET" }).handler(
 );
 
 async function summarize(user: AuthUser): Promise<SessionSummary> {
-  const cfg = await getDb().query.userConfig.findFirst({
-    where: eq(userConfig.userId, user.id),
-  });
+  // One D1 round-trip: read user_config and simultaneously LEFT JOIN against
+  // the user's GitHub account row, filtered to the admin ID from env.
+  // `adminAccountId` is non-null iff this user is the admin. If
+  // ADMIN_GITHUB_USER_ID is unset, force the join to miss. Anonymous users
+  // can't match either way, but we still fetch their config.
+  const adminId = user.isAnonymous ? "" : getEnv().ADMIN_GITHUB_USER_ID ?? "";
+  const rows = await getDb()
+    .select({
+      theme: userConfig.theme,
+      monacoTheme: userConfig.monacoTheme,
+      adminAccountId: account.id,
+    })
+    .from(userConfig)
+    .leftJoin(
+      account,
+      and(
+        eq(account.userId, userConfig.userId),
+        eq(account.providerId, "github"),
+        adminId ? eq(account.accountId, adminId) : sql`0`,
+      ),
+    )
+    .where(eq(userConfig.userId, user.id));
+  const row = rows[0];
   const theme: Theme | null =
-    cfg?.theme === "light" || cfg?.theme === "dark" ? cfg.theme : null;
+    row?.theme === "light" || row?.theme === "dark" ? row.theme : null;
   const monacoTheme =
-    cfg?.monacoTheme && THEME_IDS.includes(cfg.monacoTheme)
-      ? cfg.monacoTheme
+    row?.monacoTheme && THEME_IDS.includes(row.monacoTheme)
+      ? row.monacoTheme
       : null;
+  const isAdmin = Boolean(row?.adminAccountId);
   return {
     userId: user.id,
     name: user.name,
     image: user.image,
     isAnonymous: user.isAnonymous,
+    isAdmin,
     theme,
     monacoTheme,
   };
