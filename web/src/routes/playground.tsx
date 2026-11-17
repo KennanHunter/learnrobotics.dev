@@ -4,6 +4,9 @@ import { Dynamic } from "solid-js/web";
 import * as v from "valibot";
 import { TopBar } from "~/components/TopBar/TopBar";
 import type { MonacoEditorProps } from "~/components/editor/Monaco/Monaco";
+import { FileTree } from "~/components/FileTree";
+import { generateDirectoryTree, collectAllDirectoryKeys } from "~/components/FileTree";
+import { directoryListing } from "~/components/FileTree/directoryListing";
 import { useTheme } from "~/lib/theme-context";
 import { m } from "~/paraglide/messages";
 import type { RunEvent, RunRequest } from "~/workers/code-runner.worker";
@@ -115,7 +118,18 @@ function Playground() {
             {buttonLabel()}
           </button>
         </div>
-        <div class="grid min-h-0 flex-1 grid-cols-2 gap-4">
+        <div class="grid min-h-0 flex-1 grid-cols-[220px_1fr_1fr] gap-4">
+          <div class="min-h-0 overflow-hidden rounded border border-background-offset">
+            {(() => {
+              const root = generateDirectoryTree(directoryListing, "demo");
+              return (
+                <FileTree
+                  root={root}
+                  defaultExpandedKeys={collectAllDirectoryKeys(root)}
+                />
+              );
+            })()}
+          </div>
           <div class="min-h-0 overflow-hidden rounded border border-background-offset">
             <Show
               when={Editor()}

@@ -1,0 +1,124 @@
+/*
+ * Folder and file icon classes using vscode icons.
+ * Ported from monaco-tree/src/assets/vscode-icons.css.
+ */
+
+.file-tree-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.file-tree-icon::before {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  content: "";
+}
+
+/* ============ FOLDER ICONS ============ */
+
+.file-tree-row .folder-icon::before {
+  background-image: url("/vscode-icons/default_folder.svg");
+}
+.file-tree-row.expanded .folder-icon::before {
+  background-image: url("/vscode-icons/default_folder_opened.svg");
+}
+
+.file-tree-row .folder_type_css::before {
+  background-image: url("/vscode-icons/folder_type_css.svg");
+}
+.file-tree-row.expanded .folder_type_css::before {
+  background-image: url("/vscode-icons/folder_type_css_opened.svg");
+}
+
+.file-tree-row .folder_type_js::before {
+  background-image: url("/vscode-icons/folder_type_js.svg");
+}
+.file-tree-row.expanded .folder_type_js::before {
+  background-image: url("/vscode-icons/folder_type_js_opened.svg");
+}
+
+.file-tree-row .folder_type_images::before {
+  background-image: url("/vscode-icons/folder_type_images.svg");
+}
+.file-tree-row.expanded .folder_type_images::before {
+  background-image: url("/vscode-icons/folder_type_images_opened.svg");
+}
+
+.file-tree-row .folder_type_public::before {
+  background-image: url("/vscode-icons/folder_type_public.svg");
+}
+.file-tree-row.expanded .folder_type_public::before {
+  background-image: url("/vscode-icons/folder_type_public_opened.svg");
+}
+
+.file-tree-row .folder_type_model::before {
+  background-image: url("/vscode-icons/folder_type_model.svg");
+}
+.file-tree-row.expanded .folder_type_model::before {
+  background-image: url("/vscode-icons/folder_type_model_opened.svg");
+}
+
+.file-tree-row .folder_type_controller::before {
+  background-image: url("/vscode-icons/folder_type_controller.svg");
+}
+.file-tree-row.expanded .folder_type_controller::before {
+  background-image: url("/vscode-icons/folder_type_controller_opened.svg");
+}
+
+.file-tree-row .folder_type_view::before {
+  background-image: url("/vscode-icons/folder_type_view.svg");
+}
+.file-tree-row.expanded .folder_type_view::before {
+  background-image: url("/vscode-icons/folder_type_view_opened.svg");
+}
+
+.file-tree-row .folder_type_template::before {
+  background-image: url("/vscode-icons/folder_type_template.svg");
+}
+.file-tree-row.expanded .folder_type_template::before {
+  background-image: url("/vscode-icons/folder_type_template_opened.svg");
+}
+
+/* ============ FILE ICONS ============ */
+
+.file_type_html::before {
+  background-image: url("/vscode-icons/file_type_html.svg");
+}
+.file_type_js::before {
+  background-image: url("/vscode-icons/file_type_js.svg");
+}
+.file_type_css::before {
+  background-image: url("/vscode-icons/file_type_css.svg");
+}
+.file_type_text::before {
+  background-image: url("/vscode-icons/file_type_text.svg");
+}
+.file_type_json::before {
+  background-image: url("/vscode-icons/file_type_json.svg");
+}
+.file_type_image::before {
+  background-image: url("/vscode-icons/file_type_image.svg");
+}
+.file_type_favicon::before {
+  background-image: url("/vscode-icons/file_type_favicon.svg");
+}
+.file_type_markdown::before {
+  background-image: url("/vscode-icons/file_type_markdown.svg");
+}
+.file_type_npm::before {
+  background-image: url("/vscode-icons/file_type_npm.svg");
+}
+.file_type_license::before {
+  background-image: url("/vscode-icons/file_type_license.svg");
+}
+.file_type_java::before {
+  background-image: url("/vscode-icons/file_type_java.svg");
+}

@@ -130,6 +130,29 @@ function AITransparency() {
             </h2>
             <ul class="space-y-5">
               <TransparencyLogEntry
+                date="2026-11-17"
+                title="File tree component (ported from monaco-tree)."
+              >
+                Ported the{" "}
+                <a
+                  class="underline"
+                  href="https://github.com/BlueMagnificent/monaco-tree"
+                >
+                  monaco-tree
+                </a>{" "}
+                React proof-of-concept into a Solid component living at
+                <code> web/src/components/FileTree</code>. The data model,
+                directory-tree generator, file-icon mapping, drag-and-drop
+                rules, and the vscode-icons SVG set were ported from the
+                original; the tree widget itself is reimplemented in Solid
+                against the app's Tailwind theme (the upstream relied on
+                internal monaco 0.20 APIs that no longer exist in 0.57).
+                Filesystem mutations are left as callbacks — the component
+                emits intent rather than persisting anything. Headline
+                deliverable is a Storybook file with 17 stories for visual
+                fidelity.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
                 date="2026-11-16"
                 title="Playground compile + run moved off the main thread."
               >
