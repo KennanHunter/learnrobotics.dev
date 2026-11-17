@@ -1,6 +1,7 @@
 /// <reference lib="webworker" />
-import { setLogHook, runClasses } from "~/lib/compiler";
+import { setLogHook, runClasses } from "~/lib/runtime";
 import { compileJava, type Diagnostic } from "~/lib/teavm";
+import { ensureBundle } from "~/lib/bundles";
 
 export type RunRequest = {
   type: "run";
@@ -8,11 +9,15 @@ export type RunRequest = {
 };
 
 export type RunEvent =
-  | { type: "phase"; phase: "compiling" | "running" }
+  | { type: "phase"; phase: "fetching-deps" | "compiling" | "running" }
   | { type: "log"; message: string }
   | { type: "diagnostics"; diagnostics: Diagnostic[] }
   | { type: "done"; ok: true }
-  | { type: "error"; stage: "compile" | "run" | "pick-main" | "unknown"; message: string };
+  | {
+      type: "error";
+      stage: "fetch-deps" | "compile" | "run" | "pick-main" | "unknown";
+      message: string;
+    };
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -33,6 +38,22 @@ function pickMainClass(
 ctx.addEventListener("message", async (event: MessageEvent<RunRequest>) => {
   const req = event.data;
   if (!req || req.type !== "run") return;
+
+  let jdk: { mountPath: string; classpath: string[] };
+  try {
+    ctx.postMessage({
+      type: "phase",
+      phase: "fetching-deps",
+    } satisfies RunEvent);
+    jdk = await ensureBundle("jdk");
+  } catch (err) {
+    ctx.postMessage({
+      type: "error",
+      stage: "fetch-deps",
+      message: err instanceof Error ? err.message : String(err),
+    } satisfies RunEvent);
+    return;
+  }
 
   try {
     ctx.postMessage({ type: "phase", phase: "compiling" } satisfies RunEvent);
@@ -69,7 +90,12 @@ ctx.addEventListener("message", async (event: MessageEvent<RunRequest>) => {
     }
 
     ctx.postMessage({ type: "phase", phase: "running" } satisfies RunEvent);
-    const result = await runClasses(compiled.classes, mainClass);
+    const result = await runClasses({
+      javaHome: jdk.mountPath,
+      classpath: jdk.classpath,
+      classes: compiled.classes,
+      mainClass,
+    });
     if (!result.ok) {
       ctx.postMessage({
         type: "error",

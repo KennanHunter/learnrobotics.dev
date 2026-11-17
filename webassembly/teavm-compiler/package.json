@@ -13,6 +13,6 @@
     "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
   },
   "dependencies": {
-    "aws4fetch": "^1.0.20"
+    "@learnrobotics/bundling": "workspace:*"
   }
 }

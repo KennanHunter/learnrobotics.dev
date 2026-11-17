@@ -24,7 +24,8 @@
   "dependencies": {
     "@bytecodealliance/preview2-shim": "^0.31.1",
     "@inlang/paraglide-js": "^3.2.2",
-    "@learnrobotics/compiler": "workspace:*",
+    "@learnrobotics/bundling": "workspace:*",
+    "@learnrobotics/runtime": "workspace:*",
     "@learnrobotics/teavm-compiler": "workspace:*",
     "@monaco-editor/loader": "^1.7.0",
     "@tanstack/solid-router": "1.170.39",

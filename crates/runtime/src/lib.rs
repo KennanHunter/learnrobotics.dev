@@ -18,10 +18,10 @@ use tracing_subscriber::prelude::*;
 
 wit_bindgen::generate!({
     path: "wit",
-    world: "compiler",
+    world: "runtime",
 });
 
-use learnrobotics::compiler::host;
+use learnrobotics::runtime::host;
 
 struct Component;
 
@@ -39,9 +39,14 @@ impl Guest for Component {
         run_compile(&source)
     }
 
-    fn run(classes: Vec<(String, Vec<u8>)>, main_class: String) -> Result<(), String> {
+    fn run(
+        java_home: String,
+        classpath: Vec<String>,
+        user_classes: Vec<(String, Vec<u8>)>,
+        main_class: String,
+    ) -> Result<(), String> {
         init_logging();
-        run_classes(classes, &main_class)
+        run_classes(&java_home, &classpath, user_classes, &main_class)
     }
 }
 
@@ -74,38 +79,51 @@ async fn compile_async(source: &str) -> Result<Vec<u8>, String> {
         .ok_or_else(|| format!("compiled output missing class {class_name}"))
 }
 
-fn run_classes(classes: Vec<(String, Vec<u8>)>, main_class: &str) -> Result<(), String> {
+fn run_classes(
+    java_home: &str,
+    classpath: &[String],
+    user_classes: Vec<(String, Vec<u8>)>,
+    main_class: &str,
+) -> Result<(), String> {
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .map_err(|e| e.to_string())?;
-    runtime.block_on(run_classes_async(classes, main_class))
+    runtime.block_on(run_classes_async(java_home, classpath, user_classes, main_class))
 }
 
 async fn run_classes_async(
-    classes: Vec<(String, Vec<u8>)>,
+    java_home: &str,
+    classpath: &[String],
+    user_classes: Vec<(String, Vec<u8>)>,
     main_class: &str,
 ) -> Result<(), String> {
-    let memory = Memory::new("teavm-output");
-    for (name, bytes) in &classes {
+    let memory = Memory::new("user-classes");
+    for (name, bytes) in &user_classes {
         tracing::debug!(
             target: env!("CARGO_PKG_NAME"),
             class = %name,
             bytes = bytes.len(),
-            "registering teavm class",
+            "registering user class",
         );
         memory.add_class(bytes).await.map_err(|e| e.to_string())?;
     }
-    let class_path = ClassPath::new(vec![ClassPathEntry::Memory(memory)]);
+    let mut entries: Vec<ClassPathEntry> =
+        classpath.iter().map(ClassPathEntry::new).collect();
+    entries.push(ClassPathEntry::Memory(memory));
+
     let configuration = ConfigurationBuilder::new()
-        .class_path(class_path)
+        .java_home(std::path::PathBuf::from(java_home))
+        .class_path(ClassPath::new(entries))
         .main_class(main_class)
         .build()
         .map_err(|e| e.to_string())?;
     tracing::info!(
         target: env!("CARGO_PKG_NAME"),
+        java_home = %java_home,
+        classpath_entries = classpath.len(),
+        user_classes = user_classes.len(),
         main_class = %main_class,
-        classes = classes.len(),
         "booting ristretto VM",
     );
     let vm = VM::new(configuration).await.map_err(|e| e.to_string())?;

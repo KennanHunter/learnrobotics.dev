@@ -10,7 +10,7 @@ const wasmPath = join(
   "target",
   "wasm32-wasip2",
   "release",
-  "compiler.wasm",
+  "runtime.wasm",
 );
 const dist = join(pkg, "dist");
 
@@ -18,7 +18,7 @@ rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 
 const { files } = await transpileBytes(readFileSync(wasmPath), {
-  name: "compiler",
+  name: "runtime",
   instantiation: "async",
   asyncMode: "sync",
   wasiShim: true,
@@ -33,4 +33,4 @@ for (const [name, bytes] of Object.entries(files)) {
   writeFileSync(out, bytes);
 }
 
-console.log(`Transpiled compiler component to ${dist}`);
+console.log(`Transpiled runtime component to ${dist}`);

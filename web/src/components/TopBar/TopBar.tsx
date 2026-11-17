@@ -38,6 +38,15 @@ export function TopBar() {
         <EnvironmentBadge />
       </div>
       <div class="flex items-center gap-3">
+        <a
+          href="https://github.com/kennanhunter/learnrobotics.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View source on GitHub"
+          class="rounded border border-background-offset p-1.5 text-lg hover:bg-background-offset"
+        >
+          <AiFillGithub />
+        </a>
         <ThemeToggle />
         <Show
           when={session() && !session()!.isAnonymous}

@@ -1,14 +1,19 @@
-import coreUrl from "@learnrobotics/compiler/compiler.core.wasm?url";
-import core2Url from "@learnrobotics/compiler/compiler.core2.wasm?url";
-import core3Url from "@learnrobotics/compiler/compiler.core3.wasm?url";
+import coreUrl from "@learnrobotics/runtime/runtime.core.wasm?url";
+import core2Url from "@learnrobotics/runtime/runtime.core2.wasm?url";
+import core3Url from "@learnrobotics/runtime/runtime.core3.wasm?url";
 import { logger } from "~/lib/logger";
 
-const log = logger.child({ scope: "compiler" });
+const log = logger.child({ scope: "runtime" });
 
-type CompilerRoot = {
+type RuntimeRoot = {
   ping(): void;
   compile(source: string): Uint8Array;
-  run(classes: [string, Uint8Array][], mainClass: string): void;
+  run(
+    javaHome: string,
+    classpath: string[],
+    userClasses: [string, Uint8Array][],
+    mainClass: string,
+  ): void;
   readonly _util: { stop(): void; whenIdle(): Promise<void> };
 };
 
@@ -86,33 +91,33 @@ export function setLogHook(hook: LogHook): void {
 }
 
 const coreModuleUrls: Record<string, string> = {
-  "compiler.core.wasm": coreUrl,
-  "compiler.core2.wasm": core2Url,
-  "compiler.core3.wasm": core3Url,
+  "runtime.core.wasm": coreUrl,
+  "runtime.core2.wasm": core2Url,
+  "runtime.core3.wasm": core3Url,
 };
 
-let cached: Promise<CompilerRoot> | undefined;
+let cached: Promise<RuntimeRoot> | undefined;
 
-export function getCompiler(): Promise<CompilerRoot> {
+export function getRuntime(): Promise<RuntimeRoot> {
   if (typeof WebAssembly === "undefined") {
     return Promise.reject(
-      new Error("compiler requires a WebAssembly-capable runtime"),
+      new Error("runtime requires a WebAssembly-capable runtime"),
     );
   }
   if (cached) {
-    log.debug("getCompiler: returning cached instance");
+    log.debug("getRuntime: returning cached instance");
   } else {
-    log.info({ coreUrl }, "getCompiler: starting instantiation");
-    cached = instantiateCompiler();
+    log.info({ coreUrl }, "getRuntime: starting instantiation");
+    cached = instantiateRuntime();
   }
   return cached;
 }
 
-async function instantiateCompiler(): Promise<CompilerRoot> {
+async function instantiateRuntime(): Promise<RuntimeRoot> {
   const t0 = performance.now();
-  log.debug("importing @learnrobotics/compiler + WASI shim");
+  log.debug("importing @learnrobotics/runtime + WASI shim");
   const [{ instantiate }, { WASIShim }, cli] = await Promise.all([
-    import("@learnrobotics/compiler"),
+    import("@learnrobotics/runtime"),
     import("@bytecodealliance/preview2-shim/instantiation"),
     import("@bytecodealliance/preview2-shim/cli"),
   ]);
@@ -126,7 +131,7 @@ async function instantiateCompiler(): Promise<CompilerRoot> {
 
   const imports = {
     ...new WASIShim().getImportObject(),
-    "learnrobotics:compiler/host": {
+    "learnrobotics:runtime/host": {
       log: (message: string) => logHook(message),
     },
   };
@@ -160,35 +165,49 @@ async function instantiateCompiler(): Promise<CompilerRoot> {
     const root = (await instantiate(
       getCoreModule as never,
       imports as never,
-    )) as CompilerRoot;
-    log.info({ ms: Math.round(performance.now() - t0) }, "compiler ready");
+    )) as RuntimeRoot;
+    log.info({ ms: Math.round(performance.now() - t0) }, "runtime ready");
     return root;
   } catch (err) {
-    log.error({ err }, "compiler instantiation failed");
+    log.error({ err }, "runtime instantiation failed");
     cached = undefined;
     throw err;
   }
 }
 
 export async function ping(): Promise<void> {
-  const root = await getCompiler();
+  const root = await getRuntime();
   log.info("ping: invoking");
   root.ping();
 }
 
 export type RunResult = { ok: true } | { ok: false; error: string };
 
-export async function runClasses(
-  classes: { name: string; bytes: Uint8Array }[],
-  mainClass: string,
-): Promise<RunResult> {
-  const root = await getCompiler();
+export type RunArgs = {
+  javaHome: string;
+  classpath: string[];
+  classes: { name: string; bytes: Uint8Array }[];
+  mainClass: string;
+};
+
+export async function runClasses(args: RunArgs): Promise<RunResult> {
+  const root = await getRuntime();
   const start = performance.now();
-  log.info({ classes: classes.length, mainClass }, "runClasses: invoking");
+  log.info(
+    {
+      javaHome: args.javaHome,
+      classpathEntries: args.classpath.length,
+      classes: args.classes.length,
+      mainClass: args.mainClass,
+    },
+    "runClasses: invoking",
+  );
   try {
     root.run(
-      classes.map((c) => [c.name, c.bytes]),
-      mainClass,
+      args.javaHome,
+      args.classpath,
+      args.classes.map((c) => [c.name, c.bytes]),
+      args.mainClass,
     );
     log.info({ ms: Math.round(performance.now() - start) }, "runClasses: ok");
     return { ok: true };
@@ -203,7 +222,7 @@ export type CompileResult =
   { ok: true; bytes: Uint8Array } | { ok: false; error: string };
 
 export async function compileJava(source: string): Promise<CompileResult> {
-  const root = await getCompiler();
+  const root = await getRuntime();
   const start = performance.now();
   log.info({ sourceBytes: source.length }, "compileJava: invoking compile");
   try {

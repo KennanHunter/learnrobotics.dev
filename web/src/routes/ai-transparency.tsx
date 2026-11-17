@@ -131,6 +131,70 @@ function AITransparency() {
             <ul class="space-y-5">
               <TransparencyLogEntry
                 date="2026-11-17"
+                title="Admin users page: search + per-user detail dropdown."
+              >
+                The <code>/admin/users</code> route now accepts an optional{" "}
+                <code>?q=</code> search param that filters by name, email,
+                or user id (server-side LIKE, escaped). Rows are clickable
+                and expand inline to a three-column detail panel: identity
+                (id, verified, timestamps), linked accounts + user config,
+                and session activity (active count, last-seen, 10 most
+                recent sessions with IP/UA/expiry). Powered by a new{" "}
+                <code>getUserDetails</code> server function in{" "}
+                <code>web/src/server/admin.ts</code>; the virtualizer now
+                measures per-row so expanded entries push subsequent rows
+                down instead of overlapping.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-17"
+                title="GitHub repo link in the top bar."
+              >
+                Added a repository link (<code>AiFillGithub</code> icon,
+                same button styling as the theme toggle) immediately left
+                of the theme toggle in <code>TopBar</code>, pointing at{" "}
+                <code>github.com/kennanhunter/learnrobotics.dev</code>.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-17"
+                title="Shared bundling package + admin bundle inventory."
+              >
+                Extracted R2 primitives (creds, AWS client, HEAD-checked
+                upload, signed GET, ListObjectsV2) into a new workspace
+                package <code>@learnrobotics/bundling</code> at{" "}
+                <code>packages/bundling</code>. Both the teavm-javac mirror
+                and the runtime-bundle pipeline now call into the same
+                helpers; their <code>config.mjs</code> /<code> upload.mjs</code>{" "}
+                / <code>stage.mjs</code> dropped to a dozen lines each.
+                Added an admin panel at <code>/admin/bundles</code> that
+                lists every bundle object in R2 — kind, pin, filename,
+                size, upload time, ETag — grouped by source prefix, backed
+                by a new <code>listBucketObjects</code> helper in{" "}
+                <code>web/src/server/r2.ts</code>.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-17"
+                title="JDK and runtime-dependency pipeline on R2."
+              >
+                Renamed <code>crates/compiler</code> + the matching
+                <code> @learnrobotics/compiler</code> JS package to
+                <code> runtime</code> — the ristretto-backed wasm actually
+                runs classes rather than producing them, and teavm already
+                owns the Java-to-class step. Taught the runtime to accept a{" "}
+                <code>java_home</code> preopen path + extra classpath
+                entries so it stops trying to download a JDK over{" "}
+                <code>wasi:http</code> (which the browser's preview2 shim
+                doesn't serve). Added a general, pinned "runtime bundle"
+                pipeline: <code>webassembly/runtime-bundles</code> builds
+                and pushes archives to R2 under
+                <code> bundles/&lt;kind&gt;/&lt;pin&gt;/</code>; the browser
+                lib at <code>web/src/lib/bundles</code> fetches via
+                <code> /api/bundles/:kind/:pin</code>, caches the bytes in
+                IndexedDB, un-tars into the WASI virtual FS, and hands the
+                mount paths to the runtime. JDK is the first bundle; WPILib
+                and custom façades plug into the same kind/pin shape.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-17"
                 title="File tree component (ported from monaco-tree)."
               >
                 Ported the{" "}

@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("teavm playground compile", () => {
-  // Pipeline is wired: teavm compile → ristretto run. The ristretto side
-  // hangs on JDK bootstrap over wasi:http — see
-  // development/agent-output/compiler-wasm-performance.md. Unskip once that's
-  // addressed (ship the JDK, or env-var it to a sideloaded blob).
+  // Pipeline is wired: teavm compile → ristretto run against a preopen JDK
+  // staged from an R2-hosted bundle (web/src/lib/bundles). Unskip once a
+  // JDK bundle has been built and uploaded:
+  //   just build-jdk-bundle && just upload-bundles
   test.fixme("compiles hello-world and attempts ristretto run", async ({
     page,
   }) => {

@@ -25,12 +25,23 @@ build-teavm:
 upload-teavm:
     node webassembly/teavm-compiler/scripts/upload.mjs
 
-# Compile the compiler crate to wasm and transpile it into the JS package.
+# Build the Corretto-derived JDK runtime bundle into
+# webassembly/runtime-bundles/dist/jdk/<pin>/bundle.tar.gz. One-shot: run
+# when you bump JDK_PIN in scripts/config.mjs, then `just upload-bundles`.
+build-jdk-bundle:
+    node webassembly/runtime-bundles/scripts/build-jdk.mjs
+
+# Push any locally-built runtime bundles to R2. Idempotent: skips pins that
+# already exist upstream.
+upload-bundles:
+    node webassembly/runtime-bundles/scripts/upload.mjs
+
+# Compile the runtime crate to wasm and transpile it into the JS package.
 build: build-teavm
     RUSTC_BOOTSTRAP=1 \
     CARGO_TARGET_WASM32_WASIP2_RUSTFLAGS="-C link-arg=-zstack-size=8388608" \
-    cargo build --release -p compiler --target wasm32-wasip2
-    pnpm --filter @learnrobotics/compiler build
+    cargo build --release -p runtime --target wasm32-wasip2
+    pnpm --filter @learnrobotics/runtime build
 
 # Run the web dev server (SSR on workerd via vite).
 dev:
@@ -51,5 +62,5 @@ format:
 
 clean:
     cargo clean
-    pnpm --filter @learnrobotics/compiler clean
+    pnpm --filter @learnrobotics/runtime clean
     pnpm --filter @learnrobotics/teavm-compiler clean

@@ -1,6 +1,7 @@
 packages:
   - web
   - webassembly/*
+  - packages/*
 allowBuilds:
   esbuild: true
   sharp: true

@@ -62,6 +62,11 @@ export default defineConfig({
       "~": "/src",
     },
   },
+  worker: {
+    // The code-runner worker uses dynamic imports (bundle staging lazy-loads
+    // preview2-shim/filesystem); Rollup refuses IIFE/UMD for code-splitting.
+    format: "es",
+  },
   optimizeDeps: {
     exclude: ["solid-icons", "solid-icons/md", "solid-icons/ai"],
   },

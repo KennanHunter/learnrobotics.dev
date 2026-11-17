@@ -60,7 +60,28 @@ export function FileTree(props: FileTreeProps) {
   const selected = () =>
     props.selectedKey === undefined ? internalSelected() : props.selectedKey;
 
-  const rows = createMemo<VisibleRow[]>(() => flattenVisible(props.root, expanded()));
+  // `<For>` reconciles by reference. `flattenVisible` returns fresh wrapper
+  // objects every call, so without this cache every expand/collapse would
+  // dispose + re-create every row — which races solid-dnd's draggable/
+  // droppable registry on the same ids and spams "Cannot remove nonexistent
+  // …" warnings. Caching wrappers keyed by `node.key` keeps object identity
+  // stable for unchanged rows.
+  const rowCache = new Map<string, VisibleRow>();
+  const rows = createMemo<VisibleRow[]>(() => {
+    const flat = flattenVisible(props.root, expanded());
+    const seen = new Set<string>();
+    const out = flat.map((r) => {
+      seen.add(r.node.key);
+      const cached = rowCache.get(r.node.key);
+      if (cached && cached.node === r.node && cached.depth === r.depth) {
+        return cached;
+      }
+      rowCache.set(r.node.key, r);
+      return r;
+    });
+    for (const k of rowCache.keys()) if (!seen.has(k)) rowCache.delete(k);
+    return out;
+  });
 
   let rootRef!: HTMLDivElement;
 

@@ -1,0 +1,17 @@
+package learnrobotics:runtime;
+
+interface host {
+    log: func(message: string);
+}
+
+world runtime {
+    import host;
+    export ping: func();
+    export compile: func(source: string) -> result<list<u8>, string>;
+    export run: func(
+        java-home: string,
+        classpath: list<string>,
+        user-classes: list<tuple<string, list<u8>>>,
+        main-class: string,
+    ) -> result<_, string>;
+}

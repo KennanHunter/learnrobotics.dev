@@ -1,0 +1,15 @@
+{
+  "name": "@learnrobotics/bundling",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./r2": "./src/r2.mjs",
+    "./key": "./src/key.mjs",
+    "./pins": "./src/pins.mjs"
+  },
+  "dependencies": {
+    "aws4fetch": "^1.0.20"
+  }
+}

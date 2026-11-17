@@ -6,16 +6,16 @@
           "target": "wasm32-wasip2",
           "allTargets": false,
           "extraEnv": {
-            "RUSTC_BOOTSTRAP": "1"
-          }
+            "RUSTC_BOOTSTRAP": "1",
+          },
         },
         "check": {
           "targets": ["wasm32-wasip2"],
           "extraEnv": {
-            "RUSTC_BOOTSTRAP": "1"
-          }
-        }
-      }
-    }
-  }
+            "RUSTC_BOOTSTRAP": "1",
+          },
+        },
+      },
+    },
+  },
 }

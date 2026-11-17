@@ -306,18 +306,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "compiler"
-version = "0.1.0"
-dependencies = [
- "ristretto_classloader",
- "ristretto_vm",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "wit-bindgen",
-]
-
-[[package]]
 name = "console"
 version = "0.16.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2688,6 +2676,18 @@ dependencies = [
  "tokio",
  "tracing",
  "zerocopy",
+]
+
+[[package]]
+name = "runtime"
+version = "0.1.0"
+dependencies = [
+ "ristretto_classloader",
+ "ristretto_vm",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "wit-bindgen",
 ]
 
 [[package]]

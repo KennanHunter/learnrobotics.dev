@@ -1,46 +1,36 @@
 // Fetch the pinned teavm-javac artifacts from R2 and stage them into dist/.
 // The pin lives in config.mjs; upload.mjs is what puts a new pin in R2.
-// Reads R2 creds from env or web/.dev.vars — a signed GET per file.
+// Reads R2 creds from env or web/.dev.vars.
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { AwsClient } from "aws4fetch";
+import { awsFromEnvOrDevVars, fetchObject } from "@learnrobotics/bundling";
 import {
   R2_BUCKET,
   TEAVM_FILES,
   TEAVM_PIN,
-  r2Endpoint,
-  readR2Credentials,
-  teavmObjectKey,
+  teavmKey,
 } from "./config.mjs";
 
 const pkg = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(pkg, "dist");
 
-const creds = readR2Credentials();
-const aws = new AwsClient({
-  accessKeyId: creds.accessKeyId,
-  secretAccessKey: creds.secretAccessKey,
-  service: "s3",
-  region: "auto",
-});
-
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist, { recursive: true });
 
+const aws = awsFromEnvOrDevVars();
 console.log(`Staging teavm pin "${TEAVM_PIN}" from ${R2_BUCKET}`);
 
 const results = await Promise.all(
-  TEAVM_FILES.map(async (name) => {
-    const key = teavmObjectKey(name);
-    const url = `${r2Endpoint()}/${R2_BUCKET}/${key}`;
-    const resp = await aws.fetch(url);
-    if (!resp.ok) {
-      return { name, key, ok: false, status: resp.status };
+  TEAVM_FILES.map(async ({ name }) => {
+    const key = teavmKey(name);
+    try {
+      const bytes = await fetchObject({ aws, bucket: R2_BUCKET, key });
+      writeFileSync(join(dist, name), bytes);
+      return { name, key, ok: true, bytes: bytes.length };
+    } catch (err) {
+      return { name, key, ok: false, error: err.message };
     }
-    const bytes = new Uint8Array(await resp.arrayBuffer());
-    writeFileSync(join(dist, name), bytes);
-    return { name, key, ok: true, bytes: bytes.length };
   }),
 );
 
@@ -50,9 +40,7 @@ for (const r of results) {
     console.log(`  ${r.name}  (${r.bytes} bytes)`);
   } else {
     failed = true;
-    console.error(
-      `  ${r.name}  FAILED  HTTP ${r.status}  r2://${R2_BUCKET}/${r.key}`,
-    );
+    console.error(`  ${r.name}  FAILED  ${r.error}  r2://${R2_BUCKET}/${r.key}`);
   }
 }
 

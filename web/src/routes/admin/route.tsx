@@ -8,11 +8,12 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-type TabId = "stats" | "users";
+type TabId = "stats" | "users" | "bundles";
 
 const TABS: { id: TabId; label: () => string; to: string }[] = [
   { id: "stats", label: () => m.admin_tab_stats(), to: "/admin/stats" },
   { id: "users", label: () => m.admin_tab_users(), to: "/admin/users" },
+  { id: "bundles", label: () => "Bundles", to: "/admin/bundles" },
 ];
 
 function AdminLayout() {

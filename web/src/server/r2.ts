@@ -14,6 +14,16 @@ const ARTIFACT_KINDS = {
     maxBytes: 64 * 1024 * 1024,
     visibility: "public",
   },
+  // Pinned Java dependency bundles (JDK, WPILib, façades) fed to ristretto
+  // via the preopen filesystem. Keyed by `<kind>/<pin>/bundle.tar.gz` under
+  // this prefix. Built + uploaded by webassembly/runtime-bundles.
+  "runtime-bundle": {
+    bucket: "learn-robotics-dev-storage",
+    prefix: "bundles/",
+    contentTypes: ["application/gzip"],
+    maxBytes: 256 * 1024 * 1024,
+    visibility: "public",
+  },
 } as const satisfies Record<string, ArtifactKindConfig>;
 
 type ArtifactKindConfig = {
@@ -159,4 +169,68 @@ export function getArtifactKindConfig<K extends ArtifactKind>(
   kind: K,
 ): (typeof ARTIFACT_KINDS)[K] {
   return ARTIFACT_KINDS[kind];
+}
+
+export type R2Object = {
+  key: string;
+  size: number;
+  lastModified: string | undefined;
+  etag: string | undefined;
+};
+
+// Admin-only. Lists objects under a prefix in an arbitrary bucket; follows
+// the ListObjectsV2 continuation tokens until exhausted. Prefer this over
+// exposing the raw AWS client because it also encodes the account-id +
+// signer convention our other helpers use.
+export async function listBucketObjects(options: {
+  bucket: string;
+  prefix?: string;
+}): Promise<R2Object[]> {
+  const env = getEnv();
+  const client = awsClient();
+  const out: R2Object[] = [];
+  let continuationToken: string | undefined;
+  do {
+    const url = new URL(
+      `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${options.bucket}`,
+    );
+    url.searchParams.set("list-type", "2");
+    if (options.prefix) url.searchParams.set("prefix", options.prefix);
+    if (continuationToken) {
+      url.searchParams.set("continuation-token", continuationToken);
+    }
+    const resp = await client.fetch(url.toString());
+    if (!resp.ok) {
+      throw new Error(
+        `List ${options.prefix ?? "/"} failed: HTTP ${resp.status} ${await resp.text()}`,
+      );
+    }
+    const xml = await resp.text();
+    for (const item of parseContents(xml)) out.push(item);
+    continuationToken = tag(xml, "NextContinuationToken");
+  } while (continuationToken);
+  return out;
+}
+
+function parseContents(xml: string): R2Object[] {
+  const items: R2Object[] = [];
+  const re = /<Contents>([\s\S]*?)<\/Contents>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(xml))) {
+    const block = m[1]!;
+    const key = tag(block, "Key");
+    if (!key) continue;
+    items.push({
+      key,
+      size: Number(tag(block, "Size") ?? "0"),
+      lastModified: tag(block, "LastModified"),
+      etag: tag(block, "ETag")?.replace(/^"|"$/g, ""),
+    });
+  }
+  return items;
+}
+
+function tag(xml: string, name: string): string | undefined {
+  const m = xml.match(new RegExp(`<${name}>([\\s\\S]*?)<\\/${name}>`));
+  return m ? m[1] : undefined;
 }

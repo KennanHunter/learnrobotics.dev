@@ -28,6 +28,12 @@ importers:
         specifier: ^5.6.0
         version: 5.9.3
 
+  packages/bundling:
+    dependencies:
+      aws4fetch:
+        specifier: ^1.0.20
+        version: 1.0.20
+
   web:
     dependencies:
       '@bytecodealliance/preview2-shim':
@@ -36,9 +42,12 @@ importers:
       '@inlang/paraglide-js':
         specifier: ^3.2.2
         version: 3.2.2(typescript@7.0.2)(vite@7.3.8(@types/node@26.6.6)(jiti@2.7.0)(lightningcss@1.33.0)(terser@5.51.2)(tsx@4.23.15))
-      '@learnrobotics/compiler':
+      '@learnrobotics/bundling':
         specifier: workspace:*
-        version: link:../webassembly/compiler
+        version: link:../packages/bundling
+      '@learnrobotics/runtime':
+        specifier: workspace:*
+        version: link:../webassembly/runtime
       '@learnrobotics/teavm-compiler':
         specifier: workspace:*
         version: link:../webassembly/teavm-compiler
@@ -170,17 +179,23 @@ importers:
         specifier: ^4.162.0
         version: 4.162.0(@cloudflare/workers-types@5.20261114.1)(@types/node@26.6.6)
 
-  webassembly/compiler:
+  webassembly/runtime:
     devDependencies:
       '@bytecodealliance/jco-transpile':
         specifier: 0.24.0
         version: 0.24.0
 
+  webassembly/runtime-bundles:
+    dependencies:
+      '@learnrobotics/bundling':
+        specifier: workspace:*
+        version: link:../../packages/bundling
+
   webassembly/teavm-compiler:
     dependencies:
-      aws4fetch:
-        specifier: ^1.0.20
-        version: 1.0.20
+      '@learnrobotics/bundling':
+        specifier: workspace:*
+        version: link:../../packages/bundling
 
 packages:
 

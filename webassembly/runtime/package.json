@@ -1,14 +1,14 @@
 {
-  "name": "@learnrobotics/compiler",
+  "name": "@learnrobotics/runtime",
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./dist/compiler.js",
-  "types": "./dist/compiler.d.ts",
+  "main": "./dist/runtime.js",
+  "types": "./dist/runtime.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/compiler.d.ts",
-      "import": "./dist/compiler.js"
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
     },
     "./*": "./dist/*"
   },
