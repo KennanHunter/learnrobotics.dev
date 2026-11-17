@@ -9,5 +9,5 @@
 
 export const TEAVM_PIN = "2026-11-16";
 
-export const JDK_VERSION = "25.0.5.11.1";
+export const JDK_VERSION = "25.0.5.1.2";
 export const JDK_PIN = `corretto-${JDK_VERSION}`;
