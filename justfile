@@ -6,12 +6,12 @@ default: install build
 install:
     pnpm install
 
-# Rust unit tests across the workspace (wasm32-wasip2).
+# Rust tests. `runtime`'s component glue can't be instantiated by the default
+# test harness (its WIT `host::log` import is unsatisfied), so tests live in
+# `tests/` and run on the host, where the component module is cfg'd out and
+# only pure helpers compile. `profile` is a host-only tool and is excluded.
 test:
-    RUSTC_BOOTSTRAP=1 \
-    CARGO_TARGET_WASM32_WASIP2_RUSTFLAGS="-C link-arg=-zstack-size=8388608" \
-    CARGO_TARGET_WASM32_WASIP2_RUNNER=wasmtime \
-    cargo test --workspace --exclude profile --target wasm32-wasip2
+    cargo test --workspace --exclude profile
 
 # All bundle pipeline steps are subcommands of the `bundling` CLI
 # (packages/bundling). Pins live in packages/bundling/src/pins.ts;

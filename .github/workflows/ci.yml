@@ -35,15 +35,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.99.1
-          targets: wasm32-wasip2
 
       - uses: Swatinem/rust-cache@v2
 
-      - uses: taiki-e/install-action@v2
-        with:
-          tool: just,wasmtime
+      - uses: taiki-e/install-action@just
 
-      - name: Run tests (wasm32-wasip2)
+      - name: Run tests
         run: just test
 
   build:
@@ -62,16 +59,16 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Build compiler wasm (release)
+      - name: Build runtime wasm (release)
         env:
           RUSTC_BOOTSTRAP: "1"
           CARGO_TARGET_WASM32_WASIP2_RUSTFLAGS: "-C link-arg=-zstack-size=8388608"
-        run: cargo build --release -p compiler --target wasm32-wasip2
+        run: cargo build --release -p runtime --target wasm32-wasip2
 
       - uses: actions/upload-artifact@v4
         with:
-          name: compiler-wasm
-          path: target/wasm32-wasip2/release/compiler.wasm
+          name: runtime-wasm
+          path: target/wasm32-wasip2/release/runtime.wasm
           if-no-files-found: error
 
   playwright:
@@ -95,14 +92,14 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: compiler-wasm
+          name: runtime-wasm
           path: target/wasm32-wasip2/release
 
       - name: Install JS deps
         run: pnpm install --frozen-lockfile
 
-      - name: Transpile compiler component
-        run: pnpm --filter '@learnrobotics/compiler' build
+      - name: Transpile runtime component
+        run: pnpm --filter '@learnrobotics/runtime' build
 
       - name: Cache Playwright browsers
         uses: actions/cache@v4
@@ -146,14 +143,14 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: compiler-wasm
+          name: runtime-wasm
           path: target/wasm32-wasip2/release
 
       - name: Install JS deps
         run: pnpm install --frozen-lockfile
 
-      - name: Transpile compiler component
-        run: pnpm --filter '@learnrobotics/compiler' build
+      - name: Transpile runtime component
+        run: pnpm --filter '@learnrobotics/runtime' build
 
       # Requires repo secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
       - name: Deploy preview (main)

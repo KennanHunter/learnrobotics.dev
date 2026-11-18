@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./code-editor": "./src/CodeEditor/index.ts",
+    "./code-editor/bind-recorder": "./src/CodeEditor/bind-recorder.ts",
+    "./code-editor/types": "./src/CodeEditor/types.ts",
     "./mdx": "./src/Mdx/index.ts",
     "./mdx-provider": "./src/Mdx/provider.tsx",
     "./panels": "./src/Panels/index.ts",

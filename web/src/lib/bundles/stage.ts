@@ -6,7 +6,7 @@
 
 import type { TarFile } from "~/lib/bundles/tar";
 
-type FileData = { file: Uint8Array };
+type FileData = { source: Uint8Array };
 type DirData = { dir: Record<string, FileData | DirData> };
 type FsNode = FileData | DirData;
 
@@ -30,7 +30,7 @@ function placeFile(root: DirData, pathParts: string[], bytes: Uint8Array) {
   }
   const leaf = pathParts[pathParts.length - 1];
   if (!leaf) return;
-  node.dir[leaf] = { file: bytes };
+  node.dir[leaf] = { source: bytes };
 }
 
 function buildTree(files: TarFile[]): DirData {

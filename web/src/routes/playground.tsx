@@ -10,7 +10,7 @@ import { Dynamic } from "solid-js/web";
 import * as v from "valibot";
 import { TopBar } from "~/components/TopBar/TopBar";
 import type { MonacoEditorProps } from "@learnrobotics/editor/code-editor";
-import { bindRecorder } from "@learnrobotics/editor/code-editor";
+import { bindRecorder } from "@learnrobotics/editor/code-editor/bind-recorder";
 import { EventDispatcher } from "@learnrobotics/events";
 import { registerThemes } from "~/lib/monaco-themes";
 import { FileTree } from "~/components/FileTree";
@@ -127,6 +127,18 @@ function Playground() {
     } satisfies RunRequest);
   }
 
+  function onStop() {
+    // Terminating the worker is the only reliable way to interrupt a
+    // ristretto VM mid-execution — there's no in-band cancel path.
+    // The bundle cache in the fresh worker starts empty, so we drop
+    // bundleState back to "unknown" and let the next Run refetch
+    // (ensureBundle itself still dedups within a single worker).
+    worker?.terminate();
+    worker = null;
+    setRunState("idle");
+    setBundleState("unknown");
+  }
+
   function buttonLabel() {
     if (bundleState() === "fetching") return "Downloading dependencies…";
     if (bundleState() === "failed") return "Retry";
@@ -148,17 +160,29 @@ function Playground() {
           <h1 class="text-2xl font-semibold tracking-tight">
             {m.playground_heading()}
           </h1>
-          <button
-            type="button"
-            data-testid="playground-run"
-            data-bundle-state={bundleState()}
-            data-run-state={runState()}
-            disabled={isBusy()}
-            onClick={onRun}
-            class="rounded bg-primary px-4 py-2 text-sm text-background hover:opacity-80 disabled:opacity-60"
-          >
-            {buttonLabel()}
-          </button>
+          <div class="flex items-center gap-2">
+            <Show when={isBusy()}>
+              <button
+                type="button"
+                data-testid="playground-stop"
+                onClick={onStop}
+                class="rounded border border-background-offset px-4 py-2 text-sm hover:opacity-80"
+              >
+                Stop
+              </button>
+            </Show>
+            <button
+              type="button"
+              data-testid="playground-run"
+              data-bundle-state={bundleState()}
+              data-run-state={runState()}
+              disabled={isBusy()}
+              onClick={onRun}
+              class="rounded bg-primary px-4 py-2 text-sm text-background hover:opacity-80 disabled:opacity-60"
+            >
+              {buttonLabel()}
+            </button>
+          </div>
         </div>
         <div class="grid min-h-0 flex-1 grid-cols-[220px_1fr_1fr] gap-4">
           <div class="min-h-0 overflow-hidden rounded border border-background-offset">

@@ -6,6 +6,10 @@ publish = false
 
 [lib]
 crate-type = ["cdylib", "rlib"]
+# The wasm component imports host::log, which cargo's unit-test harness can't
+# satisfy. Integration tests in tests/ run on the host, where the component
+# module is cfg'd out and only pure helpers compile.
+test = false
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 ristretto_vm = { path = "../ristretto/ristretto_vm", default-features = false, features = [

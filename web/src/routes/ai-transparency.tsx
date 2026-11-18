@@ -141,6 +141,16 @@ function AITransparency() {
             <ul class="space-y-5">
               <TransparencyLogEntry
                 date="2026-11-18"
+                title="Playground Stop button."
+              >
+                Added a Stop button next to Run on <code>/playground</code>{" "}
+                that terminates the code-runner worker mid-execution. The
+                ristretto VM has no in-band cancel, so interrupting a
+                runaway program means tearing down the worker and letting
+                the next Run spin up a fresh one.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-18"
                 title="Content package + runtime markdown projection."
               >
                 Moved <code>/content</code> into its own workspace package
