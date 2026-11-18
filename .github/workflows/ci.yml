@@ -39,12 +39,9 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Install wasmtime
-        run: |
-          curl https://wasmtime.dev/install.sh -sSf | bash
-          echo "$HOME/.wasmtime/bin" >> "$GITHUB_PATH"
-
-      - uses: taiki-e/install-action@just
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just,wasmtime
 
       - name: Run tests (wasm32-wasip2)
         run: just test
