@@ -10,13 +10,8 @@ import {
 } from "solid-js";
 import { useNavigate, useSearch } from "@tanstack/solid-router";
 import { createVirtualizer } from "@tanstack/solid-virtual";
-import {
-  deleteUser,
-  getUserDetails,
-  listUsersPage,
-  type AdminUser,
-} from "~/server/admin";
-import { useSession } from "~/lib/session-context";
+import { useSession, type AdminUser } from "@learnrobotics/db";
+import { deleteUser, getUserDetails, listUsersPage } from "~/server/admin";
 import { m } from "~/paraglide/messages";
 
 const PAGE_SIZE = 50;

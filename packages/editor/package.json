@@ -11,17 +11,23 @@
     "./mdx": "./src/Mdx/index.ts",
     "./mdx-provider": "./src/Mdx/provider.tsx",
     "./panels": "./src/Panels/index.ts",
-    "./variants/reading": "./src/Variants/Reading/index.ts"
+    "./variants/reading": "./src/Variants/Reading/index.ts",
+    "./variants/java-code-runner": "./src/Variants/JavaCodeRunner/index.ts",
+    "./variants/markdown-runner": "./src/Variants/MarkdownRunner/index.ts",
+    "./variants/quiz": "./src/Variants/Quiz/index.ts"
   },
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@learnrobotics/content": "workspace:*",
     "@learnrobotics/events": "workspace:*",
     "@monaco-editor/loader": "^1.7.0",
+    "marked": "^18.2.1",
     "monaco-editor": "^0.57.0",
-    "solid-icons": "catalog:"
+    "solid-icons": "catalog:",
+    "solid-resizable-panels": "^0.5.4"
   },
   "peerDependencies": {
     "solid-js": "^1.9.0"

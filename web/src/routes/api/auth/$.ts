@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { getAuth } from "~/server/auth";
+import { getAuth } from "@learnrobotics/db/server";
 
 const handler = ({ request }: { request: Request }) =>
   getAuth().handler(request);

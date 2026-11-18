@@ -2,7 +2,7 @@ import { onCleanup, onMount, Show } from "solid-js";
 import { AiFillGithub } from "solid-icons/ai/AiFillGithub";
 import { AiOutlineInfoCircle } from "solid-icons/ai/AiOutlineInfoCircle";
 import { authClient } from "~/lib/auth-client";
-import { useSession } from "~/lib/session-context";
+import { useSession } from "@learnrobotics/db";
 import { m } from "~/paraglide/messages";
 import { localizeHref } from "~/paraglide/runtime";
 import { Logo } from "../Logo/Logo";
@@ -45,31 +45,31 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
       ref={headerEl}
       class="border-b border-background-offset"
     >
-      <div class="flex items-center justify-between gap-3 px-4 py-3">
-        <div class="flex items-center gap-4">
+      <div class="flex items-center justify-between gap-2.5 px-3 py-1.5">
+        <div class="flex items-center gap-3">
           <a href={localizeHref("/")} class="block text-inherit">
-            <Logo class="hidden h-8 w-auto sm:block" />
-            <LogoSquare class="h-8 w-8 sm:hidden" />
+            <Logo class="hidden h-[1.6rem] w-auto sm:block" />
+            <LogoSquare class="h-[1.6rem] w-[1.6rem] sm:hidden" />
           </a>
           <Show
             when={props.crumbs}
             fallback={
-              <div class="hidden items-center gap-4 sm:flex">
+              <div class="hidden items-center gap-3 sm:flex">
                 <a
                   href={localizeHref("/playground")}
-                  class="text-sm hover:underline"
+                  class="text-xs hover:underline"
                 >
                   {m.nav_playground()}
                 </a>
                 <a
                   href={localizeHref("/discord")}
-                  class="text-sm hover:underline"
+                  class="text-xs hover:underline"
                 >
                   {m.nav_discord()}
                 </a>
                 <a
                   href={localizeHref("/about")}
-                  class="text-sm hover:underline"
+                  class="text-xs hover:underline"
                 >
                   {m.nav_about()}
                 </a>
@@ -82,13 +82,13 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
           </Show>
           <EnvironmentBadge />
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
           <a
             href="https://github.com/kennanhunter/learnrobotics.dev"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="View source on GitHub"
-            class="rounded border border-background-offset p-1.5 text-lg hover:bg-background-offset"
+            class="rounded border border-background-offset p-1 text-base hover:bg-background-offset"
           >
             <AiFillGithub />
           </a>
@@ -96,12 +96,12 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
           <Show
             when={session() && !session()!.isAnonymous}
             fallback={
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5">
                 <button
-                  class="flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-background shadow-sm transition-all hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                  class="flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-medium text-background shadow-sm transition-all hover:bg-primary/90 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   onClick={onGithub}
                 >
-                  <AiFillGithub class="text-base" />
+                  <AiFillGithub class="text-sm" />
                   <span class="hidden sm:inline">
                     {m.nav_sign_in_github()}
                   </span>
@@ -109,10 +109,10 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
                 <div class="group relative flex items-center">
                   <button
                     type="button"
-                    class="flex items-center justify-center rounded-full p-1 text-foreground-muted transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    class="flex items-center justify-center rounded-full p-0.5 text-foreground-muted transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                     aria-label={m.nav_account_info_aria()}
                   >
-                    <AiOutlineInfoCircle class="text-lg" />
+                    <AiOutlineInfoCircle class="text-base" />
                   </button>
                   <div
                     role="tooltip"
@@ -129,25 +129,25 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
         </div>
       </div>
       <Show when={props.crumbs}>
-        <div class="flex items-center border-t border-background-offset/60 px-4 py-2 sm:hidden">
+        <div class="flex items-center border-t border-background-offset/60 px-3 py-1.5 sm:hidden">
           <BreadcrumbNav crumbs={props.crumbs!} />
         </div>
       </Show>
       <Show when={!props.crumbs}>
-        <div class="flex items-center gap-4 border-t border-background-offset/60 px-4 py-2 sm:hidden">
+        <div class="flex items-center gap-3 border-t border-background-offset/60 px-3 py-1.5 sm:hidden">
           <a
             href={localizeHref("/playground")}
-            class="text-sm hover:underline"
+            class="text-xs hover:underline"
           >
             {m.nav_playground()}
           </a>
           <a
             href={localizeHref("/discord")}
-            class="text-sm hover:underline"
+            class="text-xs hover:underline"
           >
             {m.nav_discord()}
           </a>
-          <a href={localizeHref("/about")} class="text-sm hover:underline">
+          <a href={localizeHref("/about")} class="text-xs hover:underline">
             {m.nav_about()}
           </a>
         </div>

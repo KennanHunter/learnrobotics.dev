@@ -1,7 +1,6 @@
 import { and, eq, lt } from "drizzle-orm";
-import { getDb } from "./db";
+import { getDb, user } from "@learnrobotics/db/server";
 import { getEnv } from "./env";
-import { user } from "./schema";
 import { logger } from "~/lib/logger";
 
 const log = logger.child({ scope: "cleanup" });

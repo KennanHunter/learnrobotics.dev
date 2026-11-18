@@ -1,19 +1,17 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { anonymous } from "better-auth/plugins";
-import { getDb } from "./db";
-import { getEnv } from "./env";
+import { getDb } from "./client";
+import { getDbEnv } from "./env";
 import { userConfig } from "./schema";
-import { logger } from "~/lib/logger";
+import { logger } from "./log";
+import { migrateProjectsOwner } from "./data/projects";
 
 const log = logger.child({ scope: "auth" });
 
-let _auth: ReturnType<typeof betterAuth> | undefined;
-
-export function getAuth() {
-  if (_auth) return _auth;
-  const env = getEnv();
-  _auth = betterAuth({
+function createAuth() {
+  const env = getDbEnv();
+  return betterAuth({
     baseURL: env.DEPLOYMENT_URL,
     secret: env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(getDb(), { provider: "sqlite" }),
@@ -35,9 +33,17 @@ export function getAuth() {
     },
     plugins: [
       anonymous({
-        onLinkAccount: async () => {
-          // No user-owned data to migrate yet. When courses add progress rows,
-          // move them here from anonymousUser.id → newUser.id.
+        onLinkAccount: async ({ anonymousUser, newUser }) => {
+          const linkLog = logger.child({ scope: "auth.onLinkAccount" });
+          const fromId = anonymousUser.user.id;
+          const toId = newUser.user.id;
+          const projects = await migrateProjectsOwner(fromId, toId);
+          linkLog.info(
+            { fromId, toId, projects },
+            "migrated anonymous user data",
+          );
+          // Future user-owned tables (course progress, submissions) should
+          // migrate here too, keyed on anonymousUser.user.id → newUser.user.id.
         },
       }),
     ],
@@ -63,5 +69,11 @@ export function getAuth() {
       },
     },
   });
+}
+
+let _auth: ReturnType<typeof createAuth> | undefined;
+
+export function getAuth(): ReturnType<typeof createAuth> {
+  if (!_auth) _auth = createAuth();
   return _auth;
 }

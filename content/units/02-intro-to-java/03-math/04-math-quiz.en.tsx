@@ -1,15 +1,11 @@
 import { defineLesson } from "../../../lib/define";
-import { LoremIpsum } from "../../../lib/components/LoremIpsum/LoremIpsum";
 
-export const meta = defineLesson({
+export default defineLesson({
   id: "math-quiz",
   title: "Math checkpoint",
   kind: "quiz",
   estMinutes: 8,
   difficulty: 2,
   importance: "essential",
+  questions: [],
 });
-
-# Math checkpoint
-
-<LoremIpsum />

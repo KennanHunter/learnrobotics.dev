@@ -146,47 +146,31 @@ function LessonRow(props: {
   chapter: IndexedChapter;
   lesson: IndexedLesson;
 }) {
-  const linkable = () => props.lesson.kind === "reading";
   const href = () =>
     localizeHref(
       `/units/${props.unit.slug}/${props.chapter.slug}/${props.lesson.slug}`,
     );
 
-  const inner = (
-    <>
-      <StatusIcon status={props.lesson.status ?? "todo"} />
-      <span class="w-10 shrink-0 font-mono text-[10px] uppercase tracking-wider text-foreground-subtle">
-        {kindLabel[props.lesson.kind]}
-      </span>
-      <span class="min-w-0 flex-1 truncate">{props.lesson.title}</span>
-      <span
-        class={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${importanceClass[props.lesson.importance]}`}
-      >
-        {importanceLabel[props.lesson.importance]}
-      </span>
-      <span class="w-10 shrink-0 pl-2 text-right font-mono text-xs text-foreground-subtle">
-        {props.lesson.estMinutes}m
-      </span>
-    </>
-  );
-
   return (
     <li>
-      {linkable() ? (
-        <a
-          href={href()}
-          class="-mx-2 flex items-center gap-3 rounded px-2 py-1 text-sm transition-colors hover:bg-background-offset"
+      <a
+        href={href()}
+        class="-mx-2 flex items-center gap-3 rounded px-2 py-1 text-sm transition-colors hover:bg-background-offset"
+      >
+        <StatusIcon status={props.lesson.status ?? "todo"} />
+        <span class="w-10 shrink-0 font-mono text-[10px] uppercase tracking-wider text-foreground-subtle">
+          {kindLabel[props.lesson.kind]}
+        </span>
+        <span class="min-w-0 flex-1 truncate">{props.lesson.title}</span>
+        <span
+          class={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase tracking-wider ${importanceClass[props.lesson.importance]}`}
         >
-          {inner}
-        </a>
-      ) : (
-        <div
-          class="-mx-2 flex cursor-not-allowed items-center gap-3 rounded px-2 py-1 text-sm transition-colors hover:bg-background-offset"
-          aria-disabled="true"
-        >
-          {inner}
-        </div>
-      )}
+          {importanceLabel[props.lesson.importance]}
+        </span>
+        <span class="w-10 shrink-0 pl-2 text-right font-mono text-xs text-foreground-subtle">
+          {props.lesson.estMinutes}m
+        </span>
+      </a>
     </li>
   );
 }

@@ -1,0 +1,74 @@
+/* Prism token colors mapped to the project's palette. Works in light + dark
+   because every colour below either comes from a `light-dark()` CSS variable
+   or is deliberately hue-only. */
+
+code[class*="language-"],
+pre[class*="language-"] {
+  color: var(--color-primary);
+  font-family: inherit;
+  text-align: left;
+  white-space: pre;
+  tab-size: 2;
+  hyphens: none;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--color-foreground-subtle);
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: var(--color-foreground-muted);
+}
+
+.token.keyword,
+.token.boolean,
+.token.null {
+  color: var(--color-blue);
+  font-weight: 600;
+}
+
+.token.string,
+.token.char,
+.token.attr-value {
+  color: var(--color-green);
+}
+
+.token.number,
+.token.symbol,
+.token.constant {
+  color: var(--color-red);
+}
+
+.token.function,
+.token.class-name,
+.token.builtin {
+  color: var(--color-blue);
+}
+
+.token.operator,
+.token.entity,
+.token.url {
+  color: var(--color-foreground-muted);
+}
+
+.token.tag,
+.token.title {
+  color: var(--color-red);
+  font-weight: 600;
+}
+
+.token.bold {
+  font-weight: 700;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+.token.code-snippet {
+  color: var(--color-green);
+}

@@ -101,18 +101,26 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
   let isOnChangeSuppressed = false;
 
   onMount(async () => {
+    console.log("[MonacoEditor] onMount: configuring loader");
     loader.config(inputProps.loaderParams ?? { monaco: monacoEditor });
     const loadMonaco = loader.init();
 
     abortInitialization = () => loadMonaco.cancel();
 
     try {
+      console.log("[MonacoEditor] awaiting loader.init()");
       const m = await loadMonaco;
+      console.log("[MonacoEditor] loader ready; registering themes");
       props.registerThemes?.(m);
       if (props.theme) m.editor.setTheme(props.theme);
+      console.log(
+        "[MonacoEditor] creating editor",
+        { path: props.path, language: props.language, valueLen: props.value?.length },
+      );
       const ed = createEditor(m);
       setMonaco(m);
       setEditor(ed);
+      console.log("[MonacoEditor] editor created; running props.onMount");
       props.onMount?.(m, ed, ed.getModel());
 
       monacoOnChangeSubscription = ed.onDidChangeModelContent(
@@ -122,11 +130,13 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
           }
         },
       );
+      console.log("[MonacoEditor] onMount complete");
     } catch (error: unknown) {
       if ((error as { type?: string } | null)?.type === "cancelation") {
+        console.warn("[MonacoEditor] init cancelled");
         return;
       }
-      console.error("Could not initialize Monaco", error);
+      console.error("[MonacoEditor] init failed", error);
     }
   });
 

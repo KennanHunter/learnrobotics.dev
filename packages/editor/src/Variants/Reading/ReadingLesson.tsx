@@ -1,6 +1,10 @@
 import { type Component } from "solid-js";
 import { Dynamic } from "solid-js/web";
 import type { EventDispatcher } from "@learnrobotics/events";
+import {
+  CitationsProvider,
+  CitationList,
+} from "@learnrobotics/content/components/Citation";
 import { HighlightOverlay } from "../../Panels";
 import { LessonNav, MarkdownCopy, type LessonNavLink } from "../../Shared";
 
@@ -24,9 +28,12 @@ export function ReadingLesson(props: ReadingLessonProps) {
         <h1 class="text-3xl font-semibold tracking-tight">{props.title}</h1>
         <MarkdownCopy markdownUrl={props.markdownUrl} />
       </header>
-      <div class="prose max-w-none flex flex-col gap-4">
-        <Dynamic component={props.Body} />
-      </div>
+      <CitationsProvider>
+        <div class="prose max-w-none flex flex-col gap-4">
+          <Dynamic component={props.Body} />
+        </div>
+        <CitationList />
+      </CitationsProvider>
       <LessonNav prev={props.prev} next={props.next} />
       <HighlightOverlay dispatcher={props.dispatcher} />
     </article>

@@ -1,4 +1,4 @@
-import { createSignal, For, Show, type JSX } from "solid-js";
+import { createEffect, createSignal, For, Show, type JSX } from "solid-js";
 import { AiOutlineDown } from "solid-icons/ai/AiOutlineDown";
 import type {
   ContentIndex,
@@ -37,7 +37,7 @@ export function BreadcrumbNav(props: { crumbs: BreadcrumbCrumbs }) {
       type="button"
       onClick={openPanel}
       aria-expanded={modal.isOpen()}
-      class="flex items-center gap-2 rounded-md border border-background-offset/60 px-3 py-1.5 text-sm hover:bg-background-offset/50"
+      class="flex items-center gap-1.5 rounded-md border border-background-offset/60 px-2.5 py-1 text-xs hover:bg-background-offset/50"
     >
       <span class="text-foreground-muted">{props.crumbs.unit.title}</span>
       <span class="text-foreground-subtle">›</span>
@@ -100,7 +100,7 @@ export function BreadcrumbPanel(props: {
           )}
         </For>
       </Column>
-      <Column title="Lesson" scroll={false} class="sm:col-span-2">
+      <Column title="Lesson" class="max-h-[50vh] sm:col-span-2">
         <For each={activeChapter().lessons}>
           {(lesson) => (
             <ColumnRow
@@ -165,12 +165,22 @@ function ColumnRow(props: {
   href?: string;
   onSelect: () => void;
 }) {
+  let rowRef: HTMLElement | undefined;
   const base =
     "flex w-full items-center justify-between gap-3 px-4 py-2 text-left text-sm";
   const stateClass = () =>
     props.selected
       ? "bg-background-offset/70"
       : "hover:bg-background-offset/40";
+
+  // When this row becomes the selected one in its column, scroll it into
+  // view — covers both the initial panel open and column pivots triggered
+  // by clicks in the column to the left.
+  createEffect(() => {
+    if (props.selected && rowRef) {
+      rowRef.scrollIntoView({ block: "nearest" });
+    }
+  });
 
   const inner = (
     <>
@@ -187,6 +197,7 @@ function ColumnRow(props: {
   if (props.href) {
     return (
       <a
+        ref={(el) => (rowRef = el)}
         href={props.href}
         onClick={props.onSelect}
         class={`${base} ${stateClass()}`}
@@ -197,6 +208,7 @@ function ColumnRow(props: {
   }
   return (
     <button
+      ref={(el) => (rowRef = el)}
       type="button"
       onClick={props.onSelect}
       class={`${base} ${stateClass()}`}

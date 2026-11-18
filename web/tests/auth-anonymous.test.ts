@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getAuth } from "~/server/auth";
+import { getAuth } from "@learnrobotics/db/server";
 
 describe("anonymous auth flow", () => {
   it("signs in an anonymous user and returns a session", async () => {

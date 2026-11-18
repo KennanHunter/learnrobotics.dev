@@ -1,0 +1,35 @@
+{
+  "name": "@learnrobotics/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./data": "./src/data.ts",
+    "./data/projects": "./src/data/projects.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-auth": "^1.7.23",
+    "drizzle-orm": "^0.45.4",
+    "pino": "^10.4.0",
+    "valibot": "^1.5.0"
+  },
+  "peerDependencies": {
+    "@tanstack/solid-start": "~1.168.0",
+    "solid-js": "^1.9.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261114.1",
+    "@tanstack/solid-start": "~1.168.0",
+    "solid-js": "^1.9.19",
+    "typescript": "^7.0.2",
+    "vite": "^7.1.0",
+    "vitest": "^4.1.12"
+  }
+}

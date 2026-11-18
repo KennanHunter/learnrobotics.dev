@@ -1,7 +1,7 @@
 import type {
   ChapterDef,
   LessonDef,
-  QuizDef,
+  QuizQuestion,
   SimulatorDef,
   StarterDef,
   UnitDef,
@@ -12,4 +12,4 @@ export const defineChapter = <T extends ChapterDef>(x: T): T => x;
 export const defineLesson = <T extends LessonDef>(x: T): T => x;
 export const defineStarter = <T extends StarterDef>(x: T): T => x;
 export const defineSimulator = <T extends SimulatorDef>(x: T): T => x;
-export const defineQuiz = <T extends QuizDef>(x: T): T => x;
+export const defineQuestion = <T extends QuizQuestion>(x: T): T => x;

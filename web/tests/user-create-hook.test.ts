@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { eq } from "drizzle-orm";
-import { getAuth } from "~/server/auth";
-import { getDb } from "~/server/db";
-import { userConfig } from "~/server/schema";
+import { getAuth, getDb, userConfig } from "@learnrobotics/db/server";
 
 describe("user create hook", () => {
   it("inserts a user_config row with null theme and monaco_theme on user creation", async () => {

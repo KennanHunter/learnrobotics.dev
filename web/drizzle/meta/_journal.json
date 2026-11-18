@@ -36,6 +36,20 @@
       "when": 1794849262736,
       "tag": "0004_square_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1795013578445,
+      "tag": "0005_quiet_silvermane",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1795014284422,
+      "tag": "0006_friendly_paper_doll",
+      "breakpoints": true
     }
   ]
 }

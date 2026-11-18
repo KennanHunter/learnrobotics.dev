@@ -2,8 +2,8 @@ import { createSignal, Show } from "solid-js";
 import { useRouter } from "@tanstack/solid-router";
 import { MdFillLight_mode } from "solid-icons/md/MdFillLight_mode";
 import { MdFillDark_mode } from "solid-icons/md/MdFillDark_mode";
-import { setTheme, type Theme } from "~/lib/session";
-import { useTheme } from "~/lib/theme-context";
+import { useTheme, type Theme } from "@learnrobotics/db";
+import { setTheme } from "~/server/session";
 import { logger } from "~/lib/logger";
 
 const log = logger.child({ scope: "ThemeToggle" });
@@ -36,7 +36,7 @@ export function ThemeToggle() {
       type="button"
       aria-label="Toggle theme"
       disabled={pending()}
-      class="rounded border border-background-offset p-1.5 text-lg hover:bg-background-offset disabled:opacity-60"
+      class="rounded border border-background-offset p-1 text-base hover:bg-background-offset disabled:opacity-60"
       onClick={toggle}
     >
       <Show when={effectiveTheme() === "dark"} fallback={<MdFillDark_mode />}>

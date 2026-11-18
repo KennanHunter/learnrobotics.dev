@@ -9,6 +9,7 @@ export type {
   IndexedLesson,
   IndexedChapter,
   IndexedUnit,
+  IndexedStarter,
   ContentIndex,
 } from "@learnrobotics/content";
 export { findLesson } from "@learnrobotics/content";

@@ -2,15 +2,48 @@ import { defineLesson } from "../../../lib/define";
 import { LoremIpsum } from "../../../lib/components/LoremIpsum/LoremIpsum";
 
 export const meta = defineLesson({
-  id: "java-history",
-  title: "History of Java and why it exists",
-  kind: "reading",
-  estMinutes: 7,
-  difficulty: 1,
-  importance: "niche",
-  status: "done",
+    id: "java-history",
+    title: "A little about Java and why it exists",
+    kind: "reading",
+    estMinutes: 10,
+    difficulty: 1,
+    importance: "niche",
+    status: "done",
 });
 
-# History of Java and why it exists
+# The CPU
 
-<LoremIpsum />
+The device you're reading this on right now, is really just a fancy calculator.
+You hear that ever so often when we talk about computers but I really want you
+to think about what that means. Every pixel, every keyboard input, every website
+you visit really just boils down to a bunch of operations done by math. A modern
+CPU can run somewhere around 4GHz. That means that every second, a CPU can do
+4,000,000,000 operations one after another.
+
+Trying to understand exactly how that math builds up to a website like the one
+you're reading, is the kind of question that will lead you through many, many
+interesting fields of computer science and engineering. This course will look at
+one of them, with the end goal of preparing you with the fundamentals to write
+code for the FIRST Tech Challenge and FIRST Robotics Competition.
+
+> Everything past here is useful to understand, but entirely skippable.
+> If you don't understand it, don't worry.
+
+# CPU Microcode
+
+Every CPU has what's called a instruction set. A instruction set is the lowest level
+interface between a CPU and user code. Instruction sets describe how a CPU does basic
+math, branches between different parts of the code, and reads and writes data for future
+operations in the form of memory.
+
+# The problem
+
+In the early 1990s there was a problem. The personal computing boom of the 1970s had
+been well under way for 20 years. Computers were now small enough to fit on someones
+desk, even in their backpacks, as opposed to taking up the rooms that they once did.
+100s of companies raced to produce the fastest, most capable machines they could. The
+driver of all of this was the CPU. The better the CPU, the faster you could run applications.
+
+As all these companies built faster and more capable CPUs, they designed them slightly
+differently. This led to instruction sets that were not compatible with each other. C++
+was the most common language at the time,

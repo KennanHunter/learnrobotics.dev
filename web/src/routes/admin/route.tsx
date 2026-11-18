@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/solid-router";
 import { For, Show } from "solid-js";
 import { TopBar } from "~/components/TopBar/TopBar";
-import { useSession } from "~/lib/session-context";
+import { useSession } from "@learnrobotics/db";
 import { m } from "~/paraglide/messages";
 
 export const Route = createFileRoute("/admin")({

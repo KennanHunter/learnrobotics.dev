@@ -1,5 +1,5 @@
 import { createResource, For, Match, Show, Switch } from "solid-js";
-import { listBundles, type BundleObject } from "~/server/admin";
+import { listBundles, type BundleObject } from "~/server/bundles";
 
 export function Bundles() {
   const [inv] = createResource(() => listBundles());

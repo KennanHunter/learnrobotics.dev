@@ -7,11 +7,14 @@ import {
 import { createEffect } from "solid-js";
 import { HydrationScript, isServer } from "solid-js/web";
 import { createServerFn } from "@tanstack/solid-start";
+import {
+  EditorDataProvider,
+  UserDataProvider,
+  useTheme,
+} from "@learnrobotics/db";
+import { getSession } from "~/server/session";
 import { ErrorPage } from "~/components/ErrorPage/ErrorPage";
 import { ModalProvider } from "~/components/ModalManager/ModalManager";
-import { getSession } from "~/lib/session";
-import { SessionProvider } from "~/lib/session-context";
-import { ThemeProvider, useTheme } from "~/lib/theme-context";
 import {
   EnvironmentProvider,
   type Environment,
@@ -105,16 +108,16 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <SessionProvider session={() => ctx().session}>
-          <ThemeProvider>
-            <HtmlThemeClassSync />
-            <EnvironmentProvider environment={() => ctx().environment}>
+        <UserDataProvider session={() => ctx().session}>
+          <HtmlThemeClassSync />
+          <EnvironmentProvider environment={() => ctx().environment}>
+            <EditorDataProvider>
               <ModalProvider>
                 <Outlet />
               </ModalProvider>
-            </EnvironmentProvider>
-          </ThemeProvider>
-        </SessionProvider>
+            </EditorDataProvider>
+          </EnvironmentProvider>
+        </UserDataProvider>
         <Scripts />
       </body>
     </html>

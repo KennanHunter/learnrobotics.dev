@@ -40,6 +40,16 @@ calls, not anything where blame is unclear.
 - pnpm workspace. `pnpm-workspace.yaml` lists `web` and `webassembly/*`.
 - `justfile` orchestrates Rust + JS + Gradle builds. Use `just` for the full
   flow, `pnpm --filter <pkg>` for targeted work.
+- `just dev` (and `pnpm --filter learnrobotics-web dev`) must run on port
+  **5173**. Don't let Vite auto-pick another port — the Playwright config,
+  Paraglide origin, and the pnpm patch on `@tanstack/start-client-core` all
+  assume it. If 5173 is busy, free it (find the existing dev server) rather
+  than running on a different port.
+- `crates/ristretto/` is a git submodule. Edits there are allowed but must
+  be clearly motivated in chat first (what needs to change in the VM
+  specifically, and why the fix can't live in `crates/runtime/` or on the
+  JS side). Prefer upstreaming or working around when possible; the
+  submodule tracking a fork is a maintenance cost.
 - `crates/compiler`: ristretto-backed Rust compiler + runtime
   (target `wasm32-wasip2`).
 - `just build-teavm` fetches prebuilt WASM-GC teavm-javac artifacts from

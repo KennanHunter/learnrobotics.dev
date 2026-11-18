@@ -94,7 +94,7 @@ function Landing() {
           <section class="flex flex-col gap-6 py-2 sm:flex-row sm:items-center sm:justify-between">
             <div class="max-w-2xl flex-1 space-y-3">
               <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">
-                Everything you need to become a <FIRST /> programmer
+                An opinionated guide to becoming a <FIRST /> programmer
               </h1>
               <p class="text-sm text-foreground-muted">
                 Not affiliated with <FIRST />. Written by alumni, for students,

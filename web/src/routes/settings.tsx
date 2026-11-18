@@ -8,8 +8,8 @@ import {
   UnsupportedLanguagesNotice,
   type LanguageCode,
 } from "~/i18n";
-import { setMonacoTheme } from "~/lib/session";
-import { useSession } from "~/lib/session-context";
+import { useSession } from "@learnrobotics/db";
+import { setMonacoTheme } from "~/server/session";
 import { THEMES, type ThemeId } from "~/lib/monaco-themes";
 import { logger } from "~/lib/logger";
 import { m } from "~/paraglide/messages";

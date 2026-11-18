@@ -13,6 +13,15 @@ install:
 test:
     cargo test --workspace --exclude profile
 
+# End-to-end playground pipeline test (teavm → JDK → ristretto) running in
+# Node via vitest's browser resolve conditions. First run downloads the real
+# JDK tarball to web/.cache/bundles/; warm runs reuse it.
+#
+# Defaults to the preview deploy's /api/bundles proxy; override with
+# JDK_BUNDLE_URL=<direct url> when the deploy is stale or unreachable.
+test-pipeline:
+    pnpm --filter learnrobotics-web test:pipeline
+
 # All bundle pipeline steps are subcommands of the `bundling` CLI
 # (packages/bundling). Pins live in packages/bundling/src/pins.ts;
 # local + CI invoke the same code. R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY

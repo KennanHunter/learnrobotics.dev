@@ -10,6 +10,7 @@ export type RunRequest =
 export type RunEvent =
   | { type: "phase"; phase: "fetching-deps" | "compiling" | "running" }
   | { type: "deps-ready" }
+  | { type: "deps-progress"; received: number; total: number | null }
   | { type: "log"; message: string }
   | { type: "diagnostics"; diagnostics: Diagnostic[] }
   | { type: "done"; ok: true }
@@ -27,12 +28,24 @@ setLogHook((message) => {
 
 function pickMainClass(
   classes: { name: string; bytes: Uint8Array }[],
+  activeFile?: string,
 ): string | null {
-  const outer = classes.find(
+  const outers = classes.filter(
     (c) => c.name.endsWith(".class") && !c.name.includes("$"),
   );
-  if (!outer) return null;
-  return outer.name.replace(/\.class$/, "").replace(/\//g, ".");
+  if (outers.length === 0) return null;
+  const toFqcn = (name: string) =>
+    name.replace(/\.class$/, "").replace(/\//g, ".");
+  if (activeFile) {
+    const baseName = activeFile.replace(/.*\//, "").replace(/\.java$/, "");
+    const match = outers.find((c) => {
+      const fqcn = toFqcn(c.name);
+      const simple = fqcn.includes(".") ? fqcn.slice(fqcn.lastIndexOf(".") + 1) : fqcn;
+      return simple === baseName;
+    });
+    if (match) return toFqcn(match.name);
+  }
+  return toFqcn(outers[0].name);
 }
 
 async function fetchDeps(): Promise<{
@@ -44,7 +57,14 @@ async function fetchDeps(): Promise<{
     phase: "fetching-deps",
   } satisfies RunEvent);
   try {
-    const jdk = await ensureBundle("jdk");
+    const jdk = await ensureBundle("jdk", {
+      onProgress: (received, total) =>
+        ctx.postMessage({
+          type: "deps-progress",
+          received,
+          total,
+        } satisfies RunEvent),
+    });
     ctx.postMessage({ type: "deps-ready" } satisfies RunEvent);
     return jdk;
   } catch (err) {
@@ -73,7 +93,7 @@ ctx.addEventListener("message", async (event: MessageEvent<RunRequest>) => {
 
   try {
     ctx.postMessage({ type: "phase", phase: "compiling" } satisfies RunEvent);
-    const compiled = await compileJava(req.source);
+    const compiled = await compileJava(req.files);
     if (!compiled.ok) {
       ctx.postMessage({
         type: "diagnostics",
@@ -93,7 +113,7 @@ ctx.addEventListener("message", async (event: MessageEvent<RunRequest>) => {
       return;
     }
 
-    const mainClass = pickMainClass(compiled.classes);
+    const mainClass = pickMainClass(compiled.classes, req.activeFile);
     if (!mainClass) {
       ctx.postMessage({
         type: "error",

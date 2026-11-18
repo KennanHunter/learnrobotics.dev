@@ -20,6 +20,7 @@ beforeAll(async () => {
 // Reset auth-owned tables between tests so each case starts clean.
 beforeEach(async () => {
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM project"),
     env.DB.prepare("DELETE FROM user_config"),
     env.DB.prepare("DELETE FROM session"),
     env.DB.prepare("DELETE FROM account"),

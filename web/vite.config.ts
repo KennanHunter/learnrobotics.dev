@@ -91,6 +91,7 @@ export default defineConfig({
   ssr: {
     noExternal: [
       "solid-icons",
+      "@learnrobotics/db",
       "@learnrobotics/editor",
       "@learnrobotics/events",
     ],

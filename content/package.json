@@ -7,8 +7,10 @@
     ".": "./lib/index.ts",
     "./types": "./lib/types.ts",
     "./define": "./lib/define.ts",
+    "./placement": "./lib/placement.ts",
     "./index-builder": "./lib/index-builder.ts",
-    "./components/LoremIpsum": "./lib/components/LoremIpsum/LoremIpsum.tsx"
+    "./components/LoremIpsum": "./lib/components/LoremIpsum/LoremIpsum.tsx",
+    "./components/Citation": "./lib/components/Citation/Citation.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

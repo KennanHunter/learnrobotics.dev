@@ -1,3 +1,5 @@
+import type { JSX } from "solid-js";
+
 export type LessonKind = "reading" | "code" | "sim" | "quiz";
 
 export type LessonImportance = "essential" | "useful" | "niche";
@@ -35,10 +37,14 @@ export type SimLessonDef = LessonBase & {
 
 export type QuizLessonDef = LessonBase & {
   kind: "quiz";
+  questions: readonly QuizQuestion[];
 };
 
 export type LessonDef =
-  ReadingLessonDef | CodeLessonDef | SimLessonDef | QuizLessonDef;
+  | ReadingLessonDef
+  | CodeLessonDef
+  | SimLessonDef
+  | QuizLessonDef;
 
 export type ChapterDef = {
   id: string;
@@ -80,16 +86,29 @@ export type SimulatorDef = {
   notes?: string;
 };
 
-export type QuizQuestion =
-  | {
-      kind: "multiple-choice";
-      prompt: string;
-      choices: readonly string[];
-      answer: number;
-    }
-  | { kind: "short-answer"; prompt: string; accept: readonly string[] }
-  | { kind: "code-matches"; prompt: string; expect: RegExp };
-
-export type QuizDef = {
-  questions: readonly QuizQuestion[];
+export type MultipleChoiceQuestion = {
+  id: string;
+  kind: "multiple-choice";
+  prompt: JSX.Element;
+  choices: readonly JSX.Element[];
+  answer: number;
 };
+
+export type DragReorderQuestion = {
+  id: string;
+  kind: "drag-to-reorder";
+  prompt: JSX.Element;
+  items: readonly JSX.Element[];
+};
+
+export type CodeUnitTestQuestion = {
+  id: string;
+  kind: "code-unit-test";
+  prompt: JSX.Element;
+  // TODO: test spec — JUnit source, stdin/stdout cases, or assertion fn.
+};
+
+export type QuizQuestion =
+  | MultipleChoiceQuestion
+  | DragReorderQuestion
+  | CodeUnitTestQuestion;

@@ -1,7 +1,7 @@
 import { createSignal, onCleanup, Show } from "solid-js";
 import { useRouter } from "@tanstack/solid-router";
 import { authClient } from "~/lib/auth-client";
-import { useSession } from "~/lib/session-context";
+import { useSession } from "@learnrobotics/db";
 import { useLocalizedNavigate } from "~/lib/use-localized-navigate";
 import { m } from "~/paraglide/messages";
 
@@ -54,7 +54,7 @@ export function ProfileMenu() {
     <div class="relative" ref={rootRef}>
       <button
         type="button"
-        class="flex items-center gap-2 rounded border border-background-offset px-2 py-1 text-sm hover:bg-background-offset"
+        class="flex items-center gap-1.5 rounded border border-background-offset px-1.5 py-0.5 text-xs hover:bg-background-offset"
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open()}
@@ -62,7 +62,7 @@ export function ProfileMenu() {
         <Show
           when={session()?.image}
           fallback={
-            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-background-offset text-xs font-medium">
+            <span class="flex h-5 w-5 items-center justify-center rounded-full bg-background-offset text-[0.65rem] font-medium">
               {initials()}
             </span>
           }
@@ -70,7 +70,7 @@ export function ProfileMenu() {
           <img
             src={session()!.image!}
             alt=""
-            class="h-6 w-6 rounded-full object-cover"
+            class="h-5 w-5 rounded-full object-cover"
           />
         </Show>
         <span>{session()?.name}</span>
@@ -83,7 +83,7 @@ export function ProfileMenu() {
           <button
             type="button"
             role="menuitem"
-            class="block w-full px-3 py-2 text-left hover:bg-background-offset"
+            class="block w-full px-2.5 py-1.5 text-left hover:bg-background-offset"
             onClick={onSettings}
           >
             {m.menu_settings()}
@@ -92,7 +92,7 @@ export function ProfileMenu() {
             <button
               type="button"
               role="menuitem"
-              class="block w-full px-3 py-2 text-left hover:bg-background-offset"
+              class="block w-full px-2.5 py-1.5 text-left hover:bg-background-offset"
               onClick={onAdmin}
             >
               {m.menu_admin()}
@@ -101,7 +101,7 @@ export function ProfileMenu() {
           <button
             type="button"
             role="menuitem"
-            class="block w-full px-3 py-2 text-left hover:bg-background-offset"
+            class="block w-full px-2.5 py-1.5 text-left hover:bg-background-offset"
             onClick={onSignOut}
           >
             {m.menu_logout()}
