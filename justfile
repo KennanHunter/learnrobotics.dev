@@ -13,28 +13,27 @@ test:
     CARGO_TARGET_WASM32_WASIP2_RUNNER=wasmtime \
     cargo test --workspace --target wasm32-wasip2
 
-# Stage the pinned teavm-javac artifacts from R2 into
-# webassembly/teavm-compiler/dist. Pin lives in scripts/config.mjs. Needs
-# R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY in env or web/.dev.vars.
-build-teavm:
-    node webassembly/teavm-compiler/scripts/stage.mjs
+# All bundle pipeline steps are subcommands of the `bundling` CLI
+# (packages/bundling). Pins live in packages/bundling/src/pins.mjs;
+# local + CI invoke the same code. R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY
+# from env or web/.dev.vars.
 
-# One-shot: download the current teavm-javac artifacts from teavm.org and
-# upload them to R2 under the current pin. Bump TEAVM_PIN in config.mjs
-# before running if you want a new cut.
+# Stage pinned teavm-javac artifacts from R2 → webassembly/teavm-compiler/dist.
+build-teavm:
+    node packages/bundling/bin/cli.mjs stage-teavm
+
+# Mirror current teavm-javac artifacts from teavm.org → R2 under TEAVM_PIN.
 upload-teavm:
-    node webassembly/teavm-compiler/scripts/upload.mjs
+    node packages/bundling/bin/cli.mjs mirror-teavm
 
 # Build the Corretto-derived JDK runtime bundle into
-# webassembly/runtime-bundles/dist/jdk/<pin>/bundle.tar.gz. One-shot: run
-# when you bump JDK_PIN in scripts/config.mjs, then `just upload-bundles`.
+# packages/bundling/dist/jdk/<pin>/bundle.tar.gz.
 build-jdk-bundle:
-    node webassembly/runtime-bundles/scripts/build-jdk.mjs
+    node packages/bundling/bin/cli.mjs build-jdk
 
-# Push any locally-built runtime bundles to R2. Idempotent: skips pins that
-# already exist upstream.
+# Push locally-built runtime bundles to R2. Idempotent; skips existing pins.
 upload-bundles:
-    node webassembly/runtime-bundles/scripts/upload.mjs
+    node packages/bundling/bin/cli.mjs upload-runtime
 
 # Compile the runtime crate to wasm and transpile it into the JS package.
 build: build-teavm

@@ -1,0 +1,53 @@
+name: infra-security
+
+# Apply checked-in infrastructure-security policies to Cloudflare. Policies
+# live under infra/; today that's R2 bucket CORS, future home for other
+# bucket/zone/account-level rules we want versioned instead of
+# dashboard-only.
+#
+# Secrets required (repo-level):
+#   CLOUDFLARE_API_TOKEN — scope: R2 Edit on the relevant account.
+#   CLOUDFLARE_ACCOUNT_ID — the Cloudflare account that owns the buckets.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/infra-security.yml"
+
+concurrency:
+  group: infra-security
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Apply R2 CORS — learn-robotics-dev-storage
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: >-
+          pnpm --filter learnrobotics-web exec wrangler r2 bucket cors put
+          learn-robotics-dev-storage
+          --file ../infra/r2-cors-learn-robotics-dev-storage.json
+
+      - name: Verify
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: >-
+          pnpm --filter learnrobotics-web exec wrangler r2 bucket cors list
+          learn-robotics-dev-storage

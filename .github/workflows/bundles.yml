@@ -1,48 +1,28 @@
 name: bundles
 
-# Mirror pinned Java + wasm artifacts into R2. Everything in the pipeline
-# is pin-driven and idempotent: putIfMissing HEAD-checks each key, so a
-# successful upload turns re-runs into no-ops. There is no "latest" tag —
-# every object is immutable at <kind>/<pin>/.
+# Mirror pinned Java + wasm artifacts into R2 via the shared
+# `bundling` CLI (packages/bundling). The whole pipeline is pin-driven and
+# idempotent: putIfMissing HEAD-checks each key, so reruns are no-ops.
+# There is no "latest" tag — every object is immutable at <kind>/<pin>/.
 #
 # Secrets required (repo-level):
 #   R2_ACCESS_KEY_ID
 #   R2_SECRET_ACCESS_KEY
-#
-# Triggers:
-#   - workflow_dispatch: ad-hoc re-run of either or both jobs.
-#   - push to main that touches a pin file: automatic mirror.
 
 on:
   workflow_dispatch:
-    inputs:
-      run_teavm:
-        description: "Mirror teavm pin"
-        type: boolean
-        default: true
-      run_runtime_bundles:
-        description: "Build + upload runtime bundles"
-        type: boolean
-        default: true
   push:
     branches: [main]
     paths:
-      - "packages/bundling/src/pins.mjs"
-      - "webassembly/teavm-compiler/scripts/**"
-      - "webassembly/runtime-bundles/scripts/**"
+      - "packages/bundling/**"
       - ".github/workflows/bundles.yml"
 
 concurrency:
-  # Serialize runs that touch the same key namespace. The upload scripts
-  # are idempotent but back-to-back jobs would waste compute + egress.
   group: bundles
   cancel-in-progress: false
 
 jobs:
-  teavm:
-    if: >-
-      github.event_name != 'workflow_dispatch' ||
-      inputs.run_teavm
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,33 +34,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Mirror teavm pin to R2
+      - name: Run bundle pipeline
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: node webassembly/teavm-compiler/scripts/upload.mjs
-
-  runtime-bundles:
-    if: >-
-      github.event_name != 'workflow_dispatch' ||
-      inputs.run_runtime_bundles
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 12
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      # build-jdk.mjs shells out to `tar`, preinstalled on ubuntu-latest.
-      # No JDK required on the runner — Corretto is extracted as data.
-      - name: Build JDK bundle
-        run: node webassembly/runtime-bundles/scripts/build-jdk.mjs
-      - name: Upload runtime bundles to R2
-        env:
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: node webassembly/runtime-bundles/scripts/upload.mjs
+        run: node packages/bundling/bin/cli.mjs ci

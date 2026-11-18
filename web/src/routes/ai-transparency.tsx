@@ -156,6 +156,41 @@ function AITransparency() {
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-17"
+                title="Versioned R2 CORS + infra-security workflow."
+              >
+                Added <code>infra/r2-cors-learn-robotics-dev-storage.json</code>{" "}
+                as the checked-in CORS policy for the bundles bucket
+                (allow-listing production, <code>www</code>,{" "}
+                <code>preview.learnrobotics.dev</code>, and{" "}
+                <code>localhost:5173</code>), and a new{" "}
+                <code>infra-security</code> GitHub Actions workflow that
+                reapplies every policy in <code>infra/</code> via wrangler
+                on push. Needed because the browser follows the
+                <code> /api/bundles/:kind/:pin</code> 302 to R2's origin,
+                where CORS is evaluated against the bucket — not the
+                worker.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-17"
+                title="Collapse bundle authoring into one CLI."
+              >
+                Merged the per-package <code>scripts/*.mjs</code> files
+                (teavm mirror/stage, runtime-bundle build/upload) into a
+                single CLI at{" "}
+                <code>packages/bundling/bin/cli.mjs</code> with subcommands{" "}
+                <code>mirror-teavm</code>, <code>stage-teavm</code>,{" "}
+                <code>build-jdk</code>, <code>upload-runtime</code>, and{" "}
+                <code>ci</code>. The GitHub Actions workflow and justfile
+                targets now both call <code>node packages/bundling/bin/cli.mjs</code>,
+                so local and CI runs are the same code path. Deleted the
+                empty <code>webassembly/runtime-bundles</code> workspace
+                package; intermediate artifacts now land in{" "}
+                <code>packages/bundling/dist</code>. Also fixed a wrong
+                Corretto pin (<code>25.0.5.11.1</code> →{" "}
+                <code>25.0.5.1.2</code>) that was 403ing in CI.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-17"
                 title="Shared bundling package + admin bundle inventory."
               >
                 Extracted R2 primitives (creds, AWS client, HEAD-checked
@@ -184,7 +219,7 @@ function AITransparency() {
                 entries so it stops trying to download a JDK over{" "}
                 <code>wasi:http</code> (which the browser's preview2 shim
                 doesn't serve). Added a general, pinned "runtime bundle"
-                pipeline: <code>webassembly/runtime-bundles</code> builds
+                pipeline: the <code>packages/bundling</code> CLI builds
                 and pushes archives to R2 under
                 <code> bundles/&lt;kind&gt;/&lt;pin&gt;/</code>; the browser
                 lib at <code>web/src/lib/bundles</code> fetches via

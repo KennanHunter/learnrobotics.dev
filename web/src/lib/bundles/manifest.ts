@@ -1,5 +1,5 @@
 // Pinned bundle catalog. `kind` + `pin` tuple must match what
-// webassembly/runtime-bundles authoring has uploaded to R2, or the browser
+// packages/bundling authoring has uploaded to R2, or the browser
 // fetches a 404 at runtime. Pins are imported from
 // @learnrobotics/bundling/pins (the single source of truth); bumping there
 // updates authoring + consumer together.
@@ -32,7 +32,7 @@ export const BUNDLES = {
     approxBytes: 140 * 1024 * 1024,
   },
   // Example shape for a future library bundle. Enable by uploading via
-  // webassembly/runtime-bundles and adding the kind here.
+  // packages/bundling (bundling CLI `build-*` + `upload-runtime`) and adding the kind here.
   // wpilib: {
   //   kind: "library",
   //   pin: "2026.1.1",

@@ -16,7 +16,7 @@ const ARTIFACT_KINDS = {
   },
   // Pinned Java dependency bundles (JDK, WPILib, façades) fed to ristretto
   // via the preopen filesystem. Keyed by `<kind>/<pin>/bundle.tar.gz` under
-  // this prefix. Built + uploaded by webassembly/runtime-bundles.
+  // this prefix. Built + uploaded by the packages/bundling CLI.
   "runtime-bundle": {
     bucket: "learn-robotics-dev-storage",
     prefix: "bundles/",

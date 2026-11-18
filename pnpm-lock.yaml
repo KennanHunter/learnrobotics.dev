@@ -185,12 +185,6 @@ importers:
         specifier: 0.24.0
         version: 0.24.0
 
-  webassembly/runtime-bundles:
-    dependencies:
-      '@learnrobotics/bundling':
-        specifier: workspace:*
-        version: link:../../packages/bundling
-
   webassembly/teavm-compiler:
     dependencies:
       '@learnrobotics/bundling':
