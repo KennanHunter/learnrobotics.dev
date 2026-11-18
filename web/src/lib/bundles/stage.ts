@@ -52,11 +52,10 @@ export async function stagePreopen(
 ): Promise<void> {
   if (staged.has(mountPath)) return;
   const tree = buildTree(files);
-  const { _addPreopen } = (await import(
-    "@bytecodealliance/preview2-shim/filesystem"
-  )) as unknown as {
-    _addPreopen: (path: string, data: FsNode) => void;
-  };
+  const { _addPreopen } =
+    (await import("@bytecodealliance/preview2-shim/filesystem")) as unknown as {
+      _addPreopen: (path: string, data: FsNode) => void;
+    };
   _addPreopen(mountPath, tree);
   staged.add(mountPath);
 }

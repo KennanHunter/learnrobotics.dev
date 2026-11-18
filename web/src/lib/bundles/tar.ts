@@ -60,9 +60,9 @@ export async function gunzip(bytes: Uint8Array): Promise<Uint8Array> {
     throw new Error("DecompressionStream is not available in this environment");
   }
   const stream = new Response(
-    new Blob([bytes as BlobPart]).stream().pipeThrough(
-      new DecompressionStream("gzip"),
-    ),
+    new Blob([bytes as BlobPart])
+      .stream()
+      .pipeThrough(new DecompressionStream("gzip")),
   );
   const buf = await stream.arrayBuffer();
   return new Uint8Array(buf);

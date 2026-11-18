@@ -2,6 +2,9 @@ packages:
   - web
   - webassembly/*
   - packages/*
+  - content
+catalog:
+  solid-icons: "github:KennanHunter/solid-icons#main"
 allowBuilds:
   esbuild: true
   sharp: true

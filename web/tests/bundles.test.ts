@@ -9,7 +9,10 @@ function writeUstarHeader(path: string, size: number): Uint8Array {
   const enc = new TextEncoder();
   const [prefix, name] =
     path.length > 100
-      ? [path.slice(0, path.lastIndexOf("/", 99)), path.slice(path.lastIndexOf("/", 99) + 1)]
+      ? [
+          path.slice(0, path.lastIndexOf("/", 99)),
+          path.slice(path.lastIndexOf("/", 99) + 1),
+        ]
       : ["", path];
   header.set(enc.encode(name), 0);
   header.set(enc.encode(size.toString(8).padStart(11, "0") + "\0"), 124);
@@ -48,16 +51,16 @@ function buildTar(files: { path: string; bytes: Uint8Array }[]): Uint8Array {
 
 async function gzipBytes(bytes: Uint8Array): Promise<Uint8Array> {
   const stream = new Response(
-    new Blob([bytes as BlobPart]).stream().pipeThrough(
-      new CompressionStream("gzip"),
-    ),
+    new Blob([bytes as BlobPart])
+      .stream()
+      .pipeThrough(new CompressionStream("gzip")),
   );
   return new Uint8Array(await stream.arrayBuffer());
 }
 
 describe("runtime-bundle tar/gunzip", () => {
   it("round-trips a short file through gzip + tar parse", async () => {
-    const payload = new TextEncoder().encode("JAVA_VERSION=\"25.0.5.11.1\"\n");
+    const payload = new TextEncoder().encode('JAVA_VERSION="25.0.5.11.1"\n');
     const tar = buildTar([{ path: "release", bytes: payload }]);
     const gz = await gzipBytes(tar);
 
@@ -66,9 +69,7 @@ describe("runtime-bundle tar/gunzip", () => {
 
     expect(files).toHaveLength(1);
     expect(files[0]!.path).toBe("release");
-    expect(new TextDecoder().decode(files[0]!.bytes)).toContain(
-      "JAVA_VERSION",
-    );
+    expect(new TextDecoder().decode(files[0]!.bytes)).toContain("JAVA_VERSION");
   });
 
   it("parses nested paths from a multi-file archive", async () => {

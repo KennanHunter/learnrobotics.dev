@@ -3,7 +3,11 @@ import { presignPublicDownload } from "~/server/r2";
 
 const VALID_KINDS = new Set(["jdk", "library"]);
 
-const handler = async ({ params }: { params: { kind: string; pin: string } }) => {
+const handler = async ({
+  params,
+}: {
+  params: { kind: string; pin: string };
+}) => {
   if (!VALID_KINDS.has(params.kind)) {
     return new Response("unknown bundle kind", { status: 404 });
   }

@@ -50,9 +50,11 @@ export function FileTree(props: FileTreeProps) {
   );
   const [focusedKey, setFocusedKey] = createSignal<string | null>(null);
   const [renamingKey, setRenamingKey] = createSignal<string | null>(null);
-  const [menu, setMenu] = createSignal<
-    { x: number; y: number; node: TreeNode } | null
-  >(null);
+  const [menu, setMenu] = createSignal<{
+    x: number;
+    y: number;
+    node: TreeNode;
+  } | null>(null);
   const [lastClickTime, setLastClickTime] = createSignal(0);
   const [lastClickKey, setLastClickKey] = createSignal<string | null>(null);
 
@@ -141,17 +143,21 @@ export function FileTree(props: FileTreeProps) {
     switch (e.key) {
       case "ArrowDown": {
         e.preventDefault();
-        const idx = currentIdx < 0 ? 0 : Math.min(currentIdx + 1, list.length - 1);
+        const idx =
+          currentIdx < 0 ? 0 : Math.min(currentIdx + 1, list.length - 1);
         setFocusedKey(list[idx].node.key);
-        if (props.selectedKey === undefined) setInternalSelected(list[idx].node.key);
+        if (props.selectedKey === undefined)
+          setInternalSelected(list[idx].node.key);
         props.onSelect?.(list[idx].node);
         break;
       }
       case "ArrowUp": {
         e.preventDefault();
-        const idx = currentIdx < 0 ? list.length - 1 : Math.max(currentIdx - 1, 0);
+        const idx =
+          currentIdx < 0 ? list.length - 1 : Math.max(currentIdx - 1, 0);
         setFocusedKey(list[idx].node.key);
-        if (props.selectedKey === undefined) setInternalSelected(list[idx].node.key);
+        if (props.selectedKey === undefined)
+          setInternalSelected(list[idx].node.key);
         props.onSelect?.(list[idx].node);
         break;
       }
@@ -165,7 +171,8 @@ export function FileTree(props: FileTreeProps) {
           const next = list[currentIdx + 1];
           if (next) {
             setFocusedKey(next.node.key);
-            if (props.selectedKey === undefined) setInternalSelected(next.node.key);
+            if (props.selectedKey === undefined)
+              setInternalSelected(next.node.key);
           }
         }
         break;
@@ -186,7 +193,8 @@ export function FileTree(props: FileTreeProps) {
       case "Home": {
         e.preventDefault();
         setFocusedKey(list[0].node.key);
-        if (props.selectedKey === undefined) setInternalSelected(list[0].node.key);
+        if (props.selectedKey === undefined)
+          setInternalSelected(list[0].node.key);
         break;
       }
       case "End": {

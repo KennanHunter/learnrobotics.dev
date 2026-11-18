@@ -89,7 +89,12 @@ fn run_classes(
         .enable_all()
         .build()
         .map_err(|e| e.to_string())?;
-    runtime.block_on(run_classes_async(java_home, classpath, user_classes, main_class))
+    runtime.block_on(run_classes_async(
+        java_home,
+        classpath,
+        user_classes,
+        main_class,
+    ))
 }
 
 async fn run_classes_async(
@@ -108,8 +113,7 @@ async fn run_classes_async(
         );
         memory.add_class(bytes).await.map_err(|e| e.to_string())?;
     }
-    let mut entries: Vec<ClassPathEntry> =
-        classpath.iter().map(ClassPathEntry::new).collect();
+    let mut entries: Vec<ClassPathEntry> = classpath.iter().map(ClassPathEntry::new).collect();
     entries.push(ClassPathEntry::Memory(memory));
 
     let configuration = ConfigurationBuilder::new()

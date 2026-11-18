@@ -1,0 +1,32 @@
+{
+  "name": "@learnrobotics/editor",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./code-editor": "./src/CodeEditor/index.ts",
+    "./mdx": "./src/Mdx/index.ts",
+    "./mdx-provider": "./src/Mdx/provider.tsx",
+    "./panels": "./src/Panels/index.ts",
+    "./variants/reading": "./src/Variants/Reading/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@learnrobotics/events": "workspace:*",
+    "@monaco-editor/loader": "^1.7.0",
+    "monaco-editor": "^0.57.0",
+    "solid-icons": "catalog:"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9.0"
+  },
+  "devDependencies": {
+    "solid-js": "^1.9.19",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.12"
+  }
+}

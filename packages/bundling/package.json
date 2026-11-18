@@ -4,12 +4,20 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.mjs",
-    "./r2": "./src/r2.mjs",
-    "./key": "./src/key.mjs",
-    "./pins": "./src/pins.mjs"
+    ".": "./src/index.ts",
+    "./r2": "./src/r2.ts",
+    "./key": "./src/key.ts",
+    "./pins": "./src/pins.ts"
+  },
+  "scripts": {
+    "cli": "tsx bin/cli.ts"
   },
   "dependencies": {
     "aws4fetch": "^1.0.20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.6.0"
   }
 }

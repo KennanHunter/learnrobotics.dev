@@ -13,9 +13,7 @@ test("non-admin visitor sees the forbidden message", async ({ page }) => {
   await expect(
     page.getByText("You don't have access to this page."),
   ).toBeVisible();
-  await expect(
-    page.getByTestId("admin-users-search"),
-  ).toHaveCount(0);
+  await expect(page.getByTestId("admin-users-search")).toHaveCount(0);
 });
 
 test("admin/users accepts an optional ?q= search param", async ({ page }) => {

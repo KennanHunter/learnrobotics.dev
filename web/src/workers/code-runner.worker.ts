@@ -3,13 +3,13 @@ import { setLogHook, runClasses } from "~/lib/runtime";
 import { compileJava, type Diagnostic } from "~/lib/teavm";
 import { ensureBundle } from "~/lib/bundles";
 
-export type RunRequest = {
-  type: "run";
-  source: string;
-};
+export type RunRequest =
+  | { type: "run"; source: string }
+  | { type: "prefetch" };
 
 export type RunEvent =
   | { type: "phase"; phase: "fetching-deps" | "compiling" | "running" }
+  | { type: "deps-ready" }
   | { type: "log"; message: string }
   | { type: "diagnostics"; diagnostics: Diagnostic[] }
   | { type: "done"; ok: true }
@@ -35,25 +35,41 @@ function pickMainClass(
   return outer.name.replace(/\.class$/, "").replace(/\//g, ".");
 }
 
-ctx.addEventListener("message", async (event: MessageEvent<RunRequest>) => {
-  const req = event.data;
-  if (!req || req.type !== "run") return;
-
-  let jdk: { mountPath: string; classpath: string[] };
+async function fetchDeps(): Promise<{
+  mountPath: string;
+  classpath: string[];
+} | null> {
+  ctx.postMessage({
+    type: "phase",
+    phase: "fetching-deps",
+  } satisfies RunEvent);
   try {
-    ctx.postMessage({
-      type: "phase",
-      phase: "fetching-deps",
-    } satisfies RunEvent);
-    jdk = await ensureBundle("jdk");
+    const jdk = await ensureBundle("jdk");
+    ctx.postMessage({ type: "deps-ready" } satisfies RunEvent);
+    return jdk;
   } catch (err) {
     ctx.postMessage({
       type: "error",
       stage: "fetch-deps",
       message: err instanceof Error ? err.message : String(err),
     } satisfies RunEvent);
+    return null;
+  }
+}
+
+ctx.addEventListener("message", async (event: MessageEvent<RunRequest>) => {
+  const req = event.data;
+  if (!req) return;
+
+  if (req.type === "prefetch") {
+    await fetchDeps();
     return;
   }
+
+  if (req.type !== "run") return;
+
+  const jdk = await fetchDeps();
+  if (!jdk) return;
 
   try {
     ctx.postMessage({ type: "phase", phase: "compiling" } satisfies RunEvent);

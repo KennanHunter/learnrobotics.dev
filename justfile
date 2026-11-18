@@ -11,32 +11,36 @@ test:
     RUSTC_BOOTSTRAP=1 \
     CARGO_TARGET_WASM32_WASIP2_RUSTFLAGS="-C link-arg=-zstack-size=8388608" \
     CARGO_TARGET_WASM32_WASIP2_RUNNER=wasmtime \
-    cargo test --workspace --target wasm32-wasip2
+    cargo test --workspace --exclude profile --target wasm32-wasip2
 
 # All bundle pipeline steps are subcommands of the `bundling` CLI
-# (packages/bundling). Pins live in packages/bundling/src/pins.mjs;
+# (packages/bundling). Pins live in packages/bundling/src/pins.ts;
 # local + CI invoke the same code. R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY
 # from env or web/.dev.vars.
 
 # Stage pinned teavm-javac artifacts from R2 → webassembly/teavm-compiler/dist.
 build-teavm:
-    node packages/bundling/bin/cli.mjs stage-teavm
+    pnpm tsx packages/bundling/bin/cli.ts stage-teavm
 
 # Mirror current teavm-javac artifacts from teavm.org → R2 under TEAVM_PIN.
 upload-teavm:
-    node packages/bundling/bin/cli.mjs mirror-teavm
+    pnpm tsx packages/bundling/bin/cli.ts mirror-teavm
 
 # Build the Corretto-derived JDK runtime bundle into
 # packages/bundling/dist/jdk/<pin>/bundle.tar.gz.
 build-jdk-bundle:
-    node packages/bundling/bin/cli.mjs build-jdk
+    pnpm tsx packages/bundling/bin/cli.ts build-jdk
 
 # Push locally-built runtime bundles to R2. Idempotent; skips existing pins.
 upload-bundles:
-    node packages/bundling/bin/cli.mjs upload-runtime
+    pnpm tsx packages/bundling/bin/cli.ts upload-runtime
 
 # Compile the runtime crate to wasm and transpile it into the JS package.
-build: build-teavm
+# Does NOT stage teavm — run `just build-teavm` once (or whenever the pin
+# changes). This target warns if the staged artifacts are missing.
+build:
+    @test -f webassembly/teavm-compiler/dist/compiler.wasm \
+        || echo "warning: webassembly/teavm-compiler/dist is empty — run 'just build-teavm' to stage teavm artifacts" >&2
     RUSTC_BOOTSTRAP=1 \
     CARGO_TARGET_WASM32_WASIP2_RUSTFLAGS="-C link-arg=-zstack-size=8388608" \
     cargo build --release -p runtime --target wasm32-wasip2

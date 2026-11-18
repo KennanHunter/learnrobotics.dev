@@ -132,9 +132,9 @@ export const meta = defineLesson({
   estMinutes: 12,
   difficulty: 1,
   importance: "essential",
-  starter: "main-hello-world",   // optional; refs content/starters/<id>/
-  recording: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",  // optional; sha256
-  language: "java",              // optional; defaults to java
+  starter: "main-hello-world", // optional; refs content/starters/<id>/
+  recording: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069", // optional; sha256
+  language: "java", // optional; defaults to java
 });
 ```
 
@@ -149,7 +149,7 @@ present). Content-addressed means:
   the events-package schema, the id lets them verify the
   recording hasn't drifted out from under them.
 - R2 layout flattens to `lessons/<sha256>/{events.jsonl,
-  metadata.json,audio.webm}` — no version prefix.
+metadata.json,audio.webm}` — no version prefix.
 
 Renderer: `CodeLesson.tsx` — split view, MDX on one side, editor
 (from `@learnrobotics/editor`) on the other. If `recording` is
@@ -198,7 +198,12 @@ export const meta = defineLesson({
 
 export const quiz = defineQuiz({
   questions: [
-    { kind: "multiple-choice", prompt: "...", choices: ["a", "b", "c"], answer: 2 },
+    {
+      kind: "multiple-choice",
+      prompt: "...",
+      choices: ["a", "b", "c"],
+      answer: 2,
+    },
     { kind: "short-answer", prompt: "...", accept: ["..."] },
     { kind: "code-matches", prompt: "...", expect: /.../ },
   ],
@@ -254,12 +259,10 @@ export default defineSimulator({
     the motor speeds into x/y/heading.
   `,
   inputs: [
-    { name: "leftSpeed",  type: "double", range: [-1, 1] },
+    { name: "leftSpeed", type: "double", range: [-1, 1] },
     { name: "rightSpeed", type: "double", range: [-1, 1] },
   ],
-  outputs: [
-    { name: "pose", type: "Pose2d" },
-  ],
+  outputs: [{ name: "pose", type: "Pose2d" }],
   notes: "Real implementation ships in @learnrobotics/simulators later.",
 });
 ```
@@ -267,12 +270,12 @@ export default defineSimulator({
 ### `content/lib/define.ts`
 
 ```ts
-export const defineUnit      = <T extends UnitDef>(x: T) => x;
-export const defineChapter   = <T extends ChapterDef>(x: T) => x;
-export const defineLesson    = <T extends LessonDef>(x: T) => x;
-export const defineStarter   = <T extends StarterDef>(x: T) => x;
+export const defineUnit = <T extends UnitDef>(x: T) => x;
+export const defineChapter = <T extends ChapterDef>(x: T) => x;
+export const defineLesson = <T extends LessonDef>(x: T) => x;
+export const defineStarter = <T extends StarterDef>(x: T) => x;
 export const defineSimulator = <T extends SimulatorDef>(x: T) => x;
-export const defineQuiz      = <T extends QuizDef>(x: T) => x;
+export const defineQuiz = <T extends QuizDef>(x: T) => x;
 ```
 
 Thin identity functions. The type parameter is constrained so
@@ -322,7 +325,7 @@ A new `packages/content` package (zero-dep, pure TS):
 
   ```ts
   type ContentIndex = {
-    units: Unit[];                       // in directory order
+    units: Unit[]; // in directory order
     starters: Record<string, Starter>;
     simulators: Record<string, Simulator>;
     recordings: Record<string, RecordingHandle>;
@@ -429,7 +432,7 @@ Every highlight-tagged component renders a stable DOM attribute
 
 - `<Hl hid="pid-definition">proportional</Hl>` → recording can
   highlight the word `proportional` via `target:
-  "mdx:pid-definition"`.
+"mdx:pid-definition"`.
 - `<Figure hid="arm-diagram" src="..."/>` → outline the figure.
 - `<Video hid="motor-spinup" src="..."/>` → outline the video
   frame.
@@ -447,13 +450,13 @@ inserting a `highlight` event, so authors don't typo selectors.
 `courses-mock.ts` §`intro-to-learnrobotics`. One chapter
 (`01-orientation`) with five lessons:
 
-| File                            | kind    | notes                           |
-| ------------------------------- | ------- | ------------------------------- |
-| `01-editor-tour.mdx`            | code    | `starter: main-hello-world`, no recording yet |
-| `02-why-java.mdx`               | reading |                                 |
-| `03-time-management.mdx`        | reading | (deduped from the mock's dup id) |
-| `04-why-no-robot.mdx`           | reading |                                 |
-| `05-why-by-hand.mdx`            | reading |                                 |
+| File                     | kind    | notes                                         |
+| ------------------------ | ------- | --------------------------------------------- |
+| `01-editor-tour.mdx`     | code    | `starter: main-hello-world`, no recording yet |
+| `02-why-java.mdx`        | reading |                                               |
+| `03-time-management.mdx` | reading | (deduped from the mock's dup id)              |
+| `04-why-no-robot.mdx`    | reading |                                               |
+| `05-why-by-hand.mdx`     | reading |                                               |
 
 `content/units/02-intro-to-java/` — port from
 `courses-mock.ts` §`intro-to-java`. Eight chapters mapped
@@ -515,7 +518,7 @@ recorder's UI is a consumer of the content tree. The replay plan
   events-package R2 codec. Not this slice, but worth writing once
   recordings accumulate.
 - Student progress storage (D1-backed `status: todo/in-progress/
-  done/placement-passed` persistence).
+done/placement-passed` persistence).
 - Localization of lesson bodies — Paraglide covers UI strings;
   lesson MDX would need a translation workflow. For now,
   English-only.
@@ -544,9 +547,11 @@ Runtime:
 ## Files summary
 
 **New package**:
+
 - `packages/content/{package.json,src/{schema,types,load,validate,index}.ts,test/*}`.
 
 **New content tree** (stubs only this slice):
+
 - `content/units/01-intro-to-learnrobotics/`
   (`unit.yaml` + `01-orientation/` with five lesson stubs).
 - `content/units/02-intro-to-java/`
@@ -554,6 +559,7 @@ Runtime:
 - `content/starters/{main-hello-world,tip-calculator,variables-skeleton,oop-skeleton}/`.
 
 **Modified**:
+
 - `web/vite.config.ts` — MDX plugin wiring.
 - `web/package.json` — `@mdx-js/rollup`, remark plugins,
   `@learnrobotics/content`.

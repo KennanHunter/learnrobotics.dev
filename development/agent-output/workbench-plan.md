@@ -334,7 +334,7 @@ so a later reader doesn't think it's load-bearing.
   teavm's parse errors from runtime stdout.
 - Real `inspect()` wit export on ristretto: returns structured
   `{ threads: [{name, state, frames: [...]}], classes: [...],
-  exception: ... }`. The `InterpreterStatePanel` swaps its stubbed
+exception: ... }`. The `InterpreterStatePanel` swaps its stubbed
   data source for this with no visual changes.
 - Controller input panel: registers under `panels/ControllerPanel.tsx`,
   uses the Gamepad API. Drop into the Workbench's right column as a

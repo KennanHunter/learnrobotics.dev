@@ -87,9 +87,7 @@ export function FileTreeRow(props: FileTreeRowProps) {
       <span class={`file-tree-icon ${iconClass()}`} aria-hidden />
       <Show
         when={props.renaming}
-        fallback={
-          <span class="truncate">{props.node.name}</span>
-        }
+        fallback={<span class="truncate">{props.node.name}</span>}
       >
         <RenameInput
           initial={props.node.name}

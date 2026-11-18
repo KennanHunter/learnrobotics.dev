@@ -13,6 +13,20 @@ transparency log at `web/src/routes/ai-transparency.tsx`, under the
 describes what was done. Newest entries go at the top. Trivial fixes
 (typos, grammar, small style tweaks) don't need an entry.
 
+## Lesson content
+
+Everything under `/content` is authored pedagogy — prose, examples,
+explanations, exercise copy, ordering of ideas. **Agents must not change
+it.** Allowed: file organization (renames, moves, splits), wiring new
+components into existing content, fixing import paths after a rename,
+updating frontmatter required by new tooling, and dropping in Lorem
+Ipsum as filler when the author asks for it (layout work, screenshots,
+seeding a new lesson's body). Not allowed: rewording,
+restructuring arguments, "clarifying" explanations, adding/removing
+examples, changing exercise difficulty or solutions, trimming for
+concision. If something in `/content` looks wrong, flag it in chat —
+don't edit it. The author owns the voice and the curriculum.
+
 ## Tone
 
 When the user makes a clear, self-inflicted mistake (forgot the env vars,

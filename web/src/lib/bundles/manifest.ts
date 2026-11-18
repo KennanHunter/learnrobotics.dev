@@ -44,6 +44,8 @@ export const BUNDLES = {
 
 export type BundleName = keyof typeof BUNDLES;
 
-export function bundleEntry<N extends BundleName>(name: N): (typeof BUNDLES)[N] {
+export function bundleEntry<N extends BundleName>(
+  name: N,
+): (typeof BUNDLES)[N] {
   return BUNDLES[name];
 }

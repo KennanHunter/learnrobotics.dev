@@ -2,20 +2,19 @@ import { createSignal, For } from "solid-js";
 import { AiOutlineRight } from "solid-icons/ai/AiOutlineRight";
 import { StatusIcon } from "~/components/StatusIcon/StatusIcon";
 import type {
+  IndexedChapter,
+  IndexedLesson,
+  IndexedUnit,
   LessonImportance,
   LessonKind,
-  MockChapter,
-  MockCourse,
-  MockLesson,
-} from "~/lib/courses-mock";
+} from "~/lib/content";
+import { localizeHref } from "~/paraglide/runtime";
 
 const kindLabel: Record<LessonKind, string> = {
-  "markdown-code": "Code",
-  "java-console": "Java",
-  "java-sim": "Sim",
-  quiz: "Quiz",
-  video: "Video",
   reading: "Read",
+  code: "Code",
+  sim: "Sim",
+  quiz: "Quiz",
 };
 
 const importanceLabel: Record<LessonImportance, string> = {
@@ -30,7 +29,7 @@ const importanceClass: Record<LessonImportance, string> = {
   niche: "border-foreground-subtle text-foreground-subtle",
 };
 
-export function CourseRow(props: { course: MockCourse }) {
+export function CourseRow(props: { course: IndexedUnit }) {
   const [expanded, setExpanded] = createSignal(true);
 
   const progress = () => {
@@ -83,7 +82,7 @@ export function CourseRow(props: { course: MockCourse }) {
             }}
           >
             <For each={props.course.chapters}>
-              {(chapter) => <ChapterBox chapter={chapter} />}
+              {(chapter) => <ChapterBox unit={props.course} chapter={chapter} />}
             </For>
           </div>
         </div>
@@ -115,7 +114,7 @@ function CourseProgress(props: { done: number; total: number }) {
   );
 }
 
-function ChapterBox(props: { chapter: MockChapter }) {
+function ChapterBox(props: { unit: IndexedUnit; chapter: IndexedChapter }) {
   return (
     <div
       id={`chapter-${props.chapter.id}`}
@@ -129,19 +128,32 @@ function ChapterBox(props: { chapter: MockChapter }) {
       </p>
       <ul class="flex flex-col gap-1">
         <For each={props.chapter.lessons}>
-          {(lesson) => <LessonRow lesson={lesson} />}
+          {(lesson) => (
+            <LessonRow
+              unit={props.unit}
+              chapter={props.chapter}
+              lesson={lesson}
+            />
+          )}
         </For>
       </ul>
     </div>
   );
 }
 
-function LessonRow(props: { lesson: MockLesson }) {
-  return (
-    <li
-      class="-mx-2 flex items-center gap-3 rounded px-2 py-1 text-sm cursor-not-allowed transition-colors hover:bg-background-offset"
-      aria-disabled="true"
-    >
+function LessonRow(props: {
+  unit: IndexedUnit;
+  chapter: IndexedChapter;
+  lesson: IndexedLesson;
+}) {
+  const linkable = () => props.lesson.kind === "reading";
+  const href = () =>
+    localizeHref(
+      `/units/${props.unit.slug}/${props.chapter.slug}/${props.lesson.slug}`,
+    );
+
+  const inner = (
+    <>
       <StatusIcon status={props.lesson.status ?? "todo"} />
       <span class="w-10 shrink-0 font-mono text-[10px] uppercase tracking-wider text-foreground-subtle">
         {kindLabel[props.lesson.kind]}
@@ -155,6 +167,26 @@ function LessonRow(props: { lesson: MockLesson }) {
       <span class="w-10 shrink-0 pl-2 text-right font-mono text-xs text-foreground-subtle">
         {props.lesson.estMinutes}m
       </span>
+    </>
+  );
+
+  return (
+    <li>
+      {linkable() ? (
+        <a
+          href={href()}
+          class="-mx-2 flex items-center gap-3 rounded px-2 py-1 text-sm transition-colors hover:bg-background-offset"
+        >
+          {inner}
+        </a>
+      ) : (
+        <div
+          class="-mx-2 flex cursor-not-allowed items-center gap-3 rounded px-2 py-1 text-sm transition-colors hover:bg-background-offset"
+          aria-disabled="true"
+        >
+          {inner}
+        </div>
+      )}
     </li>
   );
 }

@@ -43,9 +43,7 @@ export function ContextMenu(props: ContextMenuProps) {
             <button
               type="button"
               class="block w-full px-3 py-1.5 text-left hover:bg-background-offset disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={
-                action.kind === "action" && action.enabled === false
-              }
+              disabled={action.kind === "action" && action.enabled === false}
               onClick={() => {
                 if (action.kind !== "action") return;
                 action.run();

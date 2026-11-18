@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { CourseRow } from "./CourseRow";
-import type { MockChapter, MockCourse, MockLesson } from "~/lib/courses-mock";
-import { mockCourses } from "~/lib/courses-mock";
+import type { IndexedChapter, IndexedLesson, IndexedUnit } from "~/lib/content";
+import { getContentIndex } from "~/lib/content";
+import { baseLocale } from "~/paraglide/runtime";
+
+const contentIndex = getContentIndex(baseLocale);
 
 const meta = {
   component: CourseRow,
@@ -20,38 +23,43 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const lesson = (overrides: Partial<MockLesson> = {}): MockLesson => ({
-  id: crypto.randomUUID(),
-  title: "A sample lesson",
-  kind: "reading",
-  estMinutes: 8,
-  difficulty: 1,
-  importance: "essential",
-  ...overrides,
-});
+const lesson = (overrides: Partial<IndexedLesson> = {}): IndexedLesson =>
+  ({
+    id: crypto.randomUUID(),
+    order: 1,
+    slug: "sample",
+    title: "A sample lesson",
+    kind: "reading",
+    estMinutes: 8,
+    difficulty: 1,
+    importance: "essential",
+    ...overrides,
+  }) as IndexedLesson;
 
-const chapter = (overrides: Partial<MockChapter> = {}): MockChapter => ({
+const chapter = (overrides: Partial<IndexedChapter> = {}): IndexedChapter => ({
   id: crypto.randomUUID(),
+  order: 1,
+  slug: "sample",
   title: "Sample chapter",
   description: "Short description of what this chapter covers.",
   lessons: [
     lesson({ title: "First lesson", kind: "reading", importance: "essential" }),
-    lesson({ title: "Second lesson", kind: "java-sim", importance: "useful" }),
+    lesson({ title: "Second lesson", kind: "sim", importance: "useful" }),
     lesson({ title: "Third lesson", kind: "quiz", importance: "niche" }),
   ],
   ...overrides,
 });
 
-const course = (overrides: Partial<MockCourse> = {}): MockCourse => ({
+const course = (overrides: Partial<IndexedUnit> = {}): IndexedUnit => ({
   id: crypto.randomUUID(),
+  order: 1,
+  slug: "sample",
   title: "Sample course",
   blurb: "A course used purely to verify layout.",
   chapters: [chapter()],
   ...overrides,
 });
 
-// A single chapter should fill the full width — the grid stays at one column
-// even on wide viewports.
 export const OneChapter: Story = {
   args: {
     course: course({
@@ -61,7 +69,6 @@ export const OneChapter: Story = {
   },
 };
 
-// Two chapters should snap to two columns at the md breakpoint.
 export const TwoChapters: Story = {
   args: {
     course: course({
@@ -74,9 +81,6 @@ export const TwoChapters: Story = {
   },
 };
 
-// Odd chapter count — the trailing chapter should fill the whole row rather
-// than sitting half-width next to empty space. Handled in CSS by
-// `:last-child:nth-child(odd)`.
 export const ThreeChapters: Story = {
   args: {
     course: course({
@@ -90,7 +94,6 @@ export const ThreeChapters: Story = {
   },
 };
 
-// Four chapters — clean 2x2 packing.
 export const FourChapters: Story = {
   args: {
     course: course({
@@ -105,8 +108,6 @@ export const FourChapters: Story = {
   },
 };
 
-// Long lesson titles — whitespace-nowrap means these can force the column
-// to grow. Watch for horizontal overflow or lopsided columns.
 export const LongLessonTitles: Story = {
   args: {
     course: course({
@@ -124,12 +125,12 @@ export const LongLessonTitles: Story = {
             }),
             lesson({
               title: "Inversion and why your drivetrain goes backwards",
-              kind: "java-sim",
+              kind: "sim",
             }),
             lesson({
               title:
                 "Grouping motors on one side for a differential drive train",
-              kind: "java-sim",
+              kind: "sim",
             }),
           ],
         }),
@@ -142,7 +143,7 @@ export const LongLessonTitles: Story = {
             }),
             lesson({
               title: "Deadzones and why they matter in competition",
-              kind: "java-sim",
+              kind: "sim",
             }),
           ],
         }),
@@ -151,16 +152,10 @@ export const LongLessonTitles: Story = {
   },
 };
 
-// Every real course from the mock data, so visual regressions anywhere in
-// the dataset show up in one place.
 export const RealCourseIntroJava: Story = {
-  args: { course: mockCourses.find((c) => c.id === "intro-to-java")! },
-};
-
-export const RealCourseTankDrive: Story = {
-  args: { course: mockCourses.find((c) => c.id === "program-a-tank-drive")! },
+  args: { course: contentIndex.units.find((c) => c.id === "intro-to-java")! },
 };
 
 export const RealCourseIntro: Story = {
-  args: { course: mockCourses[0]! },
+  args: { course: contentIndex.units[0]! },
 };

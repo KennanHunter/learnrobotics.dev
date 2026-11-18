@@ -69,16 +69,21 @@ function SourceSection(props: SourceProps) {
           </p>
         </div>
         <div class="text-right text-xs text-foreground-muted">
-          <div>{totals().pins} pins · {totals().objects} objects</div>
+          <div>
+            {totals().pins} pins · {totals().objects} objects
+          </div>
           <div>{formatBytes(totals().bytes)}</div>
         </div>
       </header>
       <Show when={props.source.error}>
         <p class="px-4 py-2 text-xs text-red-500">{props.source.error}</p>
       </Show>
-      <Show when={props.source.objects.length > 0} fallback={
-        <p class="px-4 py-4 text-sm text-foreground-muted">No objects.</p>
-      }>
+      <Show
+        when={props.source.objects.length > 0}
+        fallback={
+          <p class="px-4 py-4 text-sm text-foreground-muted">No objects.</p>
+        }
+      >
         <ObjectTable objects={props.source.objects} />
       </Show>
     </section>

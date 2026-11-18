@@ -38,4 +38,4 @@ jobs:
         env:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: node packages/bundling/bin/cli.mjs ci
+        run: pnpm tsx packages/bundling/bin/cli.ts ci

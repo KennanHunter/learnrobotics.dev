@@ -28,7 +28,11 @@ export function ensureBundle(
     log.info({ name, pin: entry.pin }, "fetching bundle");
     const compressed = await fetchBundleBytes(entry, options);
     log.info(
-      { name, bytes: compressed.length, ms: Math.round(performance.now() - t0) },
+      {
+        name,
+        bytes: compressed.length,
+        ms: Math.round(performance.now() - t0),
+      },
       "bundle bytes ready",
     );
 

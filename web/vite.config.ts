@@ -5,12 +5,30 @@ import solid from "vite-plugin-solid";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
+import mdx from "@mdx-js/rollup";
+import { mdRaw } from "./vite-plugins/md-raw";
 
 export default defineConfig({
+  // BetterAuth is configured against http://localhost:5173 — pin the dev
+  // server so cookies/redirects work. If 5173 is taken, fail fast rather
+  // than silently drift to 5174 and break login.
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+  assetsInclude: ["**/*.md"],
   plugins: [
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tanstackStart({ customViteSolidPlugin: true }),
-    solid({ ssr: true }),
+    mdRaw(),
+    {
+      enforce: "pre",
+      ...mdx({
+        jsx: true,
+        providerImportSource: "@learnrobotics/editor/mdx-provider",
+      }),
+    },
+    solid({ ssr: true, extensions: [".mdx"] }),
     tailwindcss(),
     paraglideVitePlugin({
       project: "./project.inlang",
@@ -71,7 +89,11 @@ export default defineConfig({
     exclude: ["solid-icons", "solid-icons/md", "solid-icons/ai"],
   },
   ssr: {
-    noExternal: ["solid-icons"],
+    noExternal: [
+      "solid-icons",
+      "@learnrobotics/editor",
+      "@learnrobotics/events",
+    ],
   },
   environments: {
     ssr: {

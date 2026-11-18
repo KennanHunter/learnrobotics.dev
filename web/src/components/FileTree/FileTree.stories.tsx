@@ -42,7 +42,12 @@ export const Default: Story = {
 export const AllExpanded: Story = {
   render: () => {
     const root = buildSample();
-    return <FileTree root={root} defaultExpandedKeys={collectAllDirectoryKeys(root)} />;
+    return (
+      <FileTree
+        root={root}
+        defaultExpandedKeys={collectAllDirectoryKeys(root)}
+      />
+    );
   },
 };
 
@@ -51,14 +56,21 @@ export const Empty: Story = {
 };
 
 export const SingleFile: Story = {
-  render: () => <FileTree root={generateDirectoryTree(["readme.md"], "solo")} />,
+  render: () => (
+    <FileTree root={generateDirectoryTree(["readme.md"], "solo")} />
+  ),
 };
 
 export const DeepNesting: Story = {
   render: () => {
     const path = "a/b/c/d/e/f/g/h/i/j/leaf.txt";
     const root = generateDirectoryTree([path], "deep");
-    return <FileTree root={root} defaultExpandedKeys={collectAllDirectoryKeys(root)} />;
+    return (
+      <FileTree
+        root={root}
+        defaultExpandedKeys={collectAllDirectoryKeys(root)}
+      />
+    );
   },
 };
 
@@ -67,14 +79,14 @@ export const LongNames: Story = {
     const long =
       "extraordinarily-long-filename-that-should-definitely-overflow-and-get-ellipsized-at-the-row-boundary.txt";
     const root = generateDirectoryTree(
-      [
-        long,
-        `folder-with-an-equally-long-name-for-stress-testing/${long}`,
-      ],
+      [long, `folder-with-an-equally-long-name-for-stress-testing/${long}`],
       "long",
     );
     return (
-      <FileTree root={root} defaultExpandedKeys={collectAllDirectoryKeys(root)} />
+      <FileTree
+        root={root}
+        defaultExpandedKeys={collectAllDirectoryKeys(root)}
+      />
     );
   },
 };
@@ -100,23 +112,47 @@ export const WithContextMenu: Story = {
     const root = buildSample();
     const getActions = (node: TreeNode): FileTreeAction[] => {
       const push = (msg: string) =>
-        setLog((prev) => [`${new Date().toLocaleTimeString()} — ${msg}`, ...prev].slice(0, 5));
+        setLog((prev) =>
+          [`${new Date().toLocaleTimeString()} — ${msg}`, ...prev].slice(0, 5),
+        );
       const actions: FileTreeAction[] = [];
       if (node.isDirectory) {
         actions.push(
-          { kind: "action", id: "newFile", label: "New File", run: () => push(`New File in ${node.path}`) },
-          { kind: "action", id: "newFolder", label: "New Folder", run: () => push(`New Folder in ${node.path}`) },
+          {
+            kind: "action",
+            id: "newFile",
+            label: "New File",
+            run: () => push(`New File in ${node.path}`),
+          },
+          {
+            kind: "action",
+            id: "newFolder",
+            label: "New Folder",
+            run: () => push(`New Folder in ${node.path}`),
+          },
           { kind: "separator" },
         );
       }
       actions.push(
-        { kind: "action", id: "rename", label: "Rename", run: () => push(`Rename ${node.path}`) },
-        { kind: "action", id: "delete", label: "Delete", run: () => push(`Delete ${node.path}`) },
+        {
+          kind: "action",
+          id: "rename",
+          label: "Rename",
+          run: () => push(`Rename ${node.path}`),
+        },
+        {
+          kind: "action",
+          id: "delete",
+          label: "Delete",
+          run: () => push(`Delete ${node.path}`),
+        },
       );
       return actions;
     };
     return (
-      <div style={{ display: "flex", "flex-direction": "column", height: "100%" }}>
+      <div
+        style={{ display: "flex", "flex-direction": "column", height: "100%" }}
+      >
         <div style={{ flex: 1, "min-height": 0 }}>
           <FileTree
             root={root}
@@ -168,7 +204,9 @@ function MutableTree(props: {
   };
 
   return (
-    <div style={{ display: "flex", "flex-direction": "column", height: "100%" }}>
+    <div
+      style={{ display: "flex", "flex-direction": "column", height: "100%" }}
+    >
       <div
         style={{
           padding: "4px 8px",
@@ -245,7 +283,10 @@ export const IconShowcase: Story = {
       "icons",
     );
     return (
-      <FileTree root={root} defaultExpandedKeys={collectAllDirectoryKeys(root)} />
+      <FileTree
+        root={root}
+        defaultExpandedKeys={collectAllDirectoryKeys(root)}
+      />
     );
   },
 };
@@ -256,7 +297,14 @@ function ThemedWrapper(props: { theme: "light" | "dark"; children: any }) {
     ref.classList.add(props.theme);
   });
   return (
-    <div ref={ref} style={{ height: "100%", background: "var(--color-background)", color: "var(--color-primary)" }}>
+    <div
+      ref={ref}
+      style={{
+        height: "100%",
+        background: "var(--color-background)",
+        color: "var(--color-primary)",
+      }}
+    >
       {props.children}
     </div>
   );
@@ -304,12 +352,33 @@ export const ControlledExternally: Story = {
     })();
 
     return (
-      <div style={{ display: "flex", "flex-direction": "column", height: "100%" }}>
-        <div style={{ padding: "4px 8px", "font-size": "11px", display: "flex", gap: "6px", "border-bottom": "1px solid rgba(128,128,128,0.2)" }}>
-          <button type="button" onClick={() => setExpanded(new Set(allKeys))}>Expand all</button>
-          <button type="button" onClick={() => setExpanded(new Set())}>Collapse all</button>
-          <button type="button" onClick={() => firstFile && setSelected(firstFile.key)}>Select first file</button>
-          <button type="button" onClick={() => setSelected(null)}>Clear selection</button>
+      <div
+        style={{ display: "flex", "flex-direction": "column", height: "100%" }}
+      >
+        <div
+          style={{
+            padding: "4px 8px",
+            "font-size": "11px",
+            display: "flex",
+            gap: "6px",
+            "border-bottom": "1px solid rgba(128,128,128,0.2)",
+          }}
+        >
+          <button type="button" onClick={() => setExpanded(new Set(allKeys))}>
+            Expand all
+          </button>
+          <button type="button" onClick={() => setExpanded(new Set())}>
+            Collapse all
+          </button>
+          <button
+            type="button"
+            onClick={() => firstFile && setSelected(firstFile.key)}
+          >
+            Select first file
+          </button>
+          <button type="button" onClick={() => setSelected(null)}>
+            Clear selection
+          </button>
         </div>
         <div style={{ flex: 1, "min-height": 0 }}>
           <FileTree
@@ -345,12 +414,20 @@ export const KeyboardDrivenPlayground: Story = {
   render: () => {
     const [log, setLog] = createSignal<string[]>([]);
     const root = buildSample();
-    const push = (msg: string) =>
-      setLog((prev) => [msg, ...prev].slice(0, 8));
+    const push = (msg: string) => setLog((prev) => [msg, ...prev].slice(0, 8));
     return (
-      <div style={{ display: "flex", "flex-direction": "column", height: "100%" }}>
-        <div style={{ padding: "6px 8px", "font-size": "11px", "border-bottom": "1px solid rgba(128,128,128,0.2)" }}>
-          Try: ↑/↓ move, →/← expand/collapse, Enter opens, F2 renames, Esc cancels.
+      <div
+        style={{ display: "flex", "flex-direction": "column", height: "100%" }}
+      >
+        <div
+          style={{
+            padding: "6px 8px",
+            "font-size": "11px",
+            "border-bottom": "1px solid rgba(128,128,128,0.2)",
+          }}
+        >
+          Try: ↑/↓ move, →/← expand/collapse, Enter opens, F2 renames, Esc
+          cancels.
         </div>
         <div style={{ flex: 1, "min-height": 0 }}>
           <FileTree

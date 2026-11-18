@@ -44,7 +44,7 @@ Constraints from the user:
 - Snapshot engine: precomputes periodic snapshots on load and uses
   them for O(≤N events-per-chunk) seek.
 - Clock-decoupled replay engine. A `ManualClock` + `<input
-  type="range">` scrubber is the first UI.
+type="range">` scrubber is the first UI.
 - Three-stage recorder route (`/dev/record/{setup,capture,edit}`):
   - **Setup**: lesson metadata + starter files → seeds the `init`
     event.
@@ -100,8 +100,8 @@ Files:
 - `src/recorder.ts` — thin FSM over the dispatcher: `idle` /
   `buffering` / `finalized`.
 - `src/snapshots.ts` — pure `buildSnapshots(events, {everyN,
-  everyMs})` and `resolveSeek(events, snapshots, currentIndex,
-  targetMs)`. No Monaco — operates on plain
+everyMs})` and `resolveSeek(events, snapshots, currentIndex,
+targetMs)`. No Monaco — operates on plain
   `Record<string, string>` through a `FileSink` interface.
 - `src/engine.ts` — `ReplayEngine`: wires events + snapshots + a
   `FileSink` + a `Clock`. Exposes `seek(tMs)`, `play()`, `pause()`,
@@ -118,7 +118,7 @@ Files:
   - `hashBundle(bundle): Promise<string>` — sha256 hex. This is
     the recording id.
   - `fetchRecording(baseUrl, id): Promise<{events, metadata,
-    audioUrl?}>` — browser-side fetch from R2.
+audioUrl?}>` — browser-side fetch from R2.
   - Node-compatible helpers for the GC script: `listRecordings`,
     `deleteRecording`. The package must work in both the browser
     and Node (no DOM assumptions in these functions).
@@ -146,12 +146,12 @@ Files:
     `cursor`.
   - `editor.onDidChangeCursorSelection` → throttled ~10 Hz
     `selection`.
-  Returns a disposer. If the caller's recorder is `idle`, it never
-  calls `bind-recorder` — listeners stay detached. Zero cost.
+    Returns a disposer. If the caller's recorder is `idle`, it never
+    calls `bind-recorder` — listeners stay detached. Zero cost.
 - `src/MonacoFileSink.ts` — `FileSink` implementation for the
   engine: `applyEdit` → `model.applyEdits`, `setActiveFile` →
   model switch, cursor/selection via `editor.setPosition /
-  setSelection`. File create/delete/rename operate on the passed
+setSelection`. File create/delete/rename operate on the passed
   `files` map plus Monaco model registry.
 - `src/HighlightOverlay.tsx` — renders `highlight` events as a
   transient outline/arrow over the targeted selector. Mounted by
@@ -160,13 +160,13 @@ Files:
   - `editor:line:<n>` → Monaco decoration on that line.
   - `editor:range:<l1>:<c1>:<l2>:<c2>` → Monaco decoration.
   - `mdx:<id>` → `document.querySelector("[data-mdx-id='<id>']")`
-    + overlay. This is the stable channel for pointing at
-    content the author tagged in their lesson MDX (a span of
-    prose, a figure, a video). See `content-plan.md` §"MDX
-    highlight targets" for the author-side components.
+    - overlay. This is the stable channel for pointing at
+      content the author tagged in their lesson MDX (a span of
+      prose, a figure, a video). See `content-plan.md` §"MDX
+      highlight targets" for the author-side components.
   - Any other string → treated as a raw CSS selector + overlay.
     Escape hatch for things the first three channels don't cover.
-  Overlay rendering handles three element kinds distinctly:
+    Overlay rendering handles three element kinds distinctly:
   - Inline text → a background-color highlight that follows the
     bounding boxes (handles wrapped lines).
   - Block (figure, image, video) → an outline around the bounds.
@@ -180,8 +180,8 @@ Files:
   2. Restores the student's stashed working buffer (see
      `src/code-stash.ts`).
   3. Flips the editor back to editable.
-  The banner is part of the editor package so the open-source
-  library ships with the UX, not just the mechanics.
+     The banner is part of the editor package so the open-source
+     library ships with the UX, not just the mechanics.
 - `src/code-stash.ts` — when the host enters replay mode, stashes
   the current `{ files, activeFile, cursor }` to an in-memory
   slot (keyed by lesson id) + optionally `localStorage` under
@@ -217,7 +217,12 @@ type ReplayEvent =
   | { t: number; type: "auto-pause"; resumeOn?: "edit" | "button" };
 
 type MonacoChange = {
-  range: { startLineNumber: number; startColumn: number; endLineNumber: number; endColumn: number };
+  range: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  };
   text: string;
 };
 type MonacoRange = MonacoChange["range"];
@@ -245,12 +250,13 @@ not exported for mutation.
 
 ```ts
 class EventDispatcher {
-  emit(event: ReplayEvent): void;        // appends, notifies subscribers, traces
+  emit(event: ReplayEvent): void; // appends, notifies subscribers, traces
   subscribe(fn: (e: ReplayEvent) => void): Disposer;
-  pause(): void; resume(): void;         // engine uses this during replay
-  isPaused(): boolean;                   // bind-recorder checks this
-  snapshot(): readonly ReplayEvent[];    // immutable view
-  clear(): void;                         // tests
+  pause(): void;
+  resume(): void; // engine uses this during replay
+  isPaused(): boolean; // bind-recorder checks this
+  snapshot(): readonly ReplayEvent[]; // immutable view
+  clear(): void; // tests
   setTrace(on: boolean): void;
 }
 ```
@@ -281,6 +287,7 @@ tool. The author writes the lesson MDX first (see
 pick which lesson they're recording for.
 
 Inputs:
+
 - **Lesson picker**: dropdown of every `code` or `sim` lesson in
   the content tree. Selecting a lesson auto-populates the
   starter from the lesson's `starter:` frontmatter.
@@ -333,21 +340,21 @@ the finalized `events` array. Never mutates the live dispatcher.
     `t`.
   - Rebuilds `init` from the mid-state file map and the active
     file at `tStart`.
-  Audio cropping deferred — same `[tStart, tEnd]` applies to the
-  blob when audio arrives.
+    Audio cropping deferred — same `[tStart, tEnd]` applies to the
+    blob when audio arrives.
 - **Insert highlight**: a form (target input + duration) + button
   at the current scrubber `t`. Calls `insertHighlight(events, t,
-  target, durationMs)`.
+target, durationMs)`.
 - **Insert auto-pause**: a toggle (`resumeOn: "edit" | "button"`) +
   button at current `t`. Calls `insertAutoPause(events, t,
-  resumeOn)`.
+resumeOn)`.
 - **Undo**: in-memory stack of previous event arrays. Covers
   accidental crops without over-engineering.
 - **Publish**: computes the sha256 of the canonical bundle via
   `encodeBundle` + `hashBundle` (events-package codec), POSTs the
   bundle to `/api/admin/upload-lesson` (server-side route holds
   R2 creds) which writes `lessons/<sha256>/{events.jsonl,
-  metadata.json,audio.webm}`. On success, the UI shows the id so
+metadata.json,audio.webm}`. On success, the UI shows the id so
   the author can paste it into the lesson's `recording:`
   frontmatter. Idempotent — same bytes → same id → same object.
 - **Export (fallback)**: download the bundle as a local zip if
@@ -380,7 +387,7 @@ On load:
    `events[i].t <= tMs`.
 2. Binary-search `snapshots` for the greatest snapshot with
    `eventIndex <= i`.
-3. If `currentEventIndex` is between snapshot and `i` *and* we are
+3. If `currentEventIndex` is between snapshot and `i` _and_ we are
    moving forward, apply `(currentEventIndex+1..i]` — normal
    `timeupdate` case.
 4. Otherwise (backward seek, or long forward jump): restore the
@@ -400,7 +407,7 @@ source: 6000 events × ~100 B = 600 KB. Snapshots every 200 events =
 
 ```ts
 interface Clock {
-  now(): number;              // ms since start
+  now(): number; // ms since start
   subscribe(fn: (t: number) => void): Disposer;
 }
 ```

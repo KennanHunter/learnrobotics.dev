@@ -217,7 +217,10 @@ export function Users() {
                         fallback={
                           <div
                             class="px-6 text-xs text-foreground-subtle"
-                            style={{ height: `${ROW_HEIGHT}px`, "line-height": `${ROW_HEIGHT}px` }}
+                            style={{
+                              height: `${ROW_HEIGHT}px`,
+                              "line-height": `${ROW_HEIGHT}px`,
+                            }}
                           >
                             …
                           </div>
@@ -387,19 +390,14 @@ function UserDetails(props: { userId: string }) {
               <KV k="Name" v={d().name || "—"} />
               <Show when={!d().isAnonymous}>
                 <KV k="Email" v={d().email ?? "—"} />
-                <KV
-                  k="Email verified"
-                  v={d().emailVerified ? "yes" : "no"}
-                />
+                <KV k="Email verified" v={d().emailVerified ? "yes" : "no"} />
               </Show>
               <KV k="Created" v={new Date(d().createdAt).toLocaleString()} />
               <KV k="Updated" v={new Date(d().updatedAt).toLocaleString()} />
             </Section>
             <Section
               title={
-                d().isAnonymous
-                  ? "Config"
-                  : `Accounts (${d().accounts.length})`
+                d().isAnonymous ? "Config" : `Accounts (${d().accounts.length})`
               }
             >
               <Show when={!d().isAnonymous}>
@@ -425,8 +423,7 @@ function UserDetails(props: { userId: string }) {
                             </div>
                           </Show>
                           <div class="text-xs text-foreground-subtle">
-                            linked{" "}
-                            {new Date(a.createdAt).toLocaleDateString()}
+                            linked {new Date(a.createdAt).toLocaleDateString()}
                           </div>
                         </li>
                       )}
@@ -501,8 +498,7 @@ function UserDetails(props: { userId: string }) {
                           </div>
                         </Show>
                         <div class="text-foreground-subtle">
-                          expires{" "}
-                          {new Date(s.expiresAt).toLocaleDateString()}
+                          expires {new Date(s.expiresAt).toLocaleDateString()}
                         </div>
                       </li>
                     )}
@@ -531,9 +527,7 @@ function Section(props: { title: any; children: any }) {
 function KV(props: { k: string; v: any }) {
   return (
     <div class="flex items-baseline gap-2">
-      <span class="w-28 shrink-0 text-xs text-foreground-muted">
-        {props.k}
-      </span>
+      <span class="w-28 shrink-0 text-xs text-foreground-muted">{props.k}</span>
       <span class="min-w-0 flex-1 break-words">{props.v}</span>
     </div>
   );

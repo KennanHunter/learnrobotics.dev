@@ -19,12 +19,10 @@ function AITransparency() {
             <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">
               AI Transparency
             </h1>
-
             <Note>
-              TLDR: Content is human written. AI is used for scoped and
+              TLDR: Content is human-written. AI is used for scoped and
               verifiable development tasks.
             </Note>
-
             <p class="text-foreground-muted">
               I find myself quite conflicted on AI use. First, a few goals of
               this course.
@@ -39,7 +37,7 @@ function AITransparency() {
                 Be immediately useful to students in <FIRST />.
               </li>
               <li>
-                Use our knowledge as Alumni and Mentors to understand what
+                Use my experience as a <FIRST /> alum to understand what
                 concepts are actually needed and when.
               </li>
             </ol>
@@ -54,19 +52,27 @@ function AITransparency() {
               the point they are at.
             </p>
             <p class="text-foreground-muted">
-              That being said, as a developer, being able to spin up features
-              fast is very powerful, and to avoid it completely would be making
-              my life harder for little reason. I used AI agents to write much
-              of our user management code. I feel comfortable doing that,
-              because at this point in my life, I've written user management
-              code probably 30 times from scratch, and can very quickly tell if
-              an important route is misconfigured. As an industry as a whole,
-              one of my biggest fears is that students and junior devs who are
-              building for the first time with expert-level programmers in their
-              terminal will miss out on the hard lessons: the days tracing
-              annoying errors or the error in prod you spend a frantic hour
-              fixing. Doing these myself I think built my debugging and analysis
-              skills much better than if I had AI at the time.
+              The best example of my process is probably the runtime which runs
+              Java in the browser. On paper I knew exactly how it should work,
+              but in practice the first library was way too slow, the next was
+              too heavy, and the JDK itself was huge and required some
+              optimizations. With AI I could try all three end to end in a day
+              instead of burning a week on each. Honestly, spending that much
+              time on approaches I was going to throw out would’ve just been
+              time not spent on lessons. The approach that stuck, I’ve gone
+              through myself and understand well, because if it breaks, students
+              can’t do anything. A lot of the smaller stuff in this project
+              works the same way.
+            </p>
+
+            <p class="text-foreground-muted">
+              As an industry as a whole, one of my biggest fears is that
+              students and junior devs who are building for the first time with
+              expert-level programmers in their terminal will miss out on the
+              hard lessons: the days tracing annoying errors or the error in
+              prod you spend a frantic hour fixing. Doing these myself I think
+              built my debugging and analysis skills much better than if I had
+              AI at the time.
             </p>
 
             <p class="text-foreground-muted">
@@ -78,10 +84,10 @@ function AITransparency() {
               kind of project, but right now, in pre-alpha, I want to get
               something real out as fast as possible, so I can get real feedback
               from users on what does and doesn't work, especially with the
-              looming deadline of the SystemCore release, where this course will
-              be uniquely helpful to students.
+              looming deadline of the Systemcore release, where this course will
+              be uniquely helpful to students, especially FTC students using
+              WPILib for the first time.
             </p>
-
             <p class="text-foreground-muted">
               It's also worth saying that once you learn to identify AI
               generated text, a fatigue sets in. To some extent it feels like if
@@ -96,7 +102,6 @@ function AITransparency() {
               ground between ensuring quality and voice, but not hindering
               development speed.
             </p>
-
             <p class="text-foreground-muted">
               So for now, here are the real rules. All lesson content is written
               by a real human. An AI might make critiques on conciseness and
@@ -104,14 +109,13 @@ function AITransparency() {
               links to available high-quality public resources, and do the due
               diligence on my side to make sure of accuracy.
             </p>
-
             <p class="text-foreground-muted">
               I do use AI for many programming tasks. The rules there are that
               it has to be either meticulously reviewed by me, or scoped in such
-              a way that quality is confirmed either with tests or by being
-              enough of a throw-away that a little slop is okay.
+              a way that quality is confirmed either with tests or is low-stakes
+              enough that small imperfections don't matter (like a placeholder
+              page).
             </p>
-
             <p class="text-foreground-muted">
               If the rambling wasn't a clue, I'm still working this out. If you
               have thoughts, I'd love to hear them.
@@ -128,30 +132,116 @@ function AITransparency() {
             <h2 class="text-xl font-semibold tracking-tight">
               Catalog of AI use (generated automatically)
             </h2>
+            <p class="text-foreground-muted">
+              Unfortunately generating a log of manual programming is a lot
+              harder. Every step here contains a lot of manual verification and
+              fixing.
+            </p>
+
             <ul class="space-y-5">
+              <TransparencyLogEntry
+                date="2026-11-18"
+                title="Content package + runtime markdown projection."
+              >
+                Moved <code>/content</code> into its own workspace package
+                (<code>@learnrobotics/content</code>) so it can declare
+                Solid and MDX dependencies directly, and exposed the lesson
+                index builder as <code>createContentRegistry</code>. The
+                plain-markdown projection consumed by the LLM output path
+                moved from a build-time MDX AST walk to a request-time
+                pipeline: SSR the lesson with a{" "}
+                <code>MarkdownRenderContext</code> flag set, then run the
+                HTML through turndown. New components (and interactive
+                figures) don&apos;t need bespoke AST handlers &mdash; they
+                either render semantic HTML or check{" "}
+                <code>useIsMarkdownRender()</code> to emit a summary variant.
+                Added a <code>LoremIpsum</code> filler component that imports
+                its sibling <code>.md</code> file and an <code>Opinion</code>{" "}
+                callout that round-trips through turndown as a labeled
+                blockquote. Deleted <code>strip-mdx.ts</code> and{" "}
+                <code>mdx-markdown.ts</code>.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-18"
+                title="Top bar mobile layout + status-icon reuse."
+              >
+                On narrow viewports the top bar now collapses the full{" "}
+                <code>Logo</code> to the compact <code>LogoSquare</code> and
+                moves the breadcrumb navigator to a second row under the
+                administrative chrome. Height is reported to the overlay system
+                via a <code>ResizeObserver</code> that writes{" "}
+                <code>--topbar-h</code> on the document element, so the grid
+                overlay still lands cleanly below the top bar when it grows. The
+                breadcrumb panel now shows lesson state with the shared{" "}
+                <code>StatusIcon</code> (same checkmark treatment as the course
+                index) instead of a bespoke dot. Added mobile stories for both{" "}
+                <code>TopBar</code> (390px and 320px frames, with/without
+                crumbs) and <code>BreadcrumbNav</code> (inline panel +
+                opened-over-host narrow views).
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-18"
+                title="Overlay system + breadcrumb mega-menu."
+              >
+                Reworked <code>ModalManager</code> into a grid-based overlay
+                system. The provider now renders a 12&times;12 grid pinned below
+                the top bar (via <code>--topbar-h</code>) and{" "}
+                <code>open()</code> takes options: <code>variant</code> (
+                <code>modal</code> / <code>panel</code> / <code>bare</code>),{" "}
+                <code>size</code> (<code>sm</code>&hellip;<code>full</code>
+                ), <code>anchor</code> (nine named positions), or explicit{" "}
+                <code>placement</code> with raw grid coords. Backdrop and
+                dismiss behavior are per-call toggles. Lesson pages&apos;
+                breadcrumb now opens through this system as a <code>panel</code>{" "}
+                at <code>top-end</code>, with a reworked layout (Unit / Chapter
+                on top, Lesson full-width below) and a subtler paper-style
+                callout around the reading pane. Added extensive Storybook
+                stories covering every size, anchor, variant, backdrop/dismiss
+                combination, and the breadcrumb panel itself (default, deep
+                unit, long titles, inline, all-done).
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-17"
+                title="Extracted editor + events into workspace packages."
+              >
+                Moved the Monaco glue out of{" "}
+                <code>web/src/components/editor/</code> into{" "}
+                <code>packages/editor/</code> (new workspace package{" "}
+                <code>@learnrobotics/editor</code>). Added a sibling{" "}
+                <code>packages/events/</code> (
+                <code>@learnrobotics/events</code>) with the{" "}
+                <code>ReplayEvent</code> schema, JSON-lines codec, and a single{" "}
+                <code>EventDispatcher</code> chokepoint for all future event
+                sources. The editor exposes a <code>bindRecorder</code> helper
+                that funnels Monaco edit/cursor/selection changes into the
+                dispatcher; the playground wires it unconditionally so setting{" "}
+                <code>localStorage.events:trace = "1"</code> prints a trace line
+                per event. No replay UI, no routes, and no behavior change yet —
+                this is the first slice of a larger event-record/replay feature.
+              </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-17"
                 title="Admin users page: search + per-user detail dropdown."
               >
                 The <code>/admin/users</code> route now accepts an optional{" "}
-                <code>?q=</code> search param that filters by name, email,
-                or user id (server-side LIKE, escaped). Rows are clickable
-                and expand inline to a three-column detail panel: identity
-                (id, verified, timestamps), linked accounts + user config,
-                and session activity (active count, last-seen, 10 most
-                recent sessions with IP/UA/expiry). Powered by a new{" "}
+                <code>?q=</code> search param that filters by name, email, or
+                user id (server-side LIKE, escaped). Rows are clickable and
+                expand inline to a three-column detail panel: identity (id,
+                verified, timestamps), linked accounts + user config, and
+                session activity (active count, last-seen, 10 most recent
+                sessions with IP/UA/expiry). Powered by a new{" "}
                 <code>getUserDetails</code> server function in{" "}
                 <code>web/src/server/admin.ts</code>; the virtualizer now
-                measures per-row so expanded entries push subsequent rows
-                down instead of overlapping.
+                measures per-row so expanded entries push subsequent rows down
+                instead of overlapping.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-17"
                 title="GitHub repo link in the top bar."
               >
-                Added a repository link (<code>AiFillGithub</code> icon,
-                same button styling as the theme toggle) immediately left
-                of the theme toggle in <code>TopBar</code>, pointing at{" "}
+                Added a repository link (<code>AiFillGithub</code> icon, same
+                button styling as the theme toggle) immediately left of the
+                theme toggle in <code>TopBar</code>, pointing at{" "}
                 <code>github.com/kennanhunter/learnrobotics.dev</code>.
               </TransparencyLogEntry>
               <TransparencyLogEntry
@@ -164,46 +254,45 @@ function AITransparency() {
                 <code>preview.learnrobotics.dev</code>, and{" "}
                 <code>localhost:5173</code>), and a new{" "}
                 <code>infra-security</code> GitHub Actions workflow that
-                reapplies every policy in <code>infra/</code> via wrangler
-                on push. Needed because the browser follows the
-                <code> /api/bundles/:kind/:pin</code> 302 to R2's origin,
-                where CORS is evaluated against the bucket — not the
-                worker.
+                reapplies every policy in <code>infra/</code> via wrangler on
+                push. Needed because the browser follows the
+                <code> /api/bundles/:kind/:pin</code> 302 to R2's origin, where
+                CORS is evaluated against the bucket — not the worker.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-17"
                 title="Collapse bundle authoring into one CLI."
               >
-                Merged the per-package <code>scripts/*.mjs</code> files
-                (teavm mirror/stage, runtime-bundle build/upload) into a
-                single CLI at{" "}
+                Merged the per-package <code>scripts/*.mjs</code> files (teavm
+                mirror/stage, runtime-bundle build/upload) into a single CLI at{" "}
                 <code>packages/bundling/bin/cli.mjs</code> with subcommands{" "}
                 <code>mirror-teavm</code>, <code>stage-teavm</code>,{" "}
                 <code>build-jdk</code>, <code>upload-runtime</code>, and{" "}
                 <code>ci</code>. The GitHub Actions workflow and justfile
-                targets now both call <code>node packages/bundling/bin/cli.mjs</code>,
-                so local and CI runs are the same code path. Deleted the
-                empty <code>webassembly/runtime-bundles</code> workspace
-                package; intermediate artifacts now land in{" "}
-                <code>packages/bundling/dist</code>. Also fixed a wrong
-                Corretto pin (<code>25.0.5.11.1</code> →{" "}
-                <code>25.0.5.1.2</code>) that was 403ing in CI.
+                targets now both call{" "}
+                <code>node packages/bundling/bin/cli.mjs</code>, so local and CI
+                runs are the same code path. Deleted the empty{" "}
+                <code>webassembly/runtime-bundles</code> workspace package;
+                intermediate artifacts now land in{" "}
+                <code>packages/bundling/dist</code>. Also fixed a wrong Corretto
+                pin (<code>25.0.5.11.1</code> → <code>25.0.5.1.2</code>) that
+                was 403ing in CI.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-17"
                 title="Shared bundling package + admin bundle inventory."
               >
-                Extracted R2 primitives (creds, AWS client, HEAD-checked
-                upload, signed GET, ListObjectsV2) into a new workspace
-                package <code>@learnrobotics/bundling</code> at{" "}
-                <code>packages/bundling</code>. Both the teavm-javac mirror
-                and the runtime-bundle pipeline now call into the same
-                helpers; their <code>config.mjs</code> /<code> upload.mjs</code>{" "}
-                / <code>stage.mjs</code> dropped to a dozen lines each.
-                Added an admin panel at <code>/admin/bundles</code> that
-                lists every bundle object in R2 — kind, pin, filename,
-                size, upload time, ETag — grouped by source prefix, backed
-                by a new <code>listBucketObjects</code> helper in{" "}
+                Extracted R2 primitives (creds, AWS client, HEAD-checked upload,
+                signed GET, ListObjectsV2) into a new workspace package{" "}
+                <code>@learnrobotics/bundling</code> at{" "}
+                <code>packages/bundling</code>. Both the teavm-javac mirror and
+                the runtime-bundle pipeline now call into the same helpers;
+                their <code>config.mjs</code> /<code> upload.mjs</code> /{" "}
+                <code>stage.mjs</code> dropped to a dozen lines each. Added an
+                admin panel at <code>/admin/bundles</code> that lists every
+                bundle object in R2 — kind, pin, filename, size, upload time,
+                ETag — grouped by source prefix, backed by a new{" "}
+                <code>listBucketObjects</code> helper in{" "}
                 <code>web/src/server/r2.ts</code>.
               </TransparencyLogEntry>
               <TransparencyLogEntry
@@ -212,21 +301,21 @@ function AITransparency() {
               >
                 Renamed <code>crates/compiler</code> + the matching
                 <code> @learnrobotics/compiler</code> JS package to
-                <code> runtime</code> — the ristretto-backed wasm actually
-                runs classes rather than producing them, and teavm already
-                owns the Java-to-class step. Taught the runtime to accept a{" "}
-                <code>java_home</code> preopen path + extra classpath
-                entries so it stops trying to download a JDK over{" "}
-                <code>wasi:http</code> (which the browser's preview2 shim
-                doesn't serve). Added a general, pinned "runtime bundle"
-                pipeline: the <code>packages/bundling</code> CLI builds
-                and pushes archives to R2 under
-                <code> bundles/&lt;kind&gt;/&lt;pin&gt;/</code>; the browser
-                lib at <code>web/src/lib/bundles</code> fetches via
+                <code> runtime</code> — the ristretto-backed wasm actually runs
+                classes rather than producing them, and teavm already owns the
+                Java-to-class step. Taught the runtime to accept a{" "}
+                <code>java_home</code> preopen path + extra classpath entries so
+                it stops trying to download a JDK over <code>wasi:http</code>{" "}
+                (which the browser's preview2 shim doesn't serve). Added a
+                general, pinned "runtime bundle" pipeline: the{" "}
+                <code>packages/bundling</code> CLI builds and pushes archives to
+                R2 under
+                <code> bundles/&lt;kind&gt;/&lt;pin&gt;/</code>; the browser lib
+                at <code>web/src/lib/bundles</code> fetches via
                 <code> /api/bundles/:kind/:pin</code>, caches the bytes in
-                IndexedDB, un-tars into the WASI virtual FS, and hands the
-                mount paths to the runtime. JDK is the first bundle; WPILib
-                and custom façades plug into the same kind/pin shape.
+                IndexedDB, un-tars into the WASI virtual FS, and hands the mount
+                paths to the runtime. JDK is the first bundle; WPILib and custom
+                façades plug into the same kind/pin shape.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-17"
@@ -246,10 +335,9 @@ function AITransparency() {
                 original; the tree widget itself is reimplemented in Solid
                 against the app's Tailwind theme (the upstream relied on
                 internal monaco 0.20 APIs that no longer exist in 0.57).
-                Filesystem mutations are left as callbacks — the component
-                emits intent rather than persisting anything. Headline
-                deliverable is a Storybook file with 17 stories for visual
-                fidelity.
+                Filesystem mutations are left as callbacks — the component emits
+                intent rather than persisting anything. Headline deliverable is
+                a Storybook file with 17 stories for visual fidelity.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-16"

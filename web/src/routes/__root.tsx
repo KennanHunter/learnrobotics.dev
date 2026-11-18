@@ -42,6 +42,8 @@ export const Route = createRootRoute({
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      // LLM-friendly index of all lessons. Served as text/markdown.
+      { rel: "describedby", href: "/api/llms", type: "text/markdown" },
     ],
   }),
   beforeLoad: async () => {
@@ -90,10 +92,12 @@ export const Route = createRootRoute({
 
 function RootDocument() {
   const ctx = Route.useRouteContext();
+
   const initialThemeClass = () => {
     const t = ctx().session?.theme;
     return t === "dark" || t === "light" ? t : "";
   };
+
   return (
     <html lang={getLocale()} class={initialThemeClass()}>
       <head>
