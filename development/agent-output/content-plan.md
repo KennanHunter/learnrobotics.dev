@@ -27,42 +27,54 @@ schema validators, and route loader.
 
 ```
 content/
+  lib/
+    define.ts                   # defineUnit/Chapter/Starter/Simulator/Lesson
+    types.ts                    # TS types for each
   units/
     01-intro-to-learnrobotics/
-      unit.yaml                 # unit metadata (title, blurb, order)
-      01-orientation/           # chapter dir, numbered for order
-        chapter.yaml            # chapter metadata (title, description)
+      unit.ts                   # exports default defineUnit({...})
+      01-orientation/
+        chapter.ts              # exports default defineChapter({...})
         01-editor-tour.mdx      # lesson files, numbered
         02-why-java.mdx
         ...
       02-second-chapter/
-        chapter.yaml
+        chapter.ts
         ...
     02-intro-to-java/
-      unit.yaml
+      unit.ts
       ...
   starters/
     main-hello-world/
-      starter.yaml              # id, title, files list
+      starter.ts                # exports default defineStarter({...})
       Main.java                 # file contents
     tip-calculator/
-      starter.yaml
+      starter.ts
       Main.java
       TipCalc.java
   simulators/
     tank-drive-basic/
-      simulator.yaml            # id, title, pseudocode stub, inputs/outputs
+      simulator.ts              # exports default defineSimulator({...})
     one-joint-arm/
-      simulator.yaml
+      simulator.ts
 
-# No content/recordings/ directory. Recordings are canonical in R2
-# only; the bucket is shared across local + prod.
+# No yaml anywhere, no content/recordings/. Recordings are canonical
+# in R2 only; the bucket is shared across local + prod.
 ```
 
 Numeric prefixes on directories and files give an unambiguous
-order without a separate manifest.  `unit.yaml`/`chapter.yaml`
-carry the human-facing metadata; the slug comes from the stripped
-directory name (`01-intro-to-learnrobotics` → `intro-to-learnrobotics`).
+order without a separate manifest. `unit.ts`/`chapter.ts` export
+a default-exported typed object built with `defineUnit` /
+`defineChapter`; the slug comes from the stripped directory name
+(`01-intro-to-learnrobotics` → `intro-to-learnrobotics`).
+
+Every content asset is authored as a `.ts` or `.mdx` file — no
+yaml, no json. Metadata objects are built through `defineX`
+helpers in `content/lib/define.ts`, which are thin
+identity-with-type functions (`<T>(x: T): T`) that give authors
+full editor autocomplete and compile-time validation. Runtime
+validation (Zod/Valibot) still runs at load time as a second
+layer against bad shapes from dynamic sources.
 
 Starters and simulators sit in sibling top-level folders so a
 lesson can reference the same `main-hello-world` starter from any
@@ -77,25 +89,31 @@ catches immediately.
 
 ## Lesson types
 
-Four `kind`s. Every lesson is an MDX file; the `kind` lives in
-frontmatter and dictates which component the MDX renders through.
+Four `kind`s. Every lesson is an MDX file; the lesson's metadata
+object is a **named export** called `meta`, built through
+`defineLesson`. The `kind` field on that object dictates which
+component wraps the MDX body.
 
 ### `reading`
 
 Plain prose + diagrams. MDX with Solid component embeds. No
 editor, no simulator, no recording.
 
-Frontmatter:
+```mdx
+import { defineLesson } from "../../../lib/define";
 
-```yaml
----
-id: why-java
-title: Why Java?
-kind: reading
-estMinutes: 5
-difficulty: 1
-importance: useful
----
+export const meta = defineLesson({
+  id: "why-java",
+  title: "Why Java?",
+  kind: "reading",
+  estMinutes: 5,
+  difficulty: 1,
+  importance: "useful",
+});
+
+# Why Java?
+
+(prose...)
 ```
 
 Renderer: `ReadingLesson.tsx` — centered column of MDX content.
@@ -106,20 +124,18 @@ MDX lesson body (narrative, code snippets, callouts) alongside a
 live editor pane. Optionally bound to a recording that the editor
 plays back; optionally seeded by a starter.
 
-Frontmatter:
-
-```yaml
----
-id: syntax
-title: Introduction to syntax
-kind: code
-estMinutes: 12
-difficulty: 1
-importance: essential
-starter: main-hello-world   # optional; refs content/starters/<id>/
-recording: 7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069  # optional; sha256 content hash
-language: java              # optional; defaults to java
----
+```mdx
+export const meta = defineLesson({
+  id: "syntax",
+  title: "Introduction to syntax",
+  kind: "code",
+  estMinutes: 12,
+  difficulty: 1,
+  importance: "essential",
+  starter: "main-hello-world",   // optional; refs content/starters/<id>/
+  recording: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",  // optional; sha256
+  language: "java",              // optional; defaults to java
+});
 ```
 
 The `recording` id is a **sha256 of the recording bundle**
@@ -148,20 +164,18 @@ itself ships as code from a future `@learnrobotics/simulators`
 package — this plan only standardizes the pseudocode descriptor
 in content so lesson authors can reference stable sim ids.
 
-Frontmatter:
-
-```yaml
----
-id: set-a-motor
-title: Setting a motor's speed
-kind: sim
-estMinutes: 15
-difficulty: 2
-importance: essential
-starter: tank-drive-skeleton
-simulator: tank-drive-basic
-recording: 7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069
----
+```mdx
+export const meta = defineLesson({
+  id: "set-a-motor",
+  title: "Setting a motor's speed",
+  kind: "sim",
+  estMinutes: 15,
+  difficulty: 2,
+  importance: "essential",
+  starter: "tank-drive-skeleton",
+  simulator: "tank-drive-basic",
+  recording: "7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+});
 ```
 
 Renderer: `SimLesson.tsx` — MDX pane, editor pane, simulator pane.
@@ -169,86 +183,104 @@ Three-column on wide screens; stacked on narrow.
 
 ### `quiz`
 
-Typed component exported from the MDX file as default. The MDX
-authors the explanation; the component owns the question types
-and grading.
+MDX authors the explanation; a `quiz` export owns the questions
+and grading rules.
 
-Frontmatter:
+```mdx
+export const meta = defineLesson({
+  id: "hello-java-quiz",
+  title: "Hello Java checkpoint",
+  kind: "quiz",
+  estMinutes: 8,
+  difficulty: 1,
+  importance: "essential",
+});
 
-```yaml
----
-id: hello-java-quiz
-title: Hello Java checkpoint
-kind: quiz
-estMinutes: 8
-difficulty: 1
-importance: essential
----
-```
-
-MDX body ends with:
-
-```tsx
 export const quiz = defineQuiz({
   questions: [
-    { kind: "multiple-choice", prompt: "...", choices: [...], answer: 2 },
+    { kind: "multiple-choice", prompt: "...", choices: ["a", "b", "c"], answer: 2 },
     { kind: "short-answer", prompt: "...", accept: ["..."] },
     { kind: "code-matches", prompt: "...", expect: /.../ },
   ],
 });
+
+# Hello Java checkpoint
+
+(prose explaining what the quiz covers)
 ```
 
-`defineQuiz` lives in a new `@learnrobotics/quiz` package (or
-`web/src/lib/quiz.ts` to start — split into a package when a
-second consumer appears). Question kinds are a discriminated
-union; adding a new kind means extending the union + its
-renderer. Renderer: `QuizLesson.tsx` — walks the questions,
-tracks per-question state, records a final score.
+`defineQuiz` lives in `content/lib/define.ts` next to the other
+helpers. Question kinds are a discriminated union; adding a new
+kind means extending the union + its renderer. Renderer:
+`QuizLesson.tsx` — walks the questions, tracks per-question
+state, records a final score.
 
-## Shared assets — schemas
+## Shared assets
 
-### `content/starters/<id>/starter.yaml`
+### `content/starters/<id>/starter.ts`
 
-```yaml
-id: main-hello-world
-title: Hello world skeleton
-language: java
-activeFile: Main.java
-files:
-  - Main.java
+```ts
+import { defineStarter } from "../../lib/define";
+
+export default defineStarter({
+  id: "main-hello-world",
+  title: "Hello world skeleton",
+  language: "java",
+  activeFile: "Main.java",
+  files: ["Main.java"],
+});
 ```
 
-File contents sit next to the yaml. The loader reads `files[]`
+File contents sit next to the `.ts`. The loader reads `files[]`,
+resolves siblings via `import.meta.glob("./*", { as: "raw" })`,
 and builds a `Record<string, string>`.
 
-### `content/simulators/<id>/simulator.yaml`
+### `content/simulators/<id>/simulator.ts`
 
 Pseudocode-level stub only — the real sim code belongs in a
 package. This file reserves the id and documents what the sim is
 supposed to do so content authors can point at it before the code
 exists.
 
-```yaml
-id: tank-drive-basic
-title: Basic tank drive
-description: |
-  Two motors, left and right. User code sets speeds in [-1, 1].
-  Sim renders a top-down rectangle on a field and integrates the
-  motor speeds into x/y/heading.
-inputs:
-  - name: leftSpeed
-    type: double
-    range: [-1, 1]
-  - name: rightSpeed
-    type: double
-    range: [-1, 1]
-outputs:
-  - name: pose
-    type: Pose2d
-notes: |
-  Real implementation ships in @learnrobotics/simulators later.
-  For now this file reserves the id.
+```ts
+import { defineSimulator } from "../../lib/define";
+
+export default defineSimulator({
+  id: "tank-drive-basic",
+  title: "Basic tank drive",
+  description: `
+    Two motors, left and right. User code sets speeds in [-1, 1].
+    Sim renders a top-down rectangle on a field and integrates
+    the motor speeds into x/y/heading.
+  `,
+  inputs: [
+    { name: "leftSpeed",  type: "double", range: [-1, 1] },
+    { name: "rightSpeed", type: "double", range: [-1, 1] },
+  ],
+  outputs: [
+    { name: "pose", type: "Pose2d" },
+  ],
+  notes: "Real implementation ships in @learnrobotics/simulators later.",
+});
 ```
+
+### `content/lib/define.ts`
+
+```ts
+export const defineUnit      = <T extends UnitDef>(x: T) => x;
+export const defineChapter   = <T extends ChapterDef>(x: T) => x;
+export const defineLesson    = <T extends LessonDef>(x: T) => x;
+export const defineStarter   = <T extends StarterDef>(x: T) => x;
+export const defineSimulator = <T extends SimulatorDef>(x: T) => x;
+export const defineQuiz      = <T extends QuizDef>(x: T) => x;
+```
+
+Thin identity functions. The type parameter is constrained so
+authors get full autocomplete + inline type errors. The actual
+union types (`UnitDef`, `LessonDef`, etc.) live in
+`content/lib/types.ts` and are re-exported from
+`packages/content` so other consumers (recorder, renderers) share
+the same source of truth.
 
 ### Recordings in R2
 
@@ -280,10 +312,11 @@ hands the URLs to the replay engine.
 
 A new `packages/content` package (zero-dep, pure TS):
 
-- `src/schema.ts` — Zod/Valibot schemas for `UnitMeta`,
-  `ChapterMeta`, `LessonFrontmatter` (discriminated by `kind`),
-  `StarterMeta`, `SimulatorMeta`, `RecordingMeta`.
-- `src/types.ts` — inferred TS types.
+- `src/types.ts` — re-exports from `content/lib/types.ts`. The
+  TS types are the source of truth; the runtime schemas are
+  derived from them.
+- `src/schema.ts` — Zod/Valibot schemas mirroring the TS types,
+  for second-layer runtime validation of the loaded index.
 - `src/load.ts` — at build time, reads the `/content/` tree via
   Vite's `import.meta.glob` and emits a typed `contentIndex`:
 
@@ -309,29 +342,84 @@ The `web/` app imports the index and routes it:
 ## MDX importer
 
 `web/vite.config.ts` gains `@mdx-js/rollup` (Solid variant) +
-`remark-frontmatter` + `remark-mdx-frontmatter`. The MDX file
-exports:
+`remark-frontmatter` + `remark-mdx-frontmatter`. The MDX file exports:
 
 - default — the body component.
-- `frontmatter` — typed via `LessonFrontmatter` after validation.
+- `meta` — the `defineLesson(...)` value (typed, no runtime
+  parsing from yaml).
 - `quiz` (quiz lessons only) — the `defineQuiz(...)` value.
 
-MDX components available in-body (`MDXProvider`):
+`remark-frontmatter` / `remark-mdx-frontmatter` are **not** used.
+Every piece of lesson metadata is a typed TS value.
+
+MDX components come from two places:
+
+**Global (provided via `MDXProvider`)** — content-agnostic
+primitives every lesson can use without importing:
 
 - `<Callout kind="note|warn|tip">…</Callout>`
 - `<CodeBlock language="java">…</CodeBlock>` — syntax-highlighted
   via the same highlighter the editor uses.
-- `<Figure src="..." caption="..." hid="...">` — images under
-  `/content/units/<unit>/<chapter>/_assets/`. `hid` is an
-  optional highlight id (see below).
-- `<Video src="..." hid="...">` — same shape as `Figure` for
-  video assets.
+- `<Figure src="..." caption="..." hid="...">` — images under a
+  sibling `_assets/` directory. `hid` is an optional highlight id.
+- `<Video src="..." hid="...">` — same shape as `Figure`.
 - `<Hl hid="...">…</Hl>` — wraps a run of inline text so a
   recording can point at it. Renders as a plain `<span>` with
   no visual styling by default; only the overlay (triggered by a
   `highlight` replay event) makes it visible.
 - Future: `<SimulatorInline id="...">` for embedded sim previews
   in reading lessons.
+
+**Lesson-local** — Solid components colocated with the content
+that uses them. A mecanum-drive chapter might ship:
+
+```
+content/units/03-advanced-drivetrains/01-mecanum/
+  chapter.ts
+  01-what-is-mecanum.mdx
+  02-mecanum-math.mdx
+  03-mecanum-drive-class.mdx
+  components/
+    MecanumWheelDemonstration.tsx   # SVG + Solid signals
+    StrafeVectorDiagram.tsx
+  _assets/
+    mecanum-wheel.png
+```
+
+Imported with a normal relative path inside the MDX:
+
+```mdx
+import { MecanumWheelDemonstration } from "./components/MecanumWheelDemonstration";
+
+# What a mecanum drive actually is
+
+<MecanumWheelDemonstration speed={0.5} />
+
+...prose...
+```
+
+Conventions:
+
+- A `components/` dir sits next to the MDX files that need it.
+  Siblings in the same directory share by relative import; nothing
+  magic, no registration step.
+- Components are plain Solid — free to use signals, `onMount`,
+  `createEffect`, imports from `@learnrobotics/editor` for inline
+  code, etc. They render into the content pane like any other
+  JSX child; no sandboxing.
+- Styling uses the app's existing Tailwind. Components live
+  under `/content/`, so the Tailwind config's `content` glob
+  must include `content/**/*.{ts,tsx,mdx}` for classes to be
+  picked up.
+- Keep components close to where they're used. A one-off diagram
+  for a single lesson goes in that chapter's `components/`; a
+  genuinely-reusable visualization that shows up in three units
+  gets promoted to `content/lib/components/` and imported from
+  there.
+- The `packages/content` loader doesn't need to know about these
+  components — they're ordinary module imports that Vite handles.
+  The loader only indexes `unit.ts`/`chapter.ts`/lesson MDX /
+  `starter.ts`/`simulator.ts`.
 
 ### MDX highlight targets
 
