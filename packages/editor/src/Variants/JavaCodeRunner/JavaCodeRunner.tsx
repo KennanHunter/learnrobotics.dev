@@ -2,6 +2,7 @@ import { Show, type JSX } from "solid-js";
 import type { EventDispatcher } from "@learnrobotics/events";
 import { CodeRunnerShell } from "../../Panels/CodeRunnerShell";
 import { PanelFrame } from "../../Panels/PanelFrame";
+import { ReplayControls } from "../../Panels/ReplayControls";
 import { TabGroup, type TabDef } from "../../Panels/TabGroup";
 import type { MonacoEditorProps } from "../../CodeEditor";
 import { useJavaCodeRunner, type ConsoleTab } from "./playground-store";
@@ -44,20 +45,6 @@ export function JavaCodeRunner(props: JavaCodeRunnerProps) {
   const store = useJavaCodeRunner();
   const L = () => props.labels ?? {};
 
-  function runLabel() {
-    if (store.bundleState() === "fetching")
-      return L().downloading ?? "Downloading dependencies…";
-    if (store.bundleState() === "failed") return L().retry ?? "Retry";
-    switch (store.runState()) {
-      case "compiling":
-        return L().compiling ?? "Compiling…";
-      case "running":
-        return L().running ?? "Running…";
-      default:
-        return L().run ?? "Run";
-    }
-  }
-
   const tabs = (): TabDef[] => [
     {
       id: "stdout",
@@ -81,36 +68,18 @@ export function JavaCodeRunner(props: JavaCodeRunnerProps) {
 
   const toolbarSlot = () => (
     <PanelFrame bare>
-      <div class="flex h-full min-h-0 items-center gap-3 px-3">
-        <div class="flex min-w-0 flex-1 items-center gap-3">
+      <div class="flex h-full min-h-0 items-stretch">
+        <div class="flex min-w-0 flex-1 items-center gap-3 border-r border-background-offset px-4 py-2">
           {props.toolbarLeft?.()}
         </div>
-        <div class="flex shrink-0 items-center gap-1">
-          <Show when={store.isBusy()}>
-            <button
-              type="button"
-              data-testid="playground-stop"
-              onClick={store.onStop}
-              class="rounded border border-background-offset px-3 py-1 text-xs hover:bg-background-offset"
-            >
-              {L().stop ?? "Stop"}
-            </button>
-          </Show>
-          <button
-            type="button"
-            data-testid="playground-run"
-            data-bundle-state={store.bundleState()}
-            data-run-state={store.runState()}
-            disabled={store.isBusy()}
-            onClick={store.onRun}
-            class="rounded bg-primary px-3 py-1 text-xs font-medium text-background hover:opacity-80 disabled:opacity-60"
-          >
-            {runLabel()}
-          </button>
+        <div class="flex shrink-0 items-center gap-3 px-4 py-2">
+          <ReplayControls />
         </div>
-        <div class="flex shrink-0 items-center gap-2">
-          {props.toolbarRight?.()}
-        </div>
+        <Show when={props.toolbarRight}>
+          <div class="flex shrink-0 items-center gap-2 border-l border-background-offset px-4 py-2">
+            {props.toolbarRight!()}
+          </div>
+        </Show>
       </div>
     </PanelFrame>
   );

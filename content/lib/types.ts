@@ -92,6 +92,8 @@ export type MultipleChoiceQuestion = {
   prompt: JSX.Element;
   choices: readonly JSX.Element[];
   answer: number;
+  /** Shown to the learner after an incorrect attempt; they can then retry. */
+  hint?: JSX.Element;
 };
 
 export type DragReorderQuestion = {
@@ -99,6 +101,8 @@ export type DragReorderQuestion = {
   kind: "drag-to-reorder";
   prompt: JSX.Element;
   items: readonly JSX.Element[];
+  /** Shown to the learner after an incorrect attempt; they can then retry. */
+  hint?: JSX.Element;
 };
 
 export type CodeUnitTestQuestion = {

@@ -1,11 +1,18 @@
-import { For, Match, Show, Switch, createMemo, type JSX } from "solid-js";
+import {
+  For,
+  Match,
+  Show,
+  Switch,
+  createMemo,
+  onMount,
+  type JSX,
+} from "solid-js";
 import type { QuizQuestion } from "@learnrobotics/content/types";
 import { LessonNav, type LessonNavLink } from "../../Shared";
 import { MarkdownCopy } from "../../Shared/MarkdownCopy";
 import { MultipleChoicePane } from "./MultipleChoicePane";
 import { DragReorderPane } from "./DragReorderPane";
 import { CodeQuestionStub } from "./CodeQuestionStub";
-import { ResultsPane } from "./ResultsPane";
 import { QuizProvider, useQuiz } from "./quiz-store";
 import type { QuizResult } from "./types";
 
@@ -67,6 +74,8 @@ function QuizInner() {
   const quiz = useQuiz();
   let topRef: HTMLDivElement | undefined;
   const allMastered = () => quiz.visibleQuestions().length === 0;
+  const hasUnlocked = () =>
+    quiz.visibleQuestions().some((q) => !quiz.isLocked(q.id));
 
   const handleSubmit = async () => {
     await quiz.submit();
@@ -84,7 +93,7 @@ function QuizInner() {
       }
     >
       <div ref={topRef} class="flex flex-col gap-6 scroll-mt-20">
-        <ProgressHeader onSubmit={handleSubmit} />
+        <QuizHeader onSubmit={handleSubmit} />
         <For each={quiz.visibleQuestions()}>
           {(question, index) => (
             <section class="flex flex-col gap-3 rounded border border-background-offset bg-background p-4">
@@ -111,20 +120,27 @@ function QuizInner() {
             </section>
           )}
         </For>
-        <Show
-          when={quiz.status() === "in-progress"}
-          fallback={<ResultsPane />}
-        >
+        <Show when={hasUnlocked()}>
           <button
             type="button"
             disabled={!quiz.canSubmit()}
             onClick={() => void handleSubmit()}
-            class="self-start rounded border border-accent bg-accent px-4 py-2 text-sm font-medium text-background disabled:cursor-not-allowed disabled:opacity-50"
+            class="self-end rounded border border-blue bg-blue px-4 py-2 text-sm font-medium text-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Submit
+            {quiz.status() === "submitted" ? "Resubmit" : "Submit"}
           </button>
         </Show>
       </div>
+    </Show>
+  );
+}
+
+function QuizHeader(props: { onSubmit: () => Promise<void> | void }) {
+  const quiz = useQuiz();
+  const submitted = () => quiz.status() === "submitted";
+  return (
+    <Show when={submitted()} fallback={<ProgressHeader onSubmit={props.onSubmit} />}>
+      <SubmissionSummary />
     </Show>
   );
 }
@@ -138,46 +154,82 @@ function ProgressHeader(props: { onSubmit: () => Promise<void> | void }) {
       .visibleQuestions()
       .filter((q) => d[q.id] !== undefined).length;
   });
-  const correct = createMemo(() =>
-    quiz.results().filter((a) => a.correct).length,
-  );
-  const submitted = () => quiz.status() === "submitted";
-
-  const value = () => (submitted() ? correct() : answered());
-  const pct = () => (total() === 0 ? 0 : (value() / total()) * 100);
-
-  const barClasses = () => {
-    if (!submitted()) return "bg-accent";
-    if (total() === 0) return "bg-emerald-500";
-    return correct() === total() ? "bg-emerald-500" : "bg-rose-500";
-  };
-
-  const label = () =>
-    submitted()
-      ? `${correct()} of ${total()} correct`
-      : `${answered()} of ${total()} answered`;
+  const pct = () => (total() === 0 ? 0 : (answered() / total()) * 100);
 
   return (
     <section class="flex flex-col gap-2 rounded border border-background-offset bg-background-offset/30 p-3">
       <div class="flex items-center justify-between gap-3">
-        <p class="text-xs font-medium tracking-wide">{label()}</p>
-        <Show when={!submitted()}>
-          <button
-            type="button"
-            disabled={!quiz.canSubmit()}
-            onClick={() => void props.onSubmit()}
-            class="rounded border border-accent bg-accent px-3 py-1 text-xs font-medium text-background disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Submit
-          </button>
-        </Show>
+        <p class="text-xs font-medium tracking-wide">
+          {answered()} of {total()} answered
+        </p>
+        <button
+          type="button"
+          disabled={!quiz.canSubmit()}
+          onClick={() => void props.onSubmit()}
+          class="rounded border border-blue bg-blue px-3 py-1 text-xs font-medium text-background focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Submit
+        </button>
       </div>
       <div class="h-1.5 w-full overflow-hidden rounded-full bg-background-offset">
         <div
-          class={`h-full transition-all ${barClasses()}`}
+          class="h-full bg-blue transition-all"
           style={{ width: `${pct()}%` }}
         />
       </div>
+    </section>
+  );
+}
+
+function SubmissionSummary() {
+  const quiz = useQuiz();
+  const correct = createMemo(() =>
+    quiz.results().filter((a) => a.correct).length,
+  );
+  const total = createMemo(() => quiz.results().length);
+  const incorrect = () => total() - correct();
+  const perfect = () => total() > 0 && correct() === total();
+
+  // Pull focus to the summary when it mounts so screen reader users land
+  // on the results instead of staying on the (now-hidden) submit button.
+  let sectionRef: HTMLElement | undefined;
+  onMount(() => sectionRef?.focus());
+
+  return (
+    <section
+      ref={sectionRef}
+      tabindex={-1}
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      class={`flex flex-col gap-3 rounded border p-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue ${
+        perfect()
+          ? "border-green bg-green/10"
+          : "border-background-offset bg-background-offset/30"
+      }`}
+    >
+      <div class="flex items-baseline justify-between gap-3">
+        <h3 class="text-sm font-semibold tracking-wide">
+          {perfect() ? "All correct." : "Results"}
+        </h3>
+        <button
+          type="button"
+          onClick={() => quiz.reset()}
+          class="rounded border border-background-offset px-3 py-1 text-xs font-medium hover:bg-background-offset focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue"
+        >
+          Retake
+        </button>
+      </div>
+      <p class="flex items-baseline gap-4 font-mono text-sm">
+        <span class="text-green">
+          <span class="text-lg font-semibold">{correct()}</span> correct
+        </span>
+        <span aria-hidden="true" class="text-foreground-subtle">·</span>
+        <span class={incorrect() === 0 ? "text-foreground-subtle" : "text-red"}>
+          <span class="text-lg font-semibold">{incorrect()}</span> incorrect
+        </span>
+        <span class="text-foreground-subtle">of {total()}</span>
+      </p>
     </section>
   );
 }

@@ -141,6 +141,51 @@ function AITransparency() {
             <ul class="space-y-5">
               <TransparencyLogEntry
                 date="2026-11-18"
+                title="Replay play/pause/seek UI stubs in the workbench toolbar."
+              >
+                Added a non-functional <code>ReplayControls</code> component
+                (play/pause toggle + range slider + percent readout) in{" "}
+                <code>packages/editor/src/Panels/</code> and wired it into
+                both the <code>JavaCodeRunner</code> and{" "}
+                <code>MarkdownRunner</code> toolbars in place of the Run
+                button. The Run/Stop affordances were removed from the
+                toolbar — the store's <code>onRun</code>/<code>onStop</code>
+                still exist for when a run surface lands elsewhere. Pure UI
+                placeholder; no recorder or player is attached yet.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-18"
+                title="Quiz submission, hints, resubmission + a11y + palette fixes."
+              >
+                Finished the long-planned quiz submit flow: on submit the page
+                scrolls to the top, where the progress bar is replaced by a
+                summary panel showing counts of correct and incorrect answers
+                plus a Retake button. Submission is no longer terminal —
+                questions a learner got right lock, questions they got wrong
+                stay editable and surface an optional author-authored{" "}
+                <code>hint</code> (new field on{" "}
+                <code>MultipleChoiceQuestion</code>/
+                <code>DragReorderQuestion</code>) so the learner can rework
+                the answer and resubmit. The correct answer is deliberately
+                not revealed. The summary is a <code>role="status"</code>{" "}
+                live region and pulls focus on mount so screen reader users
+                hear the result after submit. Multiple-choice panes are now
+                proper ARIA radio groups (<code>role=radiogroup</code> /{" "}
+                <code>role=radio</code> with <code>aria-checked</code>, roving
+                <code> tabindex</code>, and arrow/Home/End key navigation)
+                instead of a plain pile of buttons. Also ported the quiz UI
+                off Tailwind's default{" "}
+                <code>accent</code>/<code>emerald</code>/<code>rose</code>{" "}
+                palette names (which resolved to nothing under this project's{" "}
+                <code>--color-*: initial</code> reset — SVG was literally
+                rendering black) onto the project's real{" "}
+                <code>blue</code>/<code>green</code>/<code>red</code> tokens,
+                and registered <code>packages/editor/src</code> as a Tailwind{" "}
+                <code>@source</code> so classes in the editor package actually
+                get emitted.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-18"
                 title="Citation primitive for MDX lessons."
               >
                 Added a <code>&lt;Citation&gt;</code> MDX component

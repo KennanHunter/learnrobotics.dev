@@ -30,10 +30,14 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
     });
   });
 
-  const submitted = () => quiz.status() === "submitted";
+  const locked = () => quiz.isLocked(props.question.id);
   const result = createMemo(() =>
     quiz.results().find((r) => r.questionId === props.question.id),
   );
+  const showHint = () =>
+    quiz.hasAttempted(props.question.id) &&
+    !locked() &&
+    props.question.hint !== undefined;
 
   const moveTo = (fromSlot: number, toSlot: number) => {
     if (fromSlot === toSlot) return;
@@ -55,19 +59,20 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
         <For each={order()}>
           {(originalIndex, slot) => {
             const isCorrectSlot = () => originalIndex === slot();
+            const graded = () => result() !== undefined;
             const classes = () => {
               const base =
                 "flex items-center gap-3 rounded border px-3 py-2 text-sm";
-              if (!submitted()) {
+              if (!graded()) {
                 return `${base} cursor-grab border-background-offset bg-background hover:bg-background-offset active:cursor-grabbing`;
               }
               return isCorrectSlot()
-                ? `${base} border-emerald-500 bg-emerald-500/10`
-                : `${base} border-rose-500 bg-rose-500/10`;
+                ? `${base} border-green bg-green/10`
+                : `${base} border-red bg-red/10`;
             };
             return (
               <li
-                draggable={!submitted()}
+                draggable={!locked()}
                 onDragStart={() => setDragging(slot())}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
@@ -86,7 +91,7 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
                   {slot() + 1}
                 </span>
                 <span class="flex-1">{props.question.items[originalIndex]}</span>
-                <Show when={!submitted()}>
+                <Show when={!locked()}>
                   <span class="text-foreground-muted">⠿</span>
                 </Show>
               </li>
@@ -94,18 +99,27 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
           }}
         </For>
       </ol>
-      <Show when={submitted() && result()}>
+      <Show when={result()}>
         {(r) => (
           <p
             class={
-              r().correct
-                ? "text-xs text-emerald-600"
-                : "text-xs text-rose-600"
+              r().correct ? "text-xs text-green" : "text-xs text-red"
             }
           >
             {r().correct ? "Correct." : "Incorrect."}
           </p>
         )}
+      </Show>
+      <Show when={showHint()}>
+        <aside
+          class="rounded border border-background-offset bg-background-offset/30 px-3 py-2 text-xs text-foreground-muted"
+          role="note"
+        >
+          <span class="mr-1 font-mono text-[10px] uppercase tracking-widest text-foreground-subtle">
+            Hint
+          </span>
+          {props.question.hint}
+        </aside>
       </Show>
     </div>
   );

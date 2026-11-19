@@ -6,3 +6,4 @@ export {
   LessonArticlePane,
   type LessonArticlePaneProps,
 } from "./LessonArticlePane";
+export { ReplayControls } from "./ReplayControls";

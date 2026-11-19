@@ -2,6 +2,7 @@ import {
   createContext,
   createMemo,
   createSignal,
+  untrack,
   useContext,
   type Accessor,
   type JSX,
@@ -24,6 +25,10 @@ export type QuizStoreValue = {
   drafts: Accessor<Record<string, AnswerDraft | undefined>>;
   setDraft: (id: string, draft: AnswerDraft) => void;
   results: Accessor<readonly QuizAnswer[]>;
+  /** A question is locked once it has been graded correct — no more edits. */
+  isLocked: (id: string) => boolean;
+  /** True once the question has been submitted at least once (used for hints). */
+  hasAttempted: (id: string) => boolean;
   canSubmit: Accessor<boolean>;
   submit: () => Promise<void>;
   reset: () => void;
@@ -48,6 +53,9 @@ export function QuizProvider(props: QuizProviderProps) {
   >({});
   const [status, setStatus] = createSignal<QuizStatus>("in-progress");
   const [results, setResults] = createSignal<readonly QuizAnswer[]>([]);
+  const [attemptedIds, setAttemptedIds] = createSignal<ReadonlySet<string>>(
+    new Set(),
+  );
 
   const visibleQuestions = createMemo(() => {
     const mastered = props.mastered;
@@ -73,14 +81,37 @@ export function QuizProvider(props: QuizProviderProps) {
     return indices;
   };
 
+  const isLocked = (id: string) => {
+    const r = results().find((a) => a.questionId === id);
+    return r?.correct === true;
+  };
+  const hasAttempted = (id: string) => attemptedIds().has(id);
+
   const setDraft = (id: string, draft: AnswerDraft) => {
-    setDrafts((prev) => ({ ...prev, [id]: draft }));
+    // setDraft is called from createEffect bodies in DragReorderPane and
+    // CodeQuestionStub. Reading reactive state here would make `results`
+    // a tracked dep of those effects, and writing to `results` below would
+    // then re-fire them in an infinite loop. Untrack the reads so only
+    // the UI (memos reading `results`) reacts to grading changes.
+    untrack(() => {
+      if (isLocked(id)) return;
+      setDrafts((prev) => ({ ...prev, [id]: draft }));
+      const existing = results();
+      if (existing.some((a) => a.questionId === id)) {
+        // Had a prior (incorrect) grade — clear it so the UI reverts to the
+        // pre-submit look. Hint stays visible via attemptedIds.
+        setResults(existing.filter((a) => a.questionId !== id));
+      }
+    });
   };
 
   const canSubmit = createMemo(() => {
-    if (status() === "submitted") return false;
     const d = drafts();
-    return visibleQuestions().every((q) => d[q.id] !== undefined);
+    const qs = visibleQuestions();
+    if (!qs.every((q) => d[q.id] !== undefined)) return false;
+    if (status() === "in-progress") return true;
+    // Submitted: allow resubmit only while at least one question is unlocked.
+    return !qs.every((q) => isLocked(q.id));
   });
 
   const grade = (
@@ -121,8 +152,17 @@ export function QuizProvider(props: QuizProviderProps) {
 
   const submit = async () => {
     const d = drafts();
-    const answers = visibleQuestions().map((q) => grade(q, d[q.id]));
+    const prevById = new Map(
+      results().map((r) => [r.questionId, r] as const),
+    );
+    // Preserve already-correct answers verbatim; grade the rest fresh.
+    const answers = visibleQuestions().map((q) => {
+      const prev = prevById.get(q.id);
+      if (prev?.correct) return prev;
+      return grade(q, d[q.id]);
+    });
     setResults(answers);
+    setAttemptedIds(new Set(visibleQuestions().map((q) => q.id)));
     setStatus("submitted");
     const payload: QuizResult = {
       quizId: props.quizId,
@@ -135,6 +175,7 @@ export function QuizProvider(props: QuizProviderProps) {
   const reset = () => {
     setDrafts({});
     setResults([]);
+    setAttemptedIds(new Set<string>());
     setStatus("in-progress");
     shuffleCache.clear();
   };
@@ -146,6 +187,8 @@ export function QuizProvider(props: QuizProviderProps) {
     drafts,
     setDraft,
     results,
+    isLocked,
+    hasAttempted,
     canSubmit,
     submit,
     reset,

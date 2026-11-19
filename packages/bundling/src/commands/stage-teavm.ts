@@ -1,6 +1,7 @@
 // Fetch the pinned teavm-javac artifacts from R2 and stage them into the
-// teavm-compiler package's dist, where the web app imports them from.
-// Local-dev flow; CI doesn't need this.
+// teavm-compiler package's dist, where the web app imports them from
+// (`@learnrobotics/teavm-compiler/compiler.wasm?url`). Needed by both
+// local dev and any CI job that runs the vite build / dev server.
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { R2_BUCKET, TEAVM_FILES, TEAVM_PIN, teavmKey } from "../catalog.ts";

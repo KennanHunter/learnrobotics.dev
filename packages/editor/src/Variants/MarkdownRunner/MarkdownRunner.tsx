@@ -1,8 +1,8 @@
-import { type JSX } from "solid-js";
+import { Show, type JSX } from "solid-js";
 import { CodeRunnerShell } from "../../Panels/CodeRunnerShell";
 import { PanelFrame } from "../../Panels/PanelFrame";
+import { ReplayControls } from "../../Panels/ReplayControls";
 import type { MonacoEditorProps } from "../../CodeEditor";
-import { useMarkdownRunner } from "./markdown-store";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 import { MarkdownPreviewPane } from "./MarkdownPreviewPane";
 
@@ -23,25 +23,22 @@ export type MarkdownRunnerProps = {
 };
 
 export function MarkdownRunner(props: MarkdownRunnerProps) {
-  const store = useMarkdownRunner();
   const L = () => props.labels ?? {};
 
   const toolbarSlot = () => (
     <PanelFrame bare>
-      <div class="flex h-full min-h-0 items-center gap-3 px-3">
-        <div class="flex min-w-0 flex-1 items-center gap-3">
+      <div class="flex h-full min-h-0 items-stretch">
+        <div class="flex min-w-0 flex-1 items-center gap-3 border-r border-background-offset px-4 py-2">
           {props.toolbarLeft?.()}
         </div>
-        <button
-          type="button"
-          onClick={store.renderNow}
-          class="rounded bg-primary px-3 py-1 text-xs font-medium text-background hover:opacity-80"
-        >
-          {L().run ?? "Run"}
-        </button>
-        <div class="flex shrink-0 items-center gap-2">
-          {props.toolbarRight?.()}
+        <div class="flex shrink-0 items-center gap-3 px-4 py-2">
+          <ReplayControls />
         </div>
+        <Show when={props.toolbarRight}>
+          <div class="flex shrink-0 items-center gap-2 border-l border-background-offset px-4 py-2">
+            {props.toolbarRight!()}
+          </div>
+        </Show>
       </div>
     </PanelFrame>
   );

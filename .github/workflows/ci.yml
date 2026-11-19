@@ -101,6 +101,14 @@ jobs:
       - name: Transpile runtime component
         run: pnpm --filter '@learnrobotics/runtime' build
 
+      # Playwright drives the real dev server; the playground route imports
+      # @learnrobotics/teavm-compiler/compiler.wasm?url, which is staged here.
+      - name: Stage teavm artifacts
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: pnpm tsx packages/bundling/bin/cli.ts stage-teavm
+
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
@@ -151,6 +159,14 @@ jobs:
 
       - name: Transpile runtime component
         run: pnpm --filter '@learnrobotics/runtime' build
+
+      # The vite build imports @learnrobotics/teavm-compiler/compiler.wasm?url;
+      # that directory is populated by `stage-teavm` from the pinned R2 copy.
+      - name: Stage teavm artifacts
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: pnpm tsx packages/bundling/bin/cli.ts stage-teavm
 
       # Requires repo secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
       - name: Deploy preview (main)
