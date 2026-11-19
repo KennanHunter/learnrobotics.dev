@@ -12,7 +12,9 @@ test("web worker drives compile — phase transitions + real javac diagnostic", 
     if (msg.type() === "error") consoleErrors.push(msg.text());
   });
 
-  await page.goto("/en/playground");
+  // `?s=` selects a starter so the JavaCodeRunner mounts; plain
+  // `/playground` now renders the StarterPicker instead.
+  await page.goto("/en/playground?s=main-hello-world");
 
   const runButton = page.getByTestId("playground-run");
   await expect(runButton).toHaveAttribute("data-phase", "idle");

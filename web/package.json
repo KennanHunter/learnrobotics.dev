@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev 2>&1 | sed -u 's/^stdout: //; s/^stderr: //' | pino-pretty --colorize --translateTime 'SYS:HH:MM:ss.l' --ignore pid,hostname,env --messageFormat '{scope} · {msg}'",
+    "dev:plain": "vite dev",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

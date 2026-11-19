@@ -15,7 +15,10 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "pnpm dev",
+    // `pnpm dev` pipes vite through pino-pretty, which hides vite's startup
+    // output in CI (non-TTY stdout) and makes the webServer wait look like
+    // a hang. Use plain vite under CI so failures are visible.
+    command: process.env.CI ? "pnpm dev:plain" : "pnpm dev",
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

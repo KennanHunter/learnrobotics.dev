@@ -66,6 +66,13 @@ export function JavaCodeRunner(props: JavaCodeRunnerProps) {
     },
   ];
 
+  const runLabel = () => {
+    const l = L();
+    if (store.runState() === "compiling") return l.compiling ?? "Compiling…";
+    if (store.runState() === "running") return l.running ?? "Running…";
+    return l.run ?? "Run";
+  };
+
   const toolbarSlot = () => (
     <PanelFrame bare>
       <div class="flex h-full min-h-0 items-stretch">
@@ -73,6 +80,16 @@ export function JavaCodeRunner(props: JavaCodeRunnerProps) {
           {props.toolbarLeft?.()}
         </div>
         <div class="flex shrink-0 items-center gap-3 px-4 py-2">
+          <button
+            type="button"
+            data-testid="playground-run"
+            data-phase={store.runState()}
+            disabled={store.isBusy()}
+            onClick={() => store.onRun()}
+            class="inline-flex items-center gap-1.5 rounded border border-background-offset bg-primary px-3 py-1 text-xs font-medium text-background shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {runLabel()}
+          </button>
           <ReplayControls />
         </div>
         <Show when={props.toolbarRight}>
