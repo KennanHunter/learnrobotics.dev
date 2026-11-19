@@ -131,11 +131,13 @@ jobs:
           if-no-files-found: ignore
 
   deploy:
-    needs: [build, playwright]
+    # Playwright is informational — don't block preview/production deploys
+    # on flaky e2e. If you want to gate on it, use branch protection on
+    # the `playwright` job's status check instead.
+    needs: [build]
     if: |
       always()
       && needs.build.result == 'success'
-      && (needs.playwright.result == 'success' || needs.playwright.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

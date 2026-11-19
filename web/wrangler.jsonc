@@ -27,7 +27,7 @@
   "vars": {
     "DEPLOYMENT_URL": "https://preview.learnrobotics.dev",
     "ENVIRONMENT": "preview",
-    "ADMIN_GITHUB_USER_ID": "",
+    "ADMIN_GITHUB_USER_ID": "64097683",
     "R2_ACCOUNT_ID": "1de9d7646d10b16be16d4afc4ac9a19b"
   },
   "env": {
@@ -55,7 +55,7 @@
       "vars": {
         "DEPLOYMENT_URL": "https://learnrobotics.dev",
         "ENVIRONMENT": "alpha",
-        "ADMIN_GITHUB_USER_ID": "",
+        "ADMIN_GITHUB_USER_ID": "64097683",
         "R2_ACCOUNT_ID": "1de9d7646d10b16be16d4afc4ac9a19b"
       }
     }
