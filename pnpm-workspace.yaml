@@ -3,11 +3,14 @@ packages:
   - webassembly/*
   - packages/*
   - content
+
 catalog:
   solid-icons: "github:KennanHunter/solid-icons#main"
+
 allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+
 patchedDependencies:
   "@tanstack/start-client-core": patches/@tanstack__start-client-core.patch

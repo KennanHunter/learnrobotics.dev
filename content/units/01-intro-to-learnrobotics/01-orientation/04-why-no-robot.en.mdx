@@ -2,14 +2,34 @@ import { defineLesson } from "../../../lib/define";
 import { LoremIpsum } from "../../../lib/components/LoremIpsum/LoremIpsum";
 
 export const meta = defineLesson({
-  id: "why-no-robot",
-  title: "Why start learning Java without a robot?",
-  kind: "reading",
-  estMinutes: 6,
-  difficulty: 1,
-  importance: "useful",
+    id: "why-no-robot",
+    title: "Why start learning Java without a robot?",
+    kind: "reading",
+    estMinutes: 6,
+    difficulty: 1,
+    importance: "useful",
 });
 
-# Why start learning Java without a robot?
+A lot of resources for FIRST programming either expect you to come in already
+knowing Java, or throw you in the deep end way too quickly. There exist good
+resources for learning Java out there, but I think some of them focus on
+aspects that arn't particularly useful for robotics. I try and cover more than
+the bare minimum for writing robot code, but trying to ensure you know
+exactly what is and isn't useful is a big reason as to why I
+include importance tags on every lesson.
 
-<LoremIpsum />
+The problem I had teaching students directly with robots, is that programming is
+hard. If you only have two hours a week with a robot, it may take a month to get to
+the point that you can start really writing code.
+
+Robots are also really hard. Just the robot specific parts of programming are worthy of
+their own course on their own, and I think trying to learn both of them at the same time
+will understandably be overwhelming to many people.
+
+Often the byproduct of this, especially on teams with good training pipelines, is that
+you'll learn the absolute bare minimum to start writing robot code, then worry about
+all the robot specific things. This will hurt long term because you'll lack some of the
+fundamentals that are needed to excel at the more complicated parts of development.
+
+Long term there are better resources for doing robot development outside of our included,
+and we teach you how to use them at TBD

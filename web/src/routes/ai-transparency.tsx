@@ -140,6 +140,40 @@ function AITransparency() {
 
             <ul class="space-y-5">
               <TransparencyLogEntry
+                date="2026-11-20"
+                title="code-markdown quiz question type."
+              >
+                Wired up the previously type-only{" "}
+                <code>code-markdown</code> question kind. Quizzes now render
+                a Monaco markdown editor inline for these questions, with a
+                Check button that runs the author-supplied{" "}
+                <code>test(content)</code> and displays the returned string
+                as live feedback. On submit, the answer is graded correct
+                if the content is non-empty (participation-style) and the
+                test's return value is stored in the result payload. New
+                pane at{" "}
+                <code>packages/editor/src/Variants/Quiz/CodeMarkdownPane.tsx</code>;
+                quiz store grows a matching <code>AnswerDraft</code> case.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Tabbed Chart.js language-popularity graph in the Why Java? lesson."
+              >
+                Added a <code>LanguageUsageGraph</code> component under{" "}
+                <code>
+                  content/units/01-intro-to-learnrobotics/01-orientation/components/LanguageUsageGraph/
+                </code>{" "}
+                that renders the top 15 languages from two sources — the Stack
+                Overflow 2026 Developer Survey (ODbL 1.0) and the TIOBE Index
+                for November 2026 — in a tabbed Chart.js horizontal bar chart,
+                with Java visually highlighted and both sources cited inline.
+                Full source data is checked in as JSON next to the component;
+                truncation to top-15 happens in the component. Wired into{" "}
+                <code>02-why-java.en.mdx</code>. <code>chart.js</code> was
+                added as a dependency to both <code>web</code> and{" "}
+                <code>content</code>.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
                 date="2026-11-18"
                 title="Replay play/pause/seek UI stubs in the workbench toolbar."
               >

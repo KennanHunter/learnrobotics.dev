@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "./prose.css";
 @source "../../packages/editor/src/**/*.{ts,tsx}";
+@source "../../content/**/*.{ts,tsx,mdx}";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -12,7 +13,7 @@
   --color-primary: light-dark(#121212, #fffbfc);
   --color-background: light-dark(#f6f3f4, #121212);
   --color-background-offset: light-dark(#e2dedf, #30332e);
-  --color-foreground-muted: light-dark(#4a4849, #e4e0e1);
+  --color-foreground-muted: light-dark(#5a5859, #f4f0f1);
   --color-foreground-subtle: light-dark(#6b6869, #bab6b7);
 }
 

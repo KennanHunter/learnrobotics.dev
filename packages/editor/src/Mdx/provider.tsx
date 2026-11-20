@@ -1,5 +1,31 @@
 import { Dynamic } from "solid-js/web";
 import { splitProps, type JSX } from "solid-js";
+import Prism from "prismjs";
+import "prismjs/components/prism-java";
+// prism-markup is a prerequisite for prism-markdown.
+import "prismjs/components/prism-markup";
+import "prismjs/components/prism-markdown";
+import "prismjs/components/prism-python";
+import "./prism-theme.css";
+
+Prism.languages.apl = {
+  comment: {
+    pattern: /⍝.*/,
+    greedy: true,
+  },
+  assign: {
+    pattern: /←/,
+    alias: "operator",
+  },
+  divide: {
+    pattern: /÷/,
+    alias: "operator",
+  },
+  "array-length": {
+    pattern: /≢/,
+    alias: "operator",
+  },
+};
 
 type AnyProps = Record<string, unknown> & { children?: JSX.Element };
 
@@ -19,6 +45,59 @@ function tag(name: string) {
   };
 }
 
+// Pull "java" out of "language-java", "hljs language-java foo", etc.
+function detectLanguage(className: string | undefined): string | undefined {
+  if (!className) return undefined;
+  const m = className.match(/language-([a-z0-9+#.-]+)/i);
+  return m?.[1];
+}
+
+function highlight(source: string, language: string): string {
+  const grammar = Prism.languages[language];
+  if (!grammar) return source;
+  return Prism.highlight(source, grammar, language);
+}
+
+// MDX wraps a fenced code block as `<pre><code className="language-X">text</code></pre>`.
+// Our `pre` tag below just adds overflow + background styling; this `code` tag
+// does the work: when `language-X` is present the body is run through Prism
+// and rendered via innerHTML. No language → plain inline `<code>` styling.
+function CodeTag(props: AnyProps) {
+  const [local, rest] = splitProps(props, ["children", "className", "class"]);
+  const className = (local.className ?? local.class) as string | undefined;
+  const language = detectLanguage(className);
+
+  if (language && typeof local.children === "string") {
+    return (
+      <code
+        class={`font-mono language-${language}`}
+        innerHTML={highlight(local.children, language)}
+      />
+    );
+  }
+
+  return (
+    <code
+      class={`rounded bg-background-offset px-1.5 py-0.5 font-mono text-[0.9em] ${className ?? ""}`}
+      {...rest}
+    >
+      {local.children}
+    </code>
+  );
+}
+
+function PreTag(props: AnyProps) {
+  const [local, rest] = splitProps(props, ["children"]);
+  return (
+    <pre
+      class="overflow-x-auto rounded-md bg-background-offset p-4 text-sm"
+      {...rest}
+    >
+      {local.children}
+    </pre>
+  );
+}
+
 const defaultComponents = {
   h1: tag("h1"),
   h2: tag("h2"),
@@ -32,8 +111,8 @@ const defaultComponents = {
   ol: tag("ol"),
   li: tag("li"),
   blockquote: tag("blockquote"),
-  code: tag("code"),
-  pre: tag("pre"),
+  code: CodeTag,
+  pre: PreTag,
   em: tag("em"),
   strong: tag("strong"),
   hr: tag("hr"),

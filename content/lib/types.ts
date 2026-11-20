@@ -41,10 +41,7 @@ export type QuizLessonDef = LessonBase & {
 };
 
 export type LessonDef =
-  | ReadingLessonDef
-  | CodeLessonDef
-  | SimLessonDef
-  | QuizLessonDef;
+  ReadingLessonDef | CodeLessonDef | SimLessonDef | QuizLessonDef;
 
 export type ChapterDef = {
   id: string;
@@ -112,7 +109,15 @@ export type CodeUnitTestQuestion = {
   // TODO: test spec — JUnit source, stdin/stdout cases, or assertion fn.
 };
 
+export type CodeMarkdownQuestion = {
+  id: string;
+  kind: "code-markdown";
+  prompt: JSX.Element;
+  test: (content: string) => unknown;
+};
+
 export type QuizQuestion =
   | MultipleChoiceQuestion
   | DragReorderQuestion
-  | CodeUnitTestQuestion;
+  | CodeUnitTestQuestion
+  | CodeMarkdownQuestion;

@@ -1,14 +1,156 @@
 import { defineLesson } from "../../../lib/define";
 import { LoremIpsum } from "../../../lib/components/LoremIpsum/LoremIpsum";
+import { Citation } from "../../../lib/components/Citation/Citation";
+import { LanguageUsageGraph } from "./components/LanguageUsageGraph/LanguageUsageGraph";
+import { Info } from "../../../lib/components/Info/Info";
 
 export const meta = defineLesson({
-  id: "why-java",
-  title: "Why Java?",
-  kind: "reading",
-  estMinutes: 5,
-  difficulty: 1,
-  importance: "useful",
-  status: "in-progress",
+    id: "why-java",
+    title: "Why Java?",
+    kind: "reading",
+    estMinutes: 5,
+    difficulty: 1,
+    importance: "useful",
+    status: "in-progress",
 });
 
-<LoremIpsum />
+WPILib has four language with first-class support, C++, Java, Python and Blockly. This
+course teaches everything using Java for a few reasons. Full transparency, I've never touched
+LabView, and while familiar with C++, I would not consider myself particularly competent,
+preferring similar languages in the domain.
+{/* <Info title="On C++">Anything I'd need low level management for, I'd rather use
+Rust. I look forward to the day the last line of C++ is written, undefined behavior
+becomes a crime punishable by death, and we all accept templates as the confused mistake
+of an ignorant past.</Info>*/}
+
+# Reasons you should use it
+
+## Difficulty
+
+Java is not the easiest language in that list. While difficulty is hard to quantify, Java
+requires more effort to learn the basics than a language like Python, and building real
+applications in C++ is requires the use of pretty difficult concepts, like interacting
+straight with memory yourself.
+
+Blockly is a great option if you need something to work and don't have the time for a full
+fledged programming language, but I'm skeptical that it can scale to what a real competition
+robot needs, and once you learn a text-based language, you'll never want to go back.
+
+If you learn Java very well, learning a language like python will be easier than going the
+other way, and I think
+
+## Use
+
+
+In FRC, Java is by far the most popular language. In 2024, about 89% of teams programmed their robot in Java.<Citation
+  href="/resources/2025+SystemCore+Software+Conference.pdf"
+  title="2025 SystemCore Software Conference"
+  description="FIRST-published slide deck reporting language adoption across FRC teams in 2024."
+/>
+That matters a lot. When something breaks the night before a competition, you
+want to be using the language that almost every other team, mentor, example project, and
+forum post is using. When you ask for help in the pits, the team next to you probably
+writes Java too.
+
+As an industry, Java is one of most popular programming languages in the world.
+
+<LanguageUsageGraph />
+
+## School Classes
+
+Java is the official language of
+[AP Computer Science A](https://apcentral.collegeboard.org/courses/ap-computer-science-a).
+If you make it through the entire Intro to Java course, then do a few practice exams and
+study anywhere you feel weak on, getting a 3 or above on the exam should be a very doable
+way to get some college credit. Emphasis on the practice exams, they will try and catch you
+off guard with trick questions.
+
+AP Computer Science Principles covers a lot that isn't directly relevant to FIRST robotics,
+but
+
+Don't feel pressured about these AP exams, I don't think these exams are a particularly effective way of
+gauging development skill. I got a 4 out of 5 on CSA and CSP. One of the best developers
+I know once stayed up for three days straight, sent in a 10,000 line project for her
+AP CSP project, which they entirely refused to grade and dropped her from the exam.
+I promise in 5 years what grade you get on AP exams will have little to no impact on
+where you are in life, and I've seen students stretch themselves too thin chasing them,
+especially balancing something as time intensive as robotics.
+
+If your school teaches Python or C++ as part of it's curriculum, that might be a good reason to
+look into using those languages.
+
+## Libraries
+
+There are multiple libraries that are only for Java. For example, I consider
+[AdvantageKit](https://docs.advantagekit.org/)
+a near must-have for top level teams, and cover it in (TBD).
+
+# Reasons you shouldn't
+
+Java isn't the right language for every team. The most convincing reason is simply
+if your team already knows or uses a language. If one of your mentors knows C++ inside
+and out, then they might be able to support you better if you stick with what they know.
+If you have 2 years of python codebases, being able to reuse code from previous years is
+pretty useful. If you really want to use a specific language for your own reasons, than at
+the end of the day you can do that, though I will warn you to be very careful about pushing
+your personal opinions onto team members. Unfortunately we do not live in a world where
+rewriting the entire robot in Rust makes sense.
+
+# Languages don't matter
+
+> "A language that doesn't affect the way you think about programming, is not worth knowing."
+> \- Alan Perlis<Citation href="https://cs.yale.edu/homes/perlis-alan/quotes.html" title="Alan Perlis — Epigrams on Programming" description="Yale CS faculty page archiving Perlis's well-known epigrams." />
+
+At the end of the day languages don't really matter. The first language you learn will be
+the hardest, the second language will be a little easier, and it only ever gets easier. Once
+you learn a few languages, you learn to think not in syntax, but in concepts. Lets say you
+want to average the readings from a sensor. You'll learn in this course how to write the
+code below:
+
+```java
+// Start with a total of zero
+double total = 0;
+
+// Add up every reading
+for (double reading : readings) {
+    total = total + reading;
+}
+
+// Divide by how many readings there are
+double average = total / readings.length;
+```
+
+If you decide to move onto python, everything you'll learn will still be applicable,
+all you need to do is learn exactly how they like to write it.
+
+```python
+# Start with a total of zero
+total = 0
+
+# Add up every reading
+for reading in readings:
+    total = total + reading
+
+# Divide by how many readings there are
+average = total / len(readings)
+```
+
+Even languages that look completely different usually use the same concepts. Here's
+the same code in APL, a language you may never see in the wild from the 60s:
+
+```apl
+⍝ Add up every reading, then divide by how many there are
+average ← (+/readings) ÷ ≢readings
+```
+
+As alien as it looks, it's the same concepts. +/ means “put a plus sign between every reading,”
+which adds them all up, ≢counts how many readings there are, and ÷ divides.
+
+With time you'll learn what you like in a language, and when different languages work better
+for the problem you're solving. For example, this website is written in
+[Typescript](https://www.typescriptlang.org/) for all the UI, [MDX](https://mdxjs.com/docs/what-is-mdx/),
+a variant of the markdown you learned in the previous lesson for all the content, [Rust] for
+the editor, CSS for the styling, [Just](https://github.com/casey/just) for running commands,
+Java for all our sample code, and a mix of TOML, YAML, and JSON for different pieces of configuration.
+It sound like a lot (and it is...), but with time switching between languages becomes
+second nature.

@@ -13,6 +13,7 @@ import { MarkdownCopy } from "../../Shared/MarkdownCopy";
 import { MultipleChoicePane } from "./MultipleChoicePane";
 import { DragReorderPane } from "./DragReorderPane";
 import { CodeQuestionStub } from "./CodeQuestionStub";
+import { CodeMarkdownPane } from "./CodeMarkdownPane";
 import { QuizProvider, useQuiz } from "./quiz-store";
 import type { QuizResult } from "./types";
 
@@ -114,6 +115,11 @@ function QuizInner() {
                 <Match when={question.kind === "code-unit-test"}>
                   <CodeQuestionStub
                     question={question as Extract<QuizQuestion, { kind: "code-unit-test" }>}
+                  />
+                </Match>
+                <Match when={question.kind === "code-markdown"}>
+                  <CodeMarkdownPane
+                    question={question as Extract<QuizQuestion, { kind: "code-markdown" }>}
                   />
                 </Match>
               </Switch>

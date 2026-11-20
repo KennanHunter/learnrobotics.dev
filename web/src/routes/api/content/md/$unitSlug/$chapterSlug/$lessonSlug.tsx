@@ -1,21 +1,17 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { renderToStringAsync } from "solid-js/web";
-import TurndownService from "turndown";
 import {
   buildIndexableLesson,
   buildReadingCopyBundle,
 } from "@learnrobotics/editor";
 import { MarkdownRenderContext } from "@learnrobotics/editor/mdx";
+import {
+  CitationList,
+  CitationsProvider,
+} from "@learnrobotics/content/components/Citation";
 import { findLesson, getContentIndex } from "~/lib/content";
+import { htmlToMarkdown } from "~/lib/html-to-markdown";
 import { getLocale, localizeHref } from "~/paraglide/runtime";
-
-// Shared turndown instance. Configured once; we never mutate it per request.
-const turndown = new TurndownService({
-  headingStyle: "atx",
-  codeBlockStyle: "fenced",
-  bulletListMarker: "-",
-  emDelimiter: "_",
-});
 
 const handler = async ({
   request,
@@ -33,12 +29,18 @@ const handler = async ({
   if (!hit) return new Response("lesson not found", { status: 404 });
 
   const Body = hit.lesson.Body;
+  // Mirror ReadingLesson's wrapper tree so components that depend on a
+  // provider (currently <Citation>, which registers against <CitationsProvider>)
+  // don't throw during the markdown projection render.
   const html = await renderToStringAsync(() => (
     <MarkdownRenderContext.Provider value={true}>
-      <Body />
+      <CitationsProvider>
+        <Body />
+        <CitationList />
+      </CitationsProvider>
     </MarkdownRenderContext.Provider>
   ));
-  const lessonMarkdown = turndown.turndown(html);
+  const lessonMarkdown = await htmlToMarkdown(html);
 
   const url = new URL(request.url);
   const mode = url.searchParams.get("for");

@@ -7,6 +7,7 @@ import { VitePWA } from "vite-plugin-pwa";
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import mdx from "@mdx-js/rollup";
 import { mdRaw } from "./vite-plugins/md-raw";
+import { watchContent } from "./vite-plugins/watch-content";
 
 export default defineConfig({
   // BetterAuth is configured against http://localhost:5173 — pin the dev
@@ -21,6 +22,7 @@ export default defineConfig({
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tanstackStart({ customViteSolidPlugin: true }),
     mdRaw(),
+    watchContent(),
     {
       enforce: "pre",
       ...mdx({

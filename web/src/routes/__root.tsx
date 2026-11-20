@@ -14,6 +14,7 @@ import {
 } from "@learnrobotics/db";
 import { getSession } from "~/server/session";
 import { ErrorPage } from "~/components/ErrorPage/ErrorPage";
+import { MonacoPrismStyle } from "~/components/MonacoPrismStyle/MonacoPrismStyle";
 import { ModalProvider } from "~/components/ModalManager/ModalManager";
 import {
   EnvironmentProvider,
@@ -110,6 +111,7 @@ function RootDocument() {
       <body>
         <UserDataProvider session={() => ctx().session}>
           <HtmlThemeClassSync />
+          <MonacoPrismStyle />
           <EnvironmentProvider environment={() => ctx().environment}>
             <EditorDataProvider>
               <ModalProvider>

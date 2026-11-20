@@ -26,6 +26,7 @@
     "@monaco-editor/loader": "^1.7.0",
     "marked": "^18.2.1",
     "monaco-editor": "^0.57.0",
+    "prismjs": "^1.30.0",
     "solid-icons": "catalog:",
     "solid-resizable-panels": "^0.5.4"
   },

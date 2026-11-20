@@ -132,3 +132,53 @@ export function autoThemeFor(app: "light" | "dark"): ThemeId {
   const match = Object.values(THEMES).find((t) => t.autoFor === app);
   return (match?.id ?? (app === "dark" ? "vs-dark" : "vs")) as ThemeId;
 }
+
+// Prism tokens map onto Monaco's base token types. Each pair is
+// [monacoTokenName, prismSelectorList].
+const PRISM_TOKEN_MAP: ReadonlyArray<readonly [string, string]> = [
+  ["comment", ".token.comment, .token.prolog, .token.doctype, .token.cdata"],
+  ["keyword", ".token.keyword, .token.boolean, .token.null"],
+  ["string", ".token.string, .token.char, .token.attr-value"],
+  ["number", ".token.number, .token.symbol, .token.constant"],
+  ["type", ".token.class-name, .token.builtin, .token.tag, .token.title"],
+  ["identifier", ".token.function, .token.property, .token.variable"],
+  ["delimiter", ".token.punctuation, .token.operator"],
+];
+
+const hex = (c: string | undefined) =>
+  c ? `#${c.replace(/^#/, "")}` : undefined;
+
+// Build CSS that restyles Prism-highlighted code blocks to match a Monaco
+// theme. Returns "" for built-in themes that have no `data` payload — the
+// fallback prism-theme.css (CSS vars) handles those.
+export function prismCssForTheme(themeId: ThemeId): string {
+  const theme = THEMES[themeId];
+  if (!theme.data) return "";
+
+  const { rules, colors } = theme.data;
+  const ruleFor = (t: string) => rules?.find((r) => r.token === t);
+  const bg = hex(colors?.["editor.background"]);
+  const fg = hex(colors?.["editor.foreground"]);
+
+  const parts: string[] = [];
+
+  // Code block as a whole: background on the <pre>, foreground on both.
+  if (bg || fg) {
+    parts.push(
+      `pre:has(> code[class*="language-"]) { ${bg ? `background-color: ${bg};` : ""} ${fg ? `color: ${fg};` : ""} }`,
+      `code[class*="language-"] { ${fg ? `color: ${fg};` : ""} }`,
+    );
+  }
+
+  for (const [token, selector] of PRISM_TOKEN_MAP) {
+    const rule = ruleFor(token);
+    const color = hex(rule?.foreground);
+    const italic = rule?.fontStyle === "italic";
+    if (!color && !italic) continue;
+    parts.push(
+      `${selector} { ${color ? `color: ${color};` : ""}${italic ? " font-style: italic;" : ""} }`,
+    );
+  }
+
+  return parts.join("\n");
+}

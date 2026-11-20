@@ -1,5 +1,10 @@
 import { defineLesson } from "../../../lib/define";
 import { LoremIpsum } from "../../../lib/components/LoremIpsum/LoremIpsum";
+import { YouTube } from "../../../lib/components/YouTube/YouTube";
+import { Info } from "../../../lib/components/Info/Info";
+import { Citation } from "../../../lib/components/Citation/Citation";
+import { Figure } from "../../../lib/components/Figure/Figure";
+import deepseekFig from "./images/deepseek-r1-reasoning.png";
 
 export const meta = defineLesson({
     id: "why-by-hand",
@@ -11,10 +16,112 @@ export const meta = defineLesson({
     status: "done",
 });
 
-# Why program by hand in the age of AI?
+Everybody is talking about AI right now. Is it a completely transformative technology
+that will bring a Utopia where machines and automation remove the need for work? Will
+AI replace everyone's jobs? Will it
+[overthrow the government?](https://www.youtube.com/watch?v=SyHM5hNPAEo) I think the
+reality is nobody knows.
 
-AI is at the point, that it could very easily completely write a elite level
-robot codebase from start to finish in about an hour.
+First, I want you to watch this video by JetBrains.
+
+<YouTube
+    video="https://www.youtube.com/watch?v=elg7eKegv0o"
+    title="Jetbrains Academy -  Is it still worth learning to code? "
+/>
+
+> JetBrain's courses are absolutely amazing. I think our Java course is probably
+> better for high school robotics than theirs, which seems to focus more on developing
+> UI-heavy android apps, but they're definitely worth checking out if you're willing
+> to spend some money.<Citation href="https://hyperskill.org/courses/8" title="JetBrains Academy — Hyperskill Java tracks" description="JetBrains' Hyperskill learning platform, Java course catalog." />
+
+
+# How strong is AI really
+
+I still remember the day vividly when I read Deepseek's paper on their R1
+model.<Citation
+              href="https://arxiv.org/pdf/2501.12948"
+              title="DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning"
+              description="DeepSeek's 2025 paper introducing the R1 reasoning model."
+          />
+
+
+<Figure
+    src={deepseekFig}
+    alt="DeepSeek-R1 benchmark accuracy over reasoning length"
+    description="Figure 1 from the DeepSeek-R1 paper — accuracy climbs with reasoning length."
+/>
+
+They weren't the first model to exhibit reasoning behavior, but it was the first time
+I saw proof that these models could really think, or at least, do something close to it.
+Prior to that I and I think many other developers just saw them as fancy autocomplete.
+
+**AI is at the point, that it could very easily completely write an elite level
+robot codebase from start to finish in about an hour.** Certain frontier models
+have proved themselves very capable in certain domains. In math,
+OpenAI published 100s of conjectures,<Citation href="https://en.wikipedia.org/wiki/OpenAI_bulk_release_of_mathematical_papers" title="OpenAI bulk release of mathematical papers" description="Wikipedia summary of the 2025 release of AI-assisted mathematical conjectures and proofs." />
+<Info title="Value?">It is often argued that these
+conjectures without human background, are kinda worthless. There's a lot
+in math that's added by understanding not just if something is provably true,
+but how it is provably true, and what the value in that is. Regardless,
+it's a sign of things to come.</Info> and AI images and writing is everywhere.
+
+AI in professional software development at the moment is everywhere.
+
+According to JetBrains research in August 2026 <Citation href="https://blog.jetbrains.com/research/2026/08/how-much-code-do-developers-really-let-agents-write/" title="How Much Code Do Developers Really Let Agents Write?" description="A survey on AI agent usage" />
+, developers report
+
+> ~47% of their code is fully written by agents.
+>
+> ~38% is written with some AI assistance.
+>
+> ~27% is written fully manually.
+
+If I'm being honest, I think that these numbers are still a little bit low, and in newer,
+smaller projects, and projects that work as internal tools, the number is much higher.
+
+I don't think AI is going anywhere. There are arguments that perhaps where models
+are at, is where they will stay. Many people, myself included, think that pure
+generative large language models will have a natural limit to "intelligence". My
+personal worry is that that plateau will be well beyond what humans can match<Info title="Can we match AI?">There's an argument that for certain AI focus points such as web development, few if any people can earnestly say they are faster/stronger developers than current flagship AI models.</Info>
+
+# Why for FIRST I'm still skeptical
+
+## Internet access
+
+Without internet, most models are unusable. Open source models exist, but on common
+hardware they're pretty limited. Most FIRST competitions I've been to have had no or
+poor internet connectivity, where AI models will be pretty much useless.
+
+## Lack of understanding of your robot
+
+No two robots are the exact same. A model can work well with what exists in it's context such as
+code, documentation, or system diagrams. When an encoder wire comes loose and you have to figure
+out if it's because of an electrical issue or an issue in multiple layers of software,
+I'm not sure that AI will be able to help. AI will probably never be very good at watching a robot
+on the field and recognizing that its PID needs a stronger P parameter.
+
+## Judging
+
+I've always thought that judging is underutilized in FIRST programming. Because judges typically
+have limited programming experience, and I've never seen a judge look directly at code, they
+tend to not judge many aspects I would consider important, such as code cleanliness and
+optimization. Regardless, communicating coding concepts succinctly to judges is an important part
+of many teams strategies, and I think that hand writing some, most, if not all, of your code
+will help you convey the concepts you're using.
+
+## Spaghetti
+
+Left unchecked, AI models can code themselves into a ever deepening bowl of spaghetti code,
+where a single structural issue is fixed with a band-aid fix, then the issues caused by that
+band-aid warrant another band-aid.
+
+# Understanding models
+
+If the hype is to be believed and Large Language Models will change the world,
+it's probably a pretty good reason to learn them. For concepts, watch
+[3blue1brown's neural network series](https://www.3blue1brown.com/?topic=neural-networks),
+and if you're interested in learning how to write them yourself, check out
+[kaparthy's wonderful series](https://karpathy.ai/zero-to-hero.html).
 
 
 # The joy of programming
@@ -60,6 +167,6 @@ water, and take a walk to get back on track. But I bet that at some point, after
 been debugging something for three hours and finally figure it out, you’ll feel a
 genuine euphoria that will make it all seem worth it.
 
-The goal of this course isn’t to remove the frustration. It’s to guide you through it,
+The goal of these courses isn’t to remove the frustration. It’s to guide you through it,
 so that when you’re at a competition with no internet and no LLM, you get one hour of
 frustration instead of three.

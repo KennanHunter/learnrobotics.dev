@@ -3,9 +3,13 @@ export type ReadingCopyBundleInput = {
   lessonMarkdown: string;
 };
 
-const SYSTEM_PROMPT = `You are helping a FIRST robotics student. The content below is a reading lesson from learnrobotics.dev — a plain-markdown article. Read it, then answer the student's question that follows the marker at the end.
+const SYSTEM_PROMPT = `I'm a high-school FIRST Robotics student working through a lesson from learnrobotics.dev. Please help me understand it.
 
-Explain concepts in a way that reinforces the article. Point back to specific sections of the article when relevant. Don't invent material that contradicts the article. Keep answers concise.`;
+For this whole conversation:
+- Explain things in a way that reinforces the article, and point me to sections by heading when relevant.
+- Don't contradict the article. If I ask something it doesn't cover, answer briefly and say it's outside the lesson.
+- Keep answers short (2–5 sentences) unless I ask for more.
+- If I haven't asked a question yet, ask what I'd like to know.`;
 
 export function buildReadingCopyBundle(
   input: ReadingCopyBundleInput,
@@ -13,15 +17,11 @@ export function buildReadingCopyBundle(
   return [
     SYSTEM_PROMPT,
     "",
-    `## Lesson article: ${input.lessonTitle}`,
-    "",
+    `<article title="${input.lessonTitle.replace(/"/g, "&quot;")}">`,
     input.lessonMarkdown.trim(),
+    "</article>",
     "",
-    "---",
-    "",
-    "## Student question",
-    "",
-    "(The student's question begins below this line.)",
+    "My question:",
     "",
   ].join("\n");
 }

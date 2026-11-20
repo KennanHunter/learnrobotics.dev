@@ -16,7 +16,8 @@ export type QuizStatus = "in-progress" | "submitted";
 export type AnswerDraft =
   | { kind: "multiple-choice"; selected: number }
   | { kind: "drag-to-reorder"; order: number[] }
-  | { kind: "code-unit-test"; skipped: true };
+  | { kind: "code-unit-test"; skipped: true }
+  | { kind: "code-markdown"; content: string };
 
 export type QuizStoreValue = {
   quizId: string;
@@ -146,6 +147,25 @@ export function QuizProvider(props: QuizProviderProps) {
       case "code-unit-test": {
         // Stubbed — no runtime yet; mark incorrect so retakes keep showing it.
         return { questionId: question.id, correct: false, payload: null };
+      }
+      case "code-markdown": {
+        if (draft.kind !== "code-markdown") {
+          return { questionId: question.id, correct: false, payload: draft };
+        }
+        const content = draft.content;
+        let feedback: unknown;
+        try {
+          feedback = question.test(content);
+        } catch (err) {
+          feedback = err instanceof Error ? err.message : String(err);
+        }
+        return {
+          questionId: question.id,
+          // Participation-graded: any non-empty content passes. The test
+          // function's return value is shown as feedback.
+          correct: content.trim().length > 0,
+          payload: { content, feedback },
+        };
       }
     }
   };
