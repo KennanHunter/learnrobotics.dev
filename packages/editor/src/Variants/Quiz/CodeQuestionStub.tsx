@@ -19,8 +19,8 @@ export function CodeQuestionStub(props: { question: CodeUnitTestQuestion }) {
     <div class="flex flex-col gap-3">
       <div class="prose-sm max-w-none text-sm">{props.question.prompt}</div>
       <div class="rounded border border-dashed border-background-offset p-4 text-xs text-foreground-muted">
-        Code-and-pass-tests questions aren't wired up yet. This question will
-        be skipped for grading.
+        Code-and-pass-tests questions aren't wired up yet. This question will be
+        skipped for grading.
       </div>
     </div>
   );

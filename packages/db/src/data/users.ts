@@ -28,6 +28,8 @@ export type AdminUserDetails = {
   config: {
     theme: string | null;
     monacoTheme: string | null;
+    systemPrompt: string | null;
+    codeSystemPrompt: string | null;
   } | null;
   accounts: {
     providerId: string;
@@ -111,13 +113,11 @@ function toMs(d: Date | number | null | undefined): number {
   return n < 1e12 ? n * 1000 : n;
 }
 
-export async function readUserDetails(userId: string): Promise<AdminUserDetails> {
+export async function readUserDetails(
+  userId: string,
+): Promise<AdminUserDetails> {
   const db = getDb();
-  const [u] = await db
-    .select()
-    .from(user)
-    .where(eq(user.id, userId))
-    .limit(1);
+  const [u] = await db.select().from(user).where(eq(user.id, userId)).limit(1);
   if (!u) throw new Error("Not found");
   const [cfg] = await db
     .select()
@@ -167,6 +167,8 @@ export async function readUserDetails(userId: string): Promise<AdminUserDetails>
       ? {
           theme: cfg.theme ?? null,
           monacoTheme: cfg.monacoTheme ?? null,
+          systemPrompt: cfg.systemPrompt ?? null,
+          codeSystemPrompt: cfg.codeSystemPrompt ?? null,
         }
       : null,
     accounts: accounts.map((a) => ({

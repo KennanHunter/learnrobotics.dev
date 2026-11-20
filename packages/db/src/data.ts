@@ -6,6 +6,9 @@ export {
   summarizeSession,
   writeTheme,
   writeMonacoTheme,
+  writeSystemPrompt,
+  writeCodeSystemPrompt,
+  writeTabSize,
 } from "./data/session";
 export {
   listProjects,
@@ -13,6 +16,7 @@ export {
   createProject,
   updateProject,
   deleteProject,
+  getOrCreateLessonProject,
   migrateProjectsOwner,
 } from "./data/projects";
 export type {
@@ -26,7 +30,4 @@ export {
   listQuizResults,
   masteredQuestionIds,
 } from "./data/quizzes";
-export type {
-  StoredQuizResult,
-  QuizResultRecord,
-} from "./data/quizzes";
+export type { StoredQuizResult, QuizResultRecord } from "./data/quizzes";

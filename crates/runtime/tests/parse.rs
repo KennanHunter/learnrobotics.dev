@@ -8,10 +8,7 @@ fn finds_simple_public_class() {
 
 #[test]
 fn stops_at_opening_brace_without_whitespace() {
-    assert_eq!(
-        extract_class_name("class Foo{}").as_deref(),
-        Some("Foo"),
-    );
+    assert_eq!(extract_class_name("class Foo{}").as_deref(), Some("Foo"),);
 }
 
 #[test]

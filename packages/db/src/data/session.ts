@@ -18,6 +18,9 @@ export type SessionSummary = {
   isAdmin: boolean;
   theme: Theme | null;
   monacoTheme: string | null;
+  systemPrompt: string | null;
+  codeSystemPrompt: string | null;
+  tabSize: number | null;
 } | null;
 
 type AuthUser = {
@@ -76,17 +79,24 @@ function forwardSetCookies(headers: Headers | undefined) {
   setResponseHeader("set-cookie", cookies);
 }
 
-export async function summarizeSession(user: AuthUser): Promise<SessionSummary> {
+export async function summarizeSession(
+  user: AuthUser,
+): Promise<SessionSummary> {
   // One D1 round-trip: read user_config and simultaneously LEFT JOIN against
   // the user's GitHub account row, filtered to the admin ID from env.
   // `adminAccountId` is non-null iff this user is the admin. If
   // ADMIN_GITHUB_USER_ID is unset, force the join to miss. Anonymous users
   // can't match either way, but we still fetch their config.
-  const adminId = user.isAnonymous ? "" : (getDbEnv().ADMIN_GITHUB_USER_ID ?? "");
+  const adminId = user.isAnonymous
+    ? ""
+    : (getDbEnv().ADMIN_GITHUB_USER_ID ?? "");
   const rows = await getDb()
     .select({
       theme: userConfig.theme,
       monacoTheme: userConfig.monacoTheme,
+      systemPrompt: userConfig.systemPrompt,
+      codeSystemPrompt: userConfig.codeSystemPrompt,
+      tabSize: userConfig.tabSize,
       adminAccountId: account.id,
     })
     .from(userConfig)
@@ -103,6 +113,12 @@ export async function summarizeSession(user: AuthUser): Promise<SessionSummary> 
   const theme: Theme | null =
     row?.theme === "light" || row?.theme === "dark" ? row.theme : null;
   const monacoTheme = row?.monacoTheme ?? null;
+  const systemPrompt = row?.systemPrompt ?? null;
+  const codeSystemPrompt = row?.codeSystemPrompt ?? null;
+  const tabSize =
+    typeof row?.tabSize === "number" && Number.isInteger(row.tabSize)
+      ? row.tabSize
+      : null;
   const isAdmin = Boolean(row?.adminAccountId);
   return {
     userId: user.id,
@@ -112,6 +128,9 @@ export async function summarizeSession(user: AuthUser): Promise<SessionSummary> 
     isAdmin,
     theme,
     monacoTheme,
+    systemPrompt,
+    codeSystemPrompt,
+    tabSize,
   };
 }
 
@@ -132,7 +151,10 @@ export async function writeTheme(userId: string, theme: Theme | null) {
     });
 }
 
-export async function writeMonacoTheme(userId: string, monacoTheme: string | null) {
+export async function writeMonacoTheme(
+  userId: string,
+  monacoTheme: string | null,
+) {
   const db = getDb();
   const now = new Date();
   await db
@@ -146,5 +168,62 @@ export async function writeMonacoTheme(userId: string, monacoTheme: string | nul
     .onConflictDoUpdate({
       target: userConfig.userId,
       set: { monacoTheme, updatedAt: now },
+    });
+}
+
+export async function writeSystemPrompt(
+  userId: string,
+  systemPrompt: string | null,
+) {
+  const db = getDb();
+  const now = new Date();
+  await db
+    .insert(userConfig)
+    .values({
+      userId,
+      systemPrompt,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: userConfig.userId,
+      set: { systemPrompt, updatedAt: now },
+    });
+}
+
+export async function writeTabSize(userId: string, tabSize: number | null) {
+  const db = getDb();
+  const now = new Date();
+  await db
+    .insert(userConfig)
+    .values({
+      userId,
+      tabSize,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: userConfig.userId,
+      set: { tabSize, updatedAt: now },
+    });
+}
+
+export async function writeCodeSystemPrompt(
+  userId: string,
+  codeSystemPrompt: string | null,
+) {
+  const db = getDb();
+  const now = new Date();
+  await db
+    .insert(userConfig)
+    .values({
+      userId,
+      codeSystemPrompt,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: userConfig.userId,
+      set: { codeSystemPrompt, updatedAt: now },
     });
 }

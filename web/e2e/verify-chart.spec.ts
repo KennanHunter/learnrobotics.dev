@@ -1,9 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-test("language usage chart renders both tabs with Java highlighted", async ({ page }) => {
+test("language usage chart renders both tabs with Java highlighted", async ({
+  page,
+}) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(String(e)));
-  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  page.on("console", (m) => {
+    if (m.type() === "error") errors.push(m.text());
+  });
 
   await page.goto(
     "http://localhost:5173/en/units/intro-to-learnrobotics/orientation/why-java",
@@ -14,7 +18,9 @@ test("language usage chart renders both tabs with Java highlighted", async ({ pa
   await expect(canvas).toBeVisible();
 
   // Tabs
-  await expect(page.getByRole("tab", { name: /Stack Overflow 2026/ })).toBeVisible();
+  await expect(
+    page.getByRole("tab", { name: /Stack Overflow 2026/ }),
+  ).toBeVisible();
   const tiobeTab = page.getByRole("tab", { name: /TIOBE Nov 2026/ });
   await expect(tiobeTab).toBeVisible();
 
@@ -48,7 +54,11 @@ test("language usage chart renders both tabs with Java highlighted", async ({ pa
   await page.waitForTimeout(200);
   const after = await readLabelColor();
   expect(after).not.toBe(before);
-  await page.locator("figure").first().screenshot({ path: "/tmp/chart-alt.png" });
+  await page
+    .locator("figure")
+    .first()
+    .screenshot({ path: "/tmp/chart-alt.png" });
 
-  if (errors.length) throw new Error("Console/page errors: " + errors.join(" | "));
+  if (errors.length)
+    throw new Error("Console/page errors: " + errors.join(" | "));
 });

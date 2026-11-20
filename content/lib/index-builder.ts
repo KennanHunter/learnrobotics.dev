@@ -42,10 +42,10 @@ export type ContentIndex = {
 
 // Glob results are resolved by the importing bundler (Vite). Paths are
 // relative to this file inside the content package.
-const unitModules = import.meta.glob<UnitDef>(
-  "../units/*/unit.*.ts",
-  { eager: true, import: "default" },
-);
+const unitModules = import.meta.glob<UnitDef>("../units/*/unit.*.ts", {
+  eager: true,
+  import: "default",
+});
 const chapterModules = import.meta.glob<ChapterDef>(
   "../units/*/*/chapter.*.ts",
   { eager: true, import: "default" },
@@ -55,10 +55,10 @@ const lessonModules = import.meta.glob<NonQuizLessonDef>(
   "../units/*/*/*.*.mdx",
   { eager: true, import: "meta" },
 );
-const lessonBodies = import.meta.glob<Component>(
-  "../units/*/*/*.*.mdx",
-  { eager: true, import: "default" },
-);
+const lessonBodies = import.meta.glob<Component>("../units/*/*/*.*.mdx", {
+  eager: true,
+  import: "default",
+});
 // Quiz lessons: .tsx whose default export is the full LessonDef
 // (with inline `questions`). No separate body — the renderer reads
 // `questions` directly.
@@ -127,8 +127,7 @@ type ChapterBucket = {
   byLocale: Map<string, ChapterDef>;
 };
 type LessonLocaleEntry =
-  | { meta: NonQuizLessonDef; Body: Component }
-  | { meta: QuizLessonDef };
+  { meta: NonQuizLessonDef; Body: Component } | { meta: QuizLessonDef };
 type LessonBucket = {
   file: string;
   unitDir: string;
@@ -210,7 +209,11 @@ function collectBuckets(): {
   return { units, chapters, lessons };
 }
 
-function pick<T>(byLocale: Map<string, T>, locale: string, baseLocale: string): T {
+function pick<T>(
+  byLocale: Map<string, T>,
+  locale: string,
+  baseLocale: string,
+): T {
   return byLocale.get(locale) ?? byLocale.get(baseLocale)!;
 }
 
@@ -302,7 +305,9 @@ export function findLesson(
   unitSlug: string,
   chapterSlug: string,
   lessonSlug: string,
-): { unit: IndexedUnit; chapter: IndexedChapter; lesson: IndexedLesson } | undefined {
+):
+  | { unit: IndexedUnit; chapter: IndexedChapter; lesson: IndexedLesson }
+  | undefined {
   const unit = index.units.find((u) => u.slug === unitSlug);
   if (!unit) return undefined;
   const chapter = unit.chapters.find((c) => c.slug === chapterSlug);

@@ -24,6 +24,8 @@ export {
   UserDataProvider,
   useSession,
   useTheme,
+  useTabSize,
+  DEFAULT_TAB_SIZE,
 } from "./contexts/user";
 export { EditorDataProvider, useEditor } from "./contexts/editor";
 export type { EditorData } from "./contexts/editor";

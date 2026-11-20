@@ -7,13 +7,13 @@ import { Figure } from "../../../lib/components/Figure/Figure";
 import deepseekFig from "./images/deepseek-r1-reasoning.png";
 
 export const meta = defineLesson({
-    id: "why-by-hand",
-    title: "Why program by hand in the age of AI?",
-    kind: "reading",
-    estMinutes: 6,
-    difficulty: 1,
-    importance: "useful",
-    status: "done",
+  id: "why-by-hand",
+  title: "Why program by hand in the age of AI?",
+  kind: "reading",
+  estMinutes: 6,
+  difficulty: 1,
+  importance: "niche",
+  status: "done",
 });
 
 Everybody is talking about AI right now. Is it a completely transformative technology
@@ -25,15 +25,14 @@ reality is nobody knows.
 First, I want you to watch this video by JetBrains.
 
 <YouTube
-    video="https://www.youtube.com/watch?v=elg7eKegv0o"
-    title="Jetbrains Academy -  Is it still worth learning to code? "
+  video="https://www.youtube.com/watch?v=elg7eKegv0o"
+  title="Jetbrains Academy -  Is it still worth learning to code? "
 />
 
 > JetBrain's courses are absolutely amazing. I think our Java course is probably
 > better for high school robotics than theirs, which seems to focus more on developing
 > UI-heavy android apps, but they're definitely worth checking out if you're willing
 > to spend some money.<Citation href="https://hyperskill.org/courses/8" title="JetBrains Academy — Hyperskill Java tracks" description="JetBrains' Hyperskill learning platform, Java course catalog." />
-
 
 # How strong is AI really
 
@@ -42,32 +41,36 @@ model.<Citation
               href="https://arxiv.org/pdf/2501.12948"
               title="DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning"
               description="DeepSeek's 2025 paper introducing the R1 reasoning model."
-          />
-
+          /> I was in a Micheal's craft store picking up yarn, and my friend was
+going through the different colors to find the ones that she liked. A coworker sent me the paper
+for me to read.
 
 <Figure
-    src={deepseekFig}
-    alt="DeepSeek-R1 benchmark accuracy over reasoning length"
-    description="Figure 1 from the DeepSeek-R1 paper — accuracy climbs with reasoning length."
+  src={deepseekFig}
+  alt="DeepSeek-R1 benchmark accuracy over reasoning length"
+  description="Figure 1 from the DeepSeek-R1 paper: accuracy climbs with reasoning length."
 />
 
 They weren't the first model to exhibit reasoning behavior, but it was the first time
 I saw proof that these models could really think, or at least, do something close to it.
 Prior to that I and I think many other developers just saw them as fancy autocomplete.
 
-**AI is at the point, that it could very easily completely write an elite level
-robot codebase from start to finish in about an hour.** Certain frontier models
-have proved themselves very capable in certain domains. In math,
+**AI is at the point that it could very easily completely write an elite level
+robot codebase from start to finish in about an hour.**
+
+Certain frontier models have proved themselves very capable in certain domains. In math,
 OpenAI published 100s of conjectures,<Citation href="https://en.wikipedia.org/wiki/OpenAI_bulk_release_of_mathematical_papers" title="OpenAI bulk release of mathematical papers" description="Wikipedia summary of the 2025 release of AI-assisted mathematical conjectures and proofs." />
-<Info title="Value?">It is often argued that these
-conjectures without human background, are kinda worthless. There's a lot
-in math that's added by understanding not just if something is provably true,
-but how it is provably true, and what the value in that is. Regardless,
-it's a sign of things to come.</Info> and AI images and writing is everywhere.
 
-AI in professional software development at the moment is everywhere.
+<Info title="Value?">
+  It is often argued that these conjectures without human background are kinda
+  worthless. There's a lot in math that's added by understanding not just if
+  something is provably true, but how it is provably true, and what that says
+  about the underlying problem. Regardless, it's a sign of things to come.
+</Info>
+and AI images and writing is everywhere.
 
-According to JetBrains research in August 2026 <Citation href="https://blog.jetbrains.com/research/2026/08/how-much-code-do-developers-really-let-agents-write/" title="How Much Code Do Developers Really Let Agents Write?" description="A survey on AI agent usage" />
+AI in professional software development at the moment is everywhere. According to JetBrains
+research in August 2026 <Citation href="https://blog.jetbrains.com/research/2026/08/how-much-code-do-developers-really-let-agents-write/" title="How Much Code Do Developers Really Let Agents Write?" description="A survey on AI agent usage" />
 , developers report
 
 > ~47% of their code is fully written by agents.
@@ -82,7 +85,7 @@ smaller projects, and projects that work as internal tools, the number is much h
 I don't think AI is going anywhere. There are arguments that perhaps where models
 are at, is where they will stay. Many people, myself included, think that pure
 generative large language models will have a natural limit to "intelligence". My
-personal worry is that that plateau will be well beyond what humans can match<Info title="Can we match AI?">There's an argument that for certain AI focus points such as web development, few if any people can earnestly say they are faster/stronger developers than current flagship AI models.</Info>
+personal worry is that that plateau will be well beyond what humans can match.<Info title="Can we match AI?">There's an argument that for certain AI focus points such as web development, few if any people can earnestly say they are faster/stronger developers than current flagship AI models.</Info>
 
 # Why for FIRST I'm still skeptical
 
@@ -107,13 +110,32 @@ have limited programming experience, and I've never seen a judge look directly a
 tend to not judge many aspects I would consider important, such as code cleanliness and
 optimization. Regardless, communicating coding concepts succinctly to judges is an important part
 of many teams strategies, and I think that hand writing some, most, if not all, of your code
-will help you convey the concepts you're using.
+will help you convey the concepts you're using better.
 
 ## Spaghetti
 
 Left unchecked, AI models can code themselves into a ever deepening bowl of spaghetti code,
 where a single structural issue is fixed with a band-aid fix, then the issues caused by that
-band-aid warrant another band-aid.
+band-aid warrant another band-aid. This is bad, especially when you don't have the experience
+to recognize a band-aid.
+
+# Why programming is important even with AI
+
+## Verification
+
+For the near future, being able to read and verify AI generated code will continue to
+be a very useful and in demand skill. AI can insert security issues, data privacy issues,
+and just generally can't know everything about the problem space you're working in, especially
+if you're working on particularly difficult issues.
+
+## "in distribution"
+
+You'll sometimes hear "techies" on places like Twitter refer to certain problems as
+"in distribution", what they mean by that is that the problem has been solved before, and models
+have been trained on similar solutions before. Your code that takes peoples cat pics and adds
+a top hat? Probably in distribution. Firmware for your custom operating system?
+Probably not, and AI models will have a tougher time at the moment. Nobody can say how long that
+will be true.
 
 # Understanding models
 
@@ -123,7 +145,6 @@ it's probably a pretty good reason to learn them. For concepts, watch
 and if you're interested in learning how to write them yourself, check out
 [kaparthy's wonderful series](https://karpathy.ai/zero-to-hero.html).
 
-
 # The joy of programming
 
 There are a lot of reasons people program.
@@ -131,7 +152,7 @@ There are a lot of reasons people program.
 1. You want to make something work.
 1. You want to be rewarded, with authority, money, or recognition.
 1. You love building something that’s really yours, something you
-understand well enough to share.
+   understand well enough to share.
 
 There’s nothing wrong with the first two. Honestly, long term, they’re
 probably the most stable reasons to keep learning, keep trying, keep going

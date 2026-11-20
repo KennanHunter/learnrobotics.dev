@@ -1,10 +1,7 @@
 import { createSignal, Show, type JSX } from "solid-js";
 import { AiOutlineInfoCircle } from "solid-icons/ai/AiOutlineInfoCircle";
 
-export function Info(props: {
-  title?: string;
-  children: JSX.Element;
-}) {
+export function Info(props: { title?: string; children: JSX.Element }) {
   const [open, setOpen] = createSignal(false);
   return (
     <span class="not-prose relative inline-block align-baseline">

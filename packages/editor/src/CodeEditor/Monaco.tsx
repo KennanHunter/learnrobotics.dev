@@ -113,14 +113,18 @@ export function MonacoEditor(inputProps: MonacoEditorProps) {
       console.log("[MonacoEditor] loader ready; registering themes");
       props.registerThemes?.(m);
       if (props.theme) m.editor.setTheme(props.theme);
-      console.log(
-        "[MonacoEditor] creating editor",
-        { path: props.path, language: props.language, valueLen: props.value?.length },
-      );
+      console.log("[MonacoEditor] creating editor", {
+        path: props.path,
+        language: props.language,
+        valueLen: props.value?.length,
+      });
       const ed = createEditor(m);
       setMonaco(m);
       setEditor(ed);
       console.log("[MonacoEditor] editor created; running props.onMount");
+      ed.addCommand(m.KeyMod.CtrlCmd | m.KeyCode.KeyS, () => {
+        console.log("[MonacoEditor] Ctrl+S intercepted");
+      });
       props.onMount?.(m, ed, ed.getModel());
 
       monacoOnChangeSubscription = ed.onDidChangeModelContent(

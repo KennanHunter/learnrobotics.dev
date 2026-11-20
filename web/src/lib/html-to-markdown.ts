@@ -159,5 +159,10 @@ function wrap(push: (s: string) => void, open: string, close: string) {
 // collapse keeps output idempotent-ish without each handler having to peek
 // at what came before.
 function normalize(s: string): string {
-  return s.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
+  return (
+    s
+      .replace(/[ \t]+\n/g, "\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim() + "\n"
+  );
 }

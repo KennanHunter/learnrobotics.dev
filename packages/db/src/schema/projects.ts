@@ -10,6 +10,7 @@ export const project = sqliteTable(
       .references(() => user.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     starterId: text("starter_id"),
+    lessonSlug: text("lesson_slug"),
     activeFile: text("active_file").notNull(),
     files: text("files", { mode: "json" })
       .$type<Record<string, string>>()
@@ -20,5 +21,6 @@ export const project = sqliteTable(
   (t) => [
     index("project_user_id_idx").on(t.userId),
     index("project_user_updated_idx").on(t.userId, t.updatedAt),
+    index("project_user_lesson_idx").on(t.userId, t.lessonSlug),
   ],
 );

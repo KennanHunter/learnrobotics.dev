@@ -8,7 +8,11 @@ export function Figure(props: {
 }) {
   return (
     <figure data-mdx-id={props.hid} class="my-6">
-      <img src={props.src} alt={props.alt ?? props.caption ?? ""} class="w-full rounded" />
+      <img
+        src={props.src}
+        alt={props.alt ?? props.caption ?? ""}
+        class="w-full rounded"
+      />
       <Show when={props.caption}>
         <figcaption class="mt-2 text-sm text-foreground-muted">
           {props.caption}

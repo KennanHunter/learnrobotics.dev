@@ -1,0 +1,59 @@
+import { defineLesson } from "../../../lib/define";
+import { LoremIpsum } from "../../../lib/components/LoremIpsum/LoremIpsum";
+import { YouTube } from "../../../lib/components/YouTube/YouTube";
+import { Info } from "../../../lib/components/Info/Info";
+import { Citation } from "../../../lib/components/Citation/Citation";
+import { Figure } from "../../../lib/components/Figure/Figure";
+import {
+  DEFAULT_SYSTEM_PROMPT,
+  DEFAULT_CODE_SYSTEM_PROMPT,
+} from "@learnrobotics/editor/prompt-bundles";
+import deepseekFig from "./images/deepseek-r1-reasoning.png";
+
+export const meta = defineLesson({
+  id: "using-ai",
+  title: "How to best use AI with these courses",
+  kind: "reading",
+  estMinutes: 6,
+  difficulty: 1,
+  importance: "essential",
+  status: "done",
+});
+
+# Avoid AI
+
+I think you should avoid using AI in the majority of cases for these courses.
+I think the second you start using AI, then every time you feel a bit of friction
+you'll reach for it immediately. I know because I do that too. I intentionally
+force myself to swear off AI assistance for certain projects to keep my skills
+from decaying. Even senior developers will admit that if they use AI for everything,
+they'll start to lose the ability to write code they accumulated over decades.
+
+If you do get through this course without any AI assistance, then you can start introducing
+it when it makes sense, on your own terms.
+
+# But if you're going to use it
+
+Every course has a "Copy Markdown" in the top right. If you choose to use AI, click that button,
+then pass it into a chatbot like ChatGPT or Claude, then put your question.
+It'll have all the context to answer your question in the context of the assignment.
+
+I'd encourage you to talk to your mentors, teammates, teachers, and friends, to figure out
+rules to keep for yourself.
+
+Maybe you're okay with asking questions, but not with it ever providing code. Maybe it
+telling you the correct code is okay as long as you explain back the principles first.
+
+When you do figure out your rules and want to give them automatically to the AI, you can
+change your system prompt in [the settings](/en/settings#prompts).
+
+The default prompt for any reading lesson you want to ask questions about is:
+
+<pre>{DEFAULT_SYSTEM_PROMPT}</pre>
+
+The default prompt for any code lesson is:
+
+<pre>{DEFAULT_CODE_SYSTEM_PROMPT}</pre>
+
+The code prompt also injects current output state and your codebase, which saves a lot of
+time copy and pasting. I think these rules are a good starting place.

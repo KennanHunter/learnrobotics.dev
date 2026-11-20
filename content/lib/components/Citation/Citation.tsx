@@ -93,10 +93,7 @@ export function CitationList() {
         <ol class="flex flex-col gap-3 text-sm">
           <For each={ctx.list()}>
             {(c, i) => (
-              <li
-                id={`citation-${i() + 1}`}
-                class="flex gap-2 scroll-mt-20"
-              >
+              <li id={`citation-${i() + 1}`} class="flex gap-2 scroll-mt-20">
                 <span class="text-foreground-muted">[{i() + 1}]</span>
                 <div class="flex flex-col gap-0.5">
                   <a

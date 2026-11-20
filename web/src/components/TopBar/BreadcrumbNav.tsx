@@ -140,13 +140,7 @@ function Column(props: {
       <div class="border-b border-background-offset/60 bg-background px-4 py-2 font-mono text-xs uppercase tracking-widest text-foreground-subtle">
         {props.title}
       </div>
-      <div
-        class={
-          scroll()
-            ? "min-h-0 flex-1 overflow-y-auto py-1"
-            : "py-1"
-        }
-      >
+      <div class={scroll() ? "min-h-0 flex-1 overflow-y-auto py-1" : "py-1"}>
         {props.children}
       </div>
     </div>

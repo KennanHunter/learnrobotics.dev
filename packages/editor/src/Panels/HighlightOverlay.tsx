@@ -32,7 +32,11 @@ export function HighlightOverlay(props: { dispatcher?: EventDispatcher }) {
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const duration = hl.durationMs ?? DEFAULT_DURATION_MS;
-      setActive({ target: hl.target, rect, expiresAt: performance.now() + duration });
+      setActive({
+        target: hl.target,
+        rect,
+        expiresAt: performance.now() + duration,
+      });
       if (clearTimer) clearTimeout(clearTimer);
       clearTimer = setTimeout(() => setActive(null), duration);
     });

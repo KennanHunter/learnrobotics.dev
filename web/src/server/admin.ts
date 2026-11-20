@@ -7,7 +7,11 @@ import {
   removeUser,
   requireAdmin,
 } from "@learnrobotics/db/data";
-import type { AdminUserDetails, UsersPage, AdminStats } from "@learnrobotics/db";
+import type {
+  AdminUserDetails,
+  UsersPage,
+  AdminStats,
+} from "@learnrobotics/db";
 import { logger } from "~/lib/logger";
 
 const log = logger.child({ scope: "admin" });

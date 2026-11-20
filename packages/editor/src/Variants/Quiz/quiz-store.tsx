@@ -172,9 +172,7 @@ export function QuizProvider(props: QuizProviderProps) {
 
   const submit = async () => {
     const d = drafts();
-    const prevById = new Map(
-      results().map((r) => [r.questionId, r] as const),
-    );
+    const prevById = new Map(results().map((r) => [r.questionId, r] as const));
     // Preserve already-correct answers verbatim; grade the rest fresh.
     const answers = visibleQuestions().map((q) => {
       const prev = prevById.get(q.id);
@@ -222,7 +220,6 @@ export function QuizProvider(props: QuizProviderProps) {
 
 export function useQuiz(): QuizStoreValue {
   const ctx = useContext(QuizContext);
-  if (!ctx)
-    throw new Error("useQuiz must be called inside <QuizProvider>");
+  if (!ctx) throw new Error("useQuiz must be called inside <QuizProvider>");
   return ctx;
 }

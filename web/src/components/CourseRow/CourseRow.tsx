@@ -82,7 +82,9 @@ export function CourseRow(props: { course: IndexedUnit }) {
             }}
           >
             <For each={props.course.chapters}>
-              {(chapter) => <ChapterBox unit={props.course} chapter={chapter} />}
+              {(chapter) => (
+                <ChapterBox unit={props.course} chapter={chapter} />
+              )}
             </For>
           </div>
         </div>

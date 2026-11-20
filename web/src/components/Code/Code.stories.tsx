@@ -42,9 +42,8 @@ export const MarkdownBlock: Story = {
 export const InlineJava: Story = {
   render: () => (
     <p class="text-base">
-      Declare a counter with{" "}
-      <Code inline language="java">{`int i = 0;`}</Code> before starting the
-      loop.
+      Declare a counter with <Code inline language="java">{`int i = 0;`}</Code>{" "}
+      before starting the loop.
     </p>
   ),
 };

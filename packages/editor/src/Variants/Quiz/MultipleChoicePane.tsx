@@ -2,14 +2,11 @@ import { For, Show, createMemo, createUniqueId } from "solid-js";
 import type { MultipleChoiceQuestion } from "@learnrobotics/content/types";
 import { useQuiz } from "./quiz-store";
 
-type MarkerState =
-  | "default"
-  | "selected"
-  | "correct"
-  | "wrong"
-  | "muted";
+type MarkerState = "default" | "selected" | "correct" | "wrong" | "muted";
 
-export function MultipleChoicePane(props: { question: MultipleChoiceQuestion }) {
+export function MultipleChoicePane(props: {
+  question: MultipleChoiceQuestion;
+}) {
   const quiz = useQuiz();
   const promptId = createUniqueId();
   const feedbackId = createUniqueId();

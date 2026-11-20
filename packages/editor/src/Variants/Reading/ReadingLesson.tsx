@@ -42,7 +42,8 @@ export function ReadingLesson(props: ReadingLessonProps) {
         if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
         const reason = (() => {
           if (e.defaultPrevented) return "defaultPrevented";
-          if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return "modifier";
+          if (e.metaKey || e.ctrlKey || e.altKey || e.shiftKey)
+            return "modifier";
           if (isEditableTarget(e.target)) return "editable-target";
           if (e.key === "ArrowLeft" && !props.prev) return "no-prev";
           if (e.key === "ArrowRight" && !props.next) return "no-next";

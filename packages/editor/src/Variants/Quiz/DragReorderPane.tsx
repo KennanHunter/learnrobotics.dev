@@ -90,7 +90,9 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
                 >
                   {slot() + 1}
                 </span>
-                <span class="flex-1">{props.question.items[originalIndex]}</span>
+                <span class="flex-1">
+                  {props.question.items[originalIndex]}
+                </span>
                 <Show when={!locked()}>
                   <span class="text-foreground-muted">⠿</span>
                 </Show>
@@ -101,11 +103,7 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
       </ol>
       <Show when={result()}>
         {(r) => (
-          <p
-            class={
-              r().correct ? "text-xs text-green" : "text-xs text-red"
-            }
-          >
+          <p class={r().correct ? "text-xs text-green" : "text-xs text-red"}>
             {r().correct ? "Correct." : "Incorrect."}
           </p>
         )}

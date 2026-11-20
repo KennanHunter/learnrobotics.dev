@@ -50,6 +50,34 @@
       "when": 1795014284422,
       "tag": "0006_friendly_paper_doll",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1795176689317,
+      "tag": "0007_spicy_justin_hammer",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1795177968323,
+      "tag": "0008_perpetual_champions",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1795180261573,
+      "tag": "0009_fearless_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1795183471501,
+      "tag": "0010_secret_unicorn",
+      "breakpoints": true
     }
   ]
 }

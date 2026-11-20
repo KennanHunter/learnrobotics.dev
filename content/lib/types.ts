@@ -26,6 +26,16 @@ export type CodeLessonDef = LessonBase & {
   starter?: string;
   recording?: string;
   language?: string;
+  /** Snippets attached to this lesson. Import from `content/snippets/*`. */
+  snippets?: readonly SnippetDef[];
+};
+
+export type SnippetLanguage = "java" | "markdown";
+
+export type SnippetDef = {
+  title: string;
+  language?: SnippetLanguage;
+  body: readonly string[];
 };
 
 export type SimLessonDef = LessonBase & {

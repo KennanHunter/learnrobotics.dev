@@ -1,9 +1,11 @@
 export type ReadingCopyBundleInput = {
   lessonTitle: string;
   lessonMarkdown: string;
+  /** Overrides DEFAULT_SYSTEM_PROMPT when set to a non-empty string. */
+  systemPrompt?: string | null;
 };
 
-const SYSTEM_PROMPT = `I'm a high-school FIRST Robotics student working through a lesson from learnrobotics.dev. Please help me understand it.
+export const DEFAULT_SYSTEM_PROMPT = `I'm a high-school FIRST Robotics student working through a lesson from learnrobotics.dev. Please help me understand it.
 
 For this whole conversation:
 - Explain things in a way that reinforces the article, and point me to sections by heading when relevant.
@@ -11,11 +13,11 @@ For this whole conversation:
 - Keep answers short (2–5 sentences) unless I ask for more.
 - If I haven't asked a question yet, ask what I'd like to know.`;
 
-export function buildReadingCopyBundle(
-  input: ReadingCopyBundleInput,
-): string {
+export function buildReadingCopyBundle(input: ReadingCopyBundleInput): string {
+  const systemPrompt = input.systemPrompt?.trim() || DEFAULT_SYSTEM_PROMPT;
+
   return [
-    SYSTEM_PROMPT,
+    systemPrompt,
     "",
     `<article title="${input.lessonTitle.replace(/"/g, "&quot;")}">`,
     input.lessonMarkdown.trim(),

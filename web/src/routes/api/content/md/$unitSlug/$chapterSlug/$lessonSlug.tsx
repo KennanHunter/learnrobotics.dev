@@ -9,6 +9,7 @@ import {
   CitationList,
   CitationsProvider,
 } from "@learnrobotics/content/components/Citation";
+import { requireUser, summarizeSession } from "@learnrobotics/db/data";
 import { findLesson, getContentIndex } from "~/lib/content";
 import { htmlToMarkdown } from "~/lib/html-to-markdown";
 import { getLocale, localizeHref } from "~/paraglide/runtime";
@@ -49,17 +50,21 @@ const handler = async ({
   );
   const lessonUrl = `${url.origin}${lessonPath}`;
 
-  const payload =
-    mode === "copy"
-      ? buildReadingCopyBundle({
-          lessonTitle: hit.lesson.title,
-          lessonMarkdown,
-        })
-      : buildIndexableLesson({
-          lessonTitle: hit.lesson.title,
-          lessonMarkdown,
-          lessonUrl,
-        });
+  let payload: string;
+  if (mode === "copy") {
+    const summary = await summarizeSession(await requireUser());
+    payload = buildReadingCopyBundle({
+      lessonTitle: hit.lesson.title,
+      lessonMarkdown,
+      systemPrompt: summary?.systemPrompt ?? null,
+    });
+  } else {
+    payload = buildIndexableLesson({
+      lessonTitle: hit.lesson.title,
+      lessonMarkdown,
+      lessonUrl,
+    });
+  }
 
   return new Response(payload, {
     status: 200,

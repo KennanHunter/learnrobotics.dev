@@ -10,7 +10,10 @@ import { test, expect } from "@playwright/test";
  */
 
 const ROUTES: Array<{ label: string; url: string }> = [
-  { label: "playground with starter", url: "/en/playground?s=main-hello-world" },
+  {
+    label: "playground with starter",
+    url: "/en/playground?s=main-hello-world",
+  },
   {
     label: "code lesson",
     url: "/en/units/intro-to-learnrobotics/orientation/editor-tour",
@@ -44,7 +47,9 @@ for (const route of ROUTES) {
     // loader.init() + worker bundle fetch all run async.
     await page.waitForTimeout(8000);
 
-    const workbenchRoot = await page.locator('[data-testid="workbench-root"]').count();
+    const workbenchRoot = await page
+      .locator('[data-testid="workbench-root"]')
+      .count();
     const stillLoading = await page
       .locator('[data-testid="workbench-loading"]')
       .count();
@@ -55,7 +60,9 @@ for (const route of ROUTES) {
       .locator("text=Workbench crashed, text=Code lesson crashed")
       .count();
 
-    const monacoTextarea = await page.locator(".monaco-editor textarea").count();
+    const monacoTextarea = await page
+      .locator(".monaco-editor textarea")
+      .count();
 
     const summary = {
       url: route.url,

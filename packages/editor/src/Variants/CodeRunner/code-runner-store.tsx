@@ -13,16 +13,22 @@ export type ConsoleTab = "stdout" | "compile" | "deps";
 export type BundleState = "unknown" | "fetching" | "ready" | "failed";
 export type RunState = "idle" | "compiling" | "running";
 
-export type JavaCodeRunnerStarter = {
+export type CodeRunnerStarter = {
   files: Record<string, string>;
   activeFile: string;
 };
 
-export type JavaCodeRunnerStore = {
+export type CodeRunnerStore = {
   files: Accessor<Record<string, string>>;
   activeFile: Accessor<string>;
   setActiveFile: (path: string) => void;
   setFileContent: (path: string, content: string) => void;
+  /** Remove a path from the virtual FS. If the removed path was the active
+   * file, caller is responsible for choosing the next active path. */
+  deleteFile: (path: string) => void;
+  /** Move a file's content to a new path and drop the old key. No-op if the
+   * source doesn't exist or the destination already does. */
+  renameFile: (oldPath: string, newPath: string) => void;
   /** Convenience: current file's content. */
   source: Accessor<string>;
   /** Convenience: write to activeFile. */
@@ -46,22 +52,22 @@ export type JavaCodeRunnerStore = {
   retryDeps: () => void;
 };
 
-const JavaCodeRunnerContext = createContext<JavaCodeRunnerStore>();
+const CodeRunnerContext = createContext<CodeRunnerStore>();
 
-export function useJavaCodeRunner(): JavaCodeRunnerStore {
-  const ctx = useContext(JavaCodeRunnerContext);
-  if (!ctx) throw new Error("useJavaCodeRunner outside provider");
+export function useCodeRunner(): CodeRunnerStore {
+  const ctx = useContext(CodeRunnerContext);
+  if (!ctx) throw new Error("useCodeRunner outside provider");
   return ctx;
 }
 
-export type JavaCodeRunnerProviderProps = {
-  starter: JavaCodeRunnerStarter;
+export type CodeRunnerProviderProps = {
+  starter: CodeRunnerStarter;
   createWorker: () => Worker;
   children: JSX.Element;
 };
 
-export function JavaCodeRunnerProvider(props: JavaCodeRunnerProviderProps) {
-  console.log("[JavaCodeRunnerProvider] body", {
+export function CodeRunnerProvider(props: CodeRunnerProviderProps) {
+  console.log("[CodeRunnerProvider] body", {
     starterFiles: Object.keys(props.starter.files ?? {}),
     activeFile: props.starter.activeFile,
   });
@@ -104,6 +110,29 @@ export function JavaCodeRunnerProvider(props: JavaCodeRunnerProviderProps) {
   }
   function setFileContent(path: string, content: string) {
     setFiles({ ...files(), [path]: content });
+  }
+  function deleteFile(path: string) {
+    const current = files();
+    if (!(path in current)) return;
+    const next: Record<string, string> = {};
+    for (const [k, v] of Object.entries(current)) {
+      if (k === path) continue;
+      next[k] = v;
+    }
+    setFiles(next);
+  }
+  function renameFile(oldPath: string, newPath: string) {
+    if (oldPath === newPath) return;
+    const current = files();
+    if (!(oldPath in current)) return;
+    if (newPath in current) return;
+    const next: Record<string, string> = {};
+    for (const [k, v] of Object.entries(current)) {
+      if (k === oldPath) next[newPath] = v;
+      else next[k] = v;
+    }
+    setFiles(next);
+    if (activeFile() === oldPath) setActiveFile(newPath);
   }
   const [stdout, setStdout] = createSignal("");
   const [diagnostics, setDiagnostics] = createSignal<Diagnostic[]>([]);
@@ -255,11 +284,13 @@ export function JavaCodeRunnerProvider(props: JavaCodeRunnerProviderProps) {
     ensureWorker().postMessage({ type: "prefetch" } satisfies RunRequest);
   }
 
-  const store: JavaCodeRunnerStore = {
+  const store: CodeRunnerStore = {
     files,
     activeFile,
     setActiveFile,
     setFileContent,
+    deleteFile,
+    renameFile,
     source,
     setSource,
     stdout,
@@ -278,8 +309,8 @@ export function JavaCodeRunnerProvider(props: JavaCodeRunnerProviderProps) {
   };
 
   return (
-    <JavaCodeRunnerContext.Provider value={store}>
+    <CodeRunnerContext.Provider value={store}>
       {props.children}
-    </JavaCodeRunnerContext.Provider>
+    </CodeRunnerContext.Provider>
   );
 }

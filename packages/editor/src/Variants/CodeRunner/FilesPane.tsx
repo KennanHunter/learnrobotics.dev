@@ -1,8 +1,8 @@
 import { For } from "solid-js";
-import { useJavaCodeRunner } from "./playground-store";
+import { useCodeRunner } from "./code-runner-store";
 
 export function FilesPane() {
-  const store = useJavaCodeRunner();
+  const store = useCodeRunner();
   const entries = () => Object.keys(store.files()).sort();
   return (
     <ul class="flex flex-col gap-0.5 p-2 text-xs">

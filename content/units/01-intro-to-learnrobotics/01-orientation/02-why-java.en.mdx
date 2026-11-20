@@ -5,25 +5,25 @@ import { LanguageUsageGraph } from "./components/LanguageUsageGraph/LanguageUsag
 import { Info } from "../../../lib/components/Info/Info";
 
 export const meta = defineLesson({
-    id: "why-java",
-    title: "Why Java?",
-    kind: "reading",
-    estMinutes: 5,
-    difficulty: 1,
-    importance: "useful",
-    status: "in-progress",
+  id: "why-java",
+  title: "Why Java?",
+  kind: "reading",
+  estMinutes: 5,
+  difficulty: 1,
+  importance: "niche",
+  status: "in-progress",
 });
 
 WPILib has four language with first-class support, C++, Java, Python and Blockly. This
 course teaches everything using Java for a few reasons. Full transparency, I've never touched
 LabView, and while familiar with C++, I would not consider myself particularly competent,
 preferring similar languages in the domain.
-{/* <Info title="On C++">Anything I'd need low level management for, I'd rather use
+{/_ <Info title="On C++">Anything I'd need low level management for, I'd rather use
 Rust. I look forward to the day the last line of C++ is written, undefined behavior
 becomes a crime punishable by death, and we all accept templates as the confused mistake
-of an ignorant past.</Info>*/}
+of an ignorant past.</Info>_/}
 
-# Reasons you should use it
+# Reasons you should use Java
 
 ## Difficulty
 
@@ -40,7 +40,6 @@ If you learn Java very well, learning a language like python will be easier than
 other way, and I think
 
 ## Use
-
 
 In FRC, Java is by far the most popular language. In 2024, about 89% of teams programmed their robot in Java.<Citation
   href="/resources/2025+SystemCore+Software+Conference.pdf"
@@ -66,15 +65,21 @@ way to get some college credit. Emphasis on the practice exams, they will try an
 off guard with trick questions.
 
 AP Computer Science Principles covers a lot that isn't directly relevant to FIRST robotics,
-but
+but if you self study the "principles" part of the CS Principles, java is a very good language
+to do your project in.
 
 Don't feel pressured about these AP exams, I don't think these exams are a particularly effective way of
-gauging development skill. I got a 4 out of 5 on CSA and CSP. One of the best developers
+gauging development skill. I didn't get a 5 on either CSA or CSP. One of the best developers
 I know once stayed up for three days straight, sent in a 10,000 line project for her
 AP CSP project, which they entirely refused to grade and dropped her from the exam.
-I promise in 5 years what grade you get on AP exams will have little to no impact on
+I promise in 5 years what grade you get on AP exams will have essentially no impact on
 where you are in life, and I've seen students stretch themselves too thin chasing them,
-especially balancing something as time intensive as robotics.
+especially balancing something as time intensive as robotics. The "college credit" part of
+AP exams is also over sold, and if you're on the fence about an exam, you should look into the
+exact degree requirements of the program you're interested in to know if it'll even help. <Info title="AP Calc BC">
+One of my biggest regrets of High School was not taking the BC exam, despite taking most of the class.
+If you're doing a degree that requires Calc 2, BC will almost certainly be easier than the college equivalent.
+My other regret was not forming strong connections with as many students in my grade as I could.</Info>
 
 If your school teaches Python or C++ as part of it's curriculum, that might be a good reason to
 look into using those languages.
@@ -149,8 +154,8 @@ which adds them all up, ≢counts how many readings there are, and ÷ divides.
 With time you'll learn what you like in a language, and when different languages work better
 for the problem you're solving. For example, this website is written in
 [Typescript](https://www.typescriptlang.org/) for all the UI, [MDX](https://mdxjs.com/docs/what-is-mdx/),
-a variant of the markdown you learned in the previous lesson for all the content, [Rust] for
-the editor, CSS for the styling, [Just](https://github.com/casey/just) for running commands,
-Java for all our sample code, and a mix of TOML, YAML, and JSON for different pieces of configuration.
-It sound like a lot (and it is...), but with time switching between languages becomes
-second nature.
+a variant of the markdown you learned in the previous lesson for all the content,
+[Rust](https://rust-lang.org/) for the editor, CSS for the styling, [Just](https://github.com/casey/just)
+for running commands, Java for all our sample code, and a mix of TOML, YAML, and JSON
+for different pieces of configuration. It sound like a lot (and it is...), but with time
+switching between languages becomes second nature.

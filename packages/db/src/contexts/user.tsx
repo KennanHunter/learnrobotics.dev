@@ -13,7 +13,10 @@ type UserDataCtx = {
   session: () => SessionSummary;
   effectiveTheme: () => Theme;
   monacoTheme: () => string | null;
+  tabSize: () => number;
 };
+
+export const DEFAULT_TAB_SIZE = 4;
 
 const UserDataContext = createContext<UserDataCtx>();
 
@@ -44,12 +47,20 @@ export function UserDataProvider(props: {
     return props.session()?.monacoTheme ?? null;
   };
 
+  const tabSize = (): number => {
+    const n = props.session()?.tabSize;
+    return typeof n === "number" && Number.isInteger(n) && n > 0
+      ? n
+      : DEFAULT_TAB_SIZE;
+  };
+
   return (
     <UserDataContext.Provider
       value={{
         session: props.session,
         effectiveTheme,
         monacoTheme,
+        tabSize,
       }}
     >
       {props.children}
@@ -59,8 +70,7 @@ export function UserDataProvider(props: {
 
 function useUserData(): UserDataCtx {
   const ctx = useContext(UserDataContext);
-  if (!ctx)
-    throw new Error("Hook must be used within UserDataProvider");
+  if (!ctx) throw new Error("Hook must be used within UserDataProvider");
   return ctx;
 }
 
@@ -74,4 +84,8 @@ export function useTheme(): {
 } {
   const { effectiveTheme, monacoTheme } = useUserData();
   return { effectiveTheme, monacoTheme };
+}
+
+export function useTabSize(): () => number {
+  return useUserData().tabSize;
 }

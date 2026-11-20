@@ -1,0 +1,1 @@
+ALTER TABLE `user_config` ADD `system_prompt` text;

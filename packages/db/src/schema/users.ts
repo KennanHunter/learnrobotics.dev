@@ -78,6 +78,14 @@ export const userConfig = sqliteTable("user_config", {
     .references(() => user.id, { onDelete: "cascade" }),
   theme: text("theme"),
   monacoTheme: text("monaco_theme"),
+  // Overrides the default system prompt used by the reading-lesson
+  // "copy as prompt" bundle. NULL = use DEFAULT_SYSTEM_PROMPT.
+  systemPrompt: text("system_prompt"),
+  // Overrides the default system prompt used by the code-lesson prompt
+  // bundle. NULL = use DEFAULT_CODE_SYSTEM_PROMPT.
+  codeSystemPrompt: text("code_system_prompt"),
+  // Monaco / snippet indentation width. NULL = default (4).
+  tabSize: integer("tab_size"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });

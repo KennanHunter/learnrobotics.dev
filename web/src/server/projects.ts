@@ -3,6 +3,7 @@ import * as v from "valibot";
 import {
   createProject,
   deleteProject,
+  getOrCreateLessonProject,
   getProject,
   listProjects,
   requireUser,
@@ -33,11 +34,24 @@ const IdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 
 const GetProjectSchema = v.object({ id: IdSchema });
 
+const LessonSlugSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(200));
+
 const CreateProjectSchema = v.object({
   title: TitleSchema,
   starterId: v.optional(v.nullable(StarterIdSchema)),
+  lessonSlug: v.optional(v.nullable(LessonSlugSchema)),
   activeFile: ActiveFileSchema,
   files: FilesSchema,
+});
+
+const EnsureLessonProjectSchema = v.object({
+  lessonSlug: LessonSlugSchema,
+  seed: v.object({
+    title: TitleSchema,
+    starterId: v.optional(v.nullable(StarterIdSchema)),
+    activeFile: ActiveFileSchema,
+    files: FilesSchema,
+  }),
 });
 
 const UpdateProjectSchema = v.object({
@@ -76,8 +90,21 @@ export const createUserProject = createServerFn({ method: "POST" })
     return createProject(user.id, {
       title: data.title,
       starterId: data.starterId ?? null,
+      lessonSlug: data.lessonSlug ?? null,
       activeFile: data.activeFile,
       files: data.files,
+    });
+  });
+
+export const ensureUserLessonProject = createServerFn({ method: "POST" })
+  .validator((data: unknown) => v.parse(EnsureLessonProjectSchema, data))
+  .handler(async ({ data }): Promise<ProjectRecord> => {
+    const user = await requireUser();
+    return getOrCreateLessonProject(user.id, data.lessonSlug, {
+      title: data.seed.title,
+      starterId: data.seed.starterId ?? null,
+      activeFile: data.seed.activeFile,
+      files: data.seed.files,
     });
   });
 
@@ -87,7 +114,10 @@ export const updateUserProject = createServerFn({ method: "POST" })
     const user = await requireUser();
     const updated = await updateProject(user.id, data.id, data.patch);
     if (!updated) {
-      log.warn({ userId: user.id, projectId: data.id }, "updateUserProject: not found");
+      log.warn(
+        { userId: user.id, projectId: data.id },
+        "updateUserProject: not found",
+      );
       throw new Error("Project not found");
     }
     return updated;
@@ -99,7 +129,10 @@ export const deleteUserProject = createServerFn({ method: "POST" })
     const user = await requireUser();
     const ok = await deleteProject(user.id, data.id);
     if (!ok) {
-      log.warn({ userId: user.id, projectId: data.id }, "deleteUserProject: not found");
+      log.warn(
+        { userId: user.id, projectId: data.id },
+        "deleteUserProject: not found",
+      );
       throw new Error("Project not found");
     }
     return { ok: true as const };

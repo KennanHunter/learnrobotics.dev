@@ -3,9 +3,7 @@ import { setLogHook, runClasses } from "~/lib/runtime";
 import { compileJava, type Diagnostic } from "~/lib/teavm";
 import { ensureBundle } from "~/lib/bundles";
 
-export type RunRequest =
-  | { type: "run"; source: string }
-  | { type: "prefetch" };
+export type RunRequest = { type: "run"; source: string } | { type: "prefetch" };
 
 export type RunEvent =
   | { type: "phase"; phase: "fetching-deps" | "compiling" | "running" }
@@ -40,7 +38,9 @@ function pickMainClass(
     const baseName = activeFile.replace(/.*\//, "").replace(/\.java$/, "");
     const match = outers.find((c) => {
       const fqcn = toFqcn(c.name);
-      const simple = fqcn.includes(".") ? fqcn.slice(fqcn.lastIndexOf(".") + 1) : fqcn;
+      const simple = fqcn.includes(".")
+        ? fqcn.slice(fqcn.lastIndexOf(".") + 1)
+        : fqcn;
       return simple === baseName;
     });
     if (match) return toFqcn(match.name);

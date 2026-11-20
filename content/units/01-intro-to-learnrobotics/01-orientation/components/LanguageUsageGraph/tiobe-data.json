@@ -6,30 +6,143 @@
   "columns": [
     { "key": "rank", "header": "Rank", "unit": "", "numeric": true },
     { "key": "prevRank", "header": "Prev. rank", "unit": "", "numeric": true },
-    { "key": "response", "header": "Programming language", "unit": "", "numeric": false },
+    {
+      "key": "response",
+      "header": "Programming language",
+      "unit": "",
+      "numeric": false
+    },
     { "key": "pct", "header": "Rating", "unit": "%", "numeric": true },
     { "key": "change", "header": "Change", "unit": "%", "numeric": true }
   ],
   "data": [
-    { "rank": 1, "prevRank": 1, "response": "Python", "pct": 20.86, "change": -2.51 },
+    {
+      "rank": 1,
+      "prevRank": 1,
+      "response": "Python",
+      "pct": 20.86,
+      "change": -2.51
+    },
     { "rank": 2, "prevRank": 2, "response": "C", "pct": 11.48, "change": 1.8 },
-    { "rank": 3, "prevRank": 4, "response": "Java", "pct": 8.89, "change": 0.34 },
-    { "rank": 4, "prevRank": 3, "response": "C++", "pct": 8.35, "change": -0.6 },
-    { "rank": 5, "prevRank": 5, "response": "C#", "pct": 3.39, "change": -4.26 },
-    { "rank": 6, "prevRank": 6, "response": "JavaScript", "pct": 2.42, "change": -1.0 },
+    {
+      "rank": 3,
+      "prevRank": 4,
+      "response": "Java",
+      "pct": 8.89,
+      "change": 0.34
+    },
+    {
+      "rank": 4,
+      "prevRank": 3,
+      "response": "C++",
+      "pct": 8.35,
+      "change": -0.6
+    },
+    {
+      "rank": 5,
+      "prevRank": 5,
+      "response": "C#",
+      "pct": 3.39,
+      "change": -4.26
+    },
+    {
+      "rank": 6,
+      "prevRank": 6,
+      "response": "JavaScript",
+      "pct": 2.42,
+      "change": -1.0
+    },
     { "rank": 7, "prevRank": 12, "response": "R", "pct": 2.27, "change": 0.6 },
-    { "rank": 8, "prevRank": 10, "response": "SQL", "pct": 1.91, "change": 0.11 },
-    { "rank": 9, "prevRank": 7, "response": "Visual Basic", "pct": 1.88, "change": -1.43 },
-    { "rank": 10, "prevRank": 11, "response": "Go", "pct": 1.69, "change": -0.03 },
-    { "rank": 11, "prevRank": 14, "response": "Rust", "pct": 1.63, "change": 0.25 },
-    { "rank": 12, "prevRank": 16, "response": "PHP", "pct": 1.58, "change": 0.27 },
-    { "rank": 13, "prevRank": 13, "response": "Fortran", "pct": 1.21, "change": -0.34 },
-    { "rank": 14, "prevRank": 19, "response": "Scratch", "pct": 1.15, "change": 0.13 },
-    { "rank": 15, "prevRank": 9, "response": "Perl", "pct": 1.14, "change": -0.69 },
-    { "rank": 16, "prevRank": 15, "response": "MATLAB", "pct": 1.08, "change": -0.3 },
-    { "rank": 17, "prevRank": 18, "response": "Assembly language", "pct": 0.92, "change": -0.24 },
-    { "rank": 18, "prevRank": 21, "response": "Swift", "pct": 0.89, "change": 0.03 },
-    { "rank": 19, "prevRank": 8, "response": "Delphi/Object Pascal", "pct": 0.78, "change": -1.28 },
-    { "rank": 20, "prevRank": 26, "response": "Dart", "pct": 0.74, "change": 0.05 }
+    {
+      "rank": 8,
+      "prevRank": 10,
+      "response": "SQL",
+      "pct": 1.91,
+      "change": 0.11
+    },
+    {
+      "rank": 9,
+      "prevRank": 7,
+      "response": "Visual Basic",
+      "pct": 1.88,
+      "change": -1.43
+    },
+    {
+      "rank": 10,
+      "prevRank": 11,
+      "response": "Go",
+      "pct": 1.69,
+      "change": -0.03
+    },
+    {
+      "rank": 11,
+      "prevRank": 14,
+      "response": "Rust",
+      "pct": 1.63,
+      "change": 0.25
+    },
+    {
+      "rank": 12,
+      "prevRank": 16,
+      "response": "PHP",
+      "pct": 1.58,
+      "change": 0.27
+    },
+    {
+      "rank": 13,
+      "prevRank": 13,
+      "response": "Fortran",
+      "pct": 1.21,
+      "change": -0.34
+    },
+    {
+      "rank": 14,
+      "prevRank": 19,
+      "response": "Scratch",
+      "pct": 1.15,
+      "change": 0.13
+    },
+    {
+      "rank": 15,
+      "prevRank": 9,
+      "response": "Perl",
+      "pct": 1.14,
+      "change": -0.69
+    },
+    {
+      "rank": 16,
+      "prevRank": 15,
+      "response": "MATLAB",
+      "pct": 1.08,
+      "change": -0.3
+    },
+    {
+      "rank": 17,
+      "prevRank": 18,
+      "response": "Assembly language",
+      "pct": 0.92,
+      "change": -0.24
+    },
+    {
+      "rank": 18,
+      "prevRank": 21,
+      "response": "Swift",
+      "pct": 0.89,
+      "change": 0.03
+    },
+    {
+      "rank": 19,
+      "prevRank": 8,
+      "response": "Delphi/Object Pascal",
+      "pct": 0.78,
+      "change": -1.28
+    },
+    {
+      "rank": 20,
+      "prevRank": 26,
+      "response": "Dart",
+      "pct": 0.74,
+      "change": 0.05
+    }
   ]
 }

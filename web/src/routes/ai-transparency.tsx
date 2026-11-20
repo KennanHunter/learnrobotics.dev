@@ -141,19 +141,112 @@ function AITransparency() {
             <ul class="space-y-5">
               <TransparencyLogEntry
                 date="2026-11-20"
+                title="Unified CodeRunner (merged MarkdownRunner)."
+              >
+                Merged the <code>MarkdownRunner</code> variant into the renamed{" "}
+                <code>CodeRunner</code> (previously <code>JavaCodeRunner</code>
+                ). The right pane now switches automatically based on the active
+                file's extension — a markdown preview for <code>.md</code>, the
+                stdout/compile/deps tabs for <code>.java</code>. The Run button
+                hides when the active file isn't runnable; the Java worker stays
+                lazy so a markdown-only project never spawns one. Playground
+                gets a proper tree-based files panel (the existing{" "}
+                <code>FileTree</code> component wired into the store via a new{" "}
+                <code>filesSlot</code> override and new <code>deleteFile</code>{" "}
+                / <code>renameFile</code> methods on the store) and a three-dot
+                editor-header menu with Reset-to-starter (confirmation modal) +
+                Export (logs only for now). Same change lets markdown lessons
+                autosave through <code>ProjectPersist</code> for free. Public
+                subpath moved from{" "}
+                <code>@learnrobotics/editor/variants/java-code-runner</code> to{" "}
+                <code>@learnrobotics/editor/variants/code-runner</code>; the{" "}
+                <code>markdown-runner</code> subpath is gone.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Tab size setting, snippet indentation, Format button."
+              >
+                Added a per-user <code>tab_size</code> column on{" "}
+                <code>user_config</code> (migration 0010, nullable; NULL =
+                default 4) with a <code>setTabSize</code> server fn and a "Tab
+                size" section on <code>/settings</code> offering 2 / 4 / 8
+                presets plus a Custom option that reveals a numeric input with a
+                mildly snarky prompt. Exposed via a new{" "}
+                <code>useTabSize()</code> hook on the shared user context.
+                Threaded the accessor through both the <code>CodeRunner</code>{" "}
+                and <code>MarkdownRunner</code> variants into Monaco's{" "}
+                <code>tabSize</code> option (with{" "}
+                <code>insertSpaces: true</code>), and through{" "}
+                <code>SnippetsPane</code> / <code>SnippetCard</code> where every{" "}
+                <code>\t</code> in snippet bodies is replaced with the
+                configured number of spaces at copy/display time. Added a
+                Prettier-backed Format button (lazy-loaded) using{" "}
+                <code>prettier-plugin-java</code> for <code>.java</code> files
+                and the built-in markdown parser; it honors the current tab size
+                and lives in both runners' toolbars.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Per-lesson project persistence + autosave indicator."
+              >
+                Extended the project table with a nullable{" "}
+                <code>lesson_slug</code> column + a{" "}
+                <code>(user_id, lesson_slug)</code> index (migration 0009). New
+                data function <code>getOrCreateLessonProject</code> and server
+                fn <code>ensureUserLessonProject</code> upsert a single row per{" "}
+                <code>(user, lesson_slug)</code>; the code-lesson route calls it
+                on mount, seeds <code>CodeRunnerProvider</code> from the
+                returned row, and mounts <code>ProjectPersist</code> with the
+                pre-provisioned id. The <code>MarkdownRunner</code> branch is
+                unchanged for now. Shared <code>AutosaveIndicator</code>{" "}
+                component (green-dot "Saved", pulsing "Saving…", muted
+                "Unsaved") lives at{" "}
+                <code>web/src/components/AutosaveIndicator/</code>; both the
+                playground and lesson code-editor panel headers render it via
+                the new <code>editorActions</code> slot on{" "}
+                <code>CodeRunnerShell</code> / <code>CodeRunner</code>.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Playground project persistence wired to D1."
+              >
+                Swapped the playground's localStorage drafts for the D1-backed{" "}
+                <code>project</code> table landed earlier. New{" "}
+                <code>ProjectPersist</code> component lives next to{" "}
+                <code>DraftPersist</code>, mounts inside{" "}
+                <code>CodeRunnerProvider</code>, debounces ~300ms, creates a row
+                on first edit, and updates in place after. Playground route
+                accepts <code>?s=&amp;project=</code>, hydrates from{" "}
+                <code>getUserProject</code> when an id is present, and rewrites
+                the URL on create so reloads restore the same row. StarterPicker
+                gained a "Your projects" section backed by{" "}
+                <code>listUserProjects</code> (with per-row delete) and only
+                renders the legacy "Local drafts" block when old localStorage
+                keys are still present. New Playwright spec at{" "}
+                <code>web/e2e/project-persistence.spec.ts</code> covers the edit
+                → reload round-trip. Lesson-route persistence is still deferred
+                pending a lesson-identity decision (see{" "}
+                <code>
+                  development/agent-output/editor-state-and-data-flow.md
+                </code>
+                ).
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
                 title="code-markdown quiz question type."
               >
-                Wired up the previously type-only{" "}
-                <code>code-markdown</code> question kind. Quizzes now render
-                a Monaco markdown editor inline for these questions, with a
-                Check button that runs the author-supplied{" "}
-                <code>test(content)</code> and displays the returned string
-                as live feedback. On submit, the answer is graded correct
-                if the content is non-empty (participation-style) and the
-                test's return value is stored in the result payload. New
+                Wired up the previously type-only <code>code-markdown</code>{" "}
+                question kind. Quizzes now render a Monaco markdown editor
+                inline for these questions, with a Check button that runs the
+                author-supplied <code>test(content)</code> and displays the
+                returned string as live feedback. On submit, the answer is
+                graded correct if the content is non-empty (participation-style)
+                and the test's return value is stored in the result payload. New
                 pane at{" "}
-                <code>packages/editor/src/Variants/Quiz/CodeMarkdownPane.tsx</code>;
-                quiz store grows a matching <code>AnswerDraft</code> case.
+                <code>
+                  packages/editor/src/Variants/Quiz/CodeMarkdownPane.tsx
+                </code>
+                ; quiz store grows a matching <code>AnswerDraft</code> case.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-20"
@@ -169,8 +262,8 @@ function AITransparency() {
                 with Java visually highlighted and both sources cited inline.
                 Full source data is checked in as JSON next to the component;
                 truncation to top-15 happens in the component. Wired into{" "}
-                <code>02-why-java.en.mdx</code>. <code>chart.js</code> was
-                added as a dependency to both <code>web</code> and{" "}
+                <code>02-why-java.en.mdx</code>. <code>chart.js</code> was added
+                as a dependency to both <code>web</code> and{" "}
                 <code>content</code>.
               </TransparencyLogEntry>
               <TransparencyLogEntry
@@ -179,11 +272,11 @@ function AITransparency() {
               >
                 Added a non-functional <code>ReplayControls</code> component
                 (play/pause toggle + range slider + percent readout) in{" "}
-                <code>packages/editor/src/Panels/</code> and wired it into
-                both the <code>JavaCodeRunner</code> and{" "}
-                <code>MarkdownRunner</code> toolbars in place of the Run
-                button. The Run/Stop affordances were removed from the
-                toolbar — the store's <code>onRun</code>/<code>onStop</code>
+                <code>packages/editor/src/Panels/</code> and wired it into both
+                the <code>CodeRunner</code> and <code>MarkdownRunner</code>{" "}
+                toolbars in place of the Run button. The Run/Stop affordances
+                were removed from the toolbar — the store's <code>onRun</code>/
+                <code>onStop</code>
                 still exist for when a run surface lands elsewhere. Pure UI
                 placeholder; no recorder or player is attached yet.
               </TransparencyLogEntry>
@@ -199,20 +292,19 @@ function AITransparency() {
                 stay editable and surface an optional author-authored{" "}
                 <code>hint</code> (new field on{" "}
                 <code>MultipleChoiceQuestion</code>/
-                <code>DragReorderQuestion</code>) so the learner can rework
-                the answer and resubmit. The correct answer is deliberately
-                not revealed. The summary is a <code>role="status"</code>{" "}
-                live region and pulls focus on mount so screen reader users
-                hear the result after submit. Multiple-choice panes are now
-                proper ARIA radio groups (<code>role=radiogroup</code> /{" "}
+                <code>DragReorderQuestion</code>) so the learner can rework the
+                answer and resubmit. The correct answer is deliberately not
+                revealed. The summary is a <code>role="status"</code> live
+                region and pulls focus on mount so screen reader users hear the
+                result after submit. Multiple-choice panes are now proper ARIA
+                radio groups (<code>role=radiogroup</code> /{" "}
                 <code>role=radio</code> with <code>aria-checked</code>, roving
                 <code> tabindex</code>, and arrow/Home/End key navigation)
-                instead of a plain pile of buttons. Also ported the quiz UI
-                off Tailwind's default{" "}
-                <code>accent</code>/<code>emerald</code>/<code>rose</code>{" "}
-                palette names (which resolved to nothing under this project's{" "}
-                <code>--color-*: initial</code> reset — SVG was literally
-                rendering black) onto the project's real{" "}
+                instead of a plain pile of buttons. Also ported the quiz UI off
+                Tailwind's default <code>accent</code>/<code>emerald</code>/
+                <code>rose</code> palette names (which resolved to nothing under
+                this project's <code>--color-*: initial</code> reset — SVG was
+                literally rendering black) onto the project's real{" "}
                 <code>blue</code>/<code>green</code>/<code>red</code> tokens,
                 and registered <code>packages/editor/src</code> as a Tailwind{" "}
                 <code>@source</code> so classes in the editor package actually
@@ -222,13 +314,13 @@ function AITransparency() {
                 date="2026-11-18"
                 title="Citation primitive for MDX lessons."
               >
-                Added a <code>&lt;Citation&gt;</code> MDX component
-                (<code>@learnrobotics/content/components/Citation</code>) that
+                Added a <code>&lt;Citation&gt;</code> MDX component (
+                <code>@learnrobotics/content/components/Citation</code>) that
                 authors drop inline with <code>href</code>, <code>title</code>,
                 and <code>description</code> props. It renders a numbered
                 superscript marker like <code>[1]</code> that jumps to a
-                "Citations" section auto-collected and rendered at the bottom
-                of every reading lesson. A <code>CitationsProvider</code> +
+                "Citations" section auto-collected and rendered at the bottom of
+                every reading lesson. A <code>CitationsProvider</code> +
                 <code>CitationList</code> pair is wired into the{" "}
                 <code>ReadingLesson</code> variant once, so lessons get the
                 section for free without extra boilerplate; registrations are
@@ -240,22 +332,21 @@ function AITransparency() {
               >
                 Rebuilt the quiz pipeline end-to-end. Quiz lessons are now{" "}
                 <code>.tsx</code> files in <code>/content</code>: the default
-                export is a <code>defineLesson({"{ kind: \"quiz\", … }"})</code>{" "}
+                export is a <code>defineLesson({'{ kind: "quiz", … }'})</code>{" "}
                 whose <code>questions</code> array is inline, and each question
                 is a named export built with <code>defineQuestion</code> so
                 placement-test files can pull individual questions with full
                 type-safety (<code>HelloJavaQuiz.testPrinting</code>). The
                 question union covers multiple-choice, drag-to-reorder, and a
                 stubbed code-and-pass-unit-test kind. A new{" "}
-                <code>@learnrobotics/editor/variants/quiz</code> Variant
-                (store + MC/drag/stub/results panes) renders the lesson,
-                reusing existing <code>LessonNav</code> and{" "}
-                <code>MarkdownCopy</code>. Results persist to a new{" "}
-                <code>quiz_result</code> table in D1 as a JSON blob (one row
-                per attempt); on reload the route fetches the union of
-                correctly-answered question ids and hides them on retake.
-                Four existing <code>.mdx</code> quiz stubs were renamed to{" "}
-                <code>.tsx</code> with <code>questions: []</code> — the
+                <code>@learnrobotics/editor/variants/quiz</code> Variant (store
+                + MC/drag/stub/results panes) renders the lesson, reusing
+                existing <code>LessonNav</code> and <code>MarkdownCopy</code>.
+                Results persist to a new <code>quiz_result</code> table in D1 as
+                a JSON blob (one row per attempt); on reload the route fetches
+                the union of correctly-answered question ids and hides them on
+                retake. Four existing <code>.mdx</code> quiz stubs were renamed
+                to <code>.tsx</code> with <code>questions: []</code> — the
                 author still owns the pedagogy. Placement test has a minimal{" "}
                 <code>definePlacementTest</code> helper only; its page and
                 content are a follow-up, as is the real test runner for
@@ -267,70 +358,68 @@ function AITransparency() {
               >
                 Added a <code>project</code> table to{" "}
                 <code>@learnrobotics/db</code> (id, userId, title, nullable
-                starterId, activeFile, files JSON blob, timestamps; FK
-                cascades on user delete so the anonymous-user cleanup cron
-                sweeps unclaimed drafts). Pure data functions in{" "}
-                <code>packages/db/src/data/projects.ts</code> cover list,
-                get, create, update, delete, and{" "}
-                <code>migrateProjectsOwner</code>; the better-auth{" "}
-                <code>onLinkAccount</code> hook now calls that migration so
-                projects a user saved while anonymous follow them into
-                their GitHub-linked account. Thin{" "}
+                starterId, activeFile, files JSON blob, timestamps; FK cascades
+                on user delete so the anonymous-user cleanup cron sweeps
+                unclaimed drafts). Pure data functions in{" "}
+                <code>packages/db/src/data/projects.ts</code> cover list, get,
+                create, update, delete, and <code>migrateProjectsOwner</code>;
+                the better-auth <code>onLinkAccount</code> hook now calls that
+                migration so projects a user saved while anonymous follow them
+                into their GitHub-linked account. Thin{" "}
                 <code>createServerFn</code> endpoints live in{" "}
                 <code>web/src/server/projects.ts</code> behind{" "}
                 <code>requireUser()</code> and a valibot validator (title
-                /activeFile length caps; files blob capped at 512 KB). Not
-                yet wired to the editor — <code>CodeRunnerShell</code>'s{" "}
-                <code>autoSaveId</code> prop will swap{" "}
-                <code>DraftPersist</code>'s localStorage for these
-                endpoints in a follow-up.
+                /activeFile length caps; files blob capped at 512 KB). Not yet
+                wired to the editor — <code>CodeRunnerShell</code>'s{" "}
+                <code>autoSaveId</code> prop will swap <code>DraftPersist</code>
+                's localStorage for these endpoints in a follow-up.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-18"
                 title="DB layer extracted to @learnrobotics/db."
               >
                 Pulled schema, drizzle client, BetterAuth config, data
-                functions, entity types, and the user/editor Solid contexts
-                into a new <code>packages/db</code> workspace package
-                (<code>@learnrobotics/db</code>). UI components import
-                hooks and types from the main entry;{" "}
-                <code>UserDataProvider</code> replaces the former
+                functions, entity types, and the user/editor Solid contexts into
+                a new <code>packages/db</code> workspace package (
+                <code>@learnrobotics/db</code>). UI components import hooks and
+                types from the main entry; <code>UserDataProvider</code>{" "}
+                replaces the former
                 <code>SessionProvider</code> + <code>ThemeProvider</code> pair
-                and now owns session, config, and derived theme in one
-                context. <code>EditorDataProvider</code> is mounted as a stub
-                for the upcoming workbench state. Server functions
-                (<code>createServerFn</code>) stay in <code>web/src/server/</code>{" "}
-                because TanStack&apos;s server-fn stripping doesn&apos;t cross
-                workspace boundaries; they&apos;re thin wrappers over the
-                package&apos;s pure data functions. Split subpath exports
-                (<code>/server</code> for DB primitives, <code>/data</code>{" "}
-                for data fns + guards) keep the client bundle clean.
-                <code>drizzle.config.ts</code> now points at the package
-                schema path.
+                and now owns session, config, and derived theme in one context.{" "}
+                <code>EditorDataProvider</code> is mounted as a stub for the
+                upcoming workbench state. Server functions (
+                <code>createServerFn</code>) stay in{" "}
+                <code>web/src/server/</code> because TanStack&apos;s server-fn
+                stripping doesn&apos;t cross workspace boundaries; they&apos;re
+                thin wrappers over the package&apos;s pure data functions. Split
+                subpath exports (<code>/server</code> for DB primitives,{" "}
+                <code>/data</code> for data fns + guards) keep the client bundle
+                clean.
+                <code>drizzle.config.ts</code> now points at the package schema
+                path.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-18"
                 title="Playground Stop button."
               >
-                Added a Stop button next to Run on <code>/playground</code>{" "}
-                that terminates the code-runner worker mid-execution. The
-                ristretto VM has no in-band cancel, so interrupting a
-                runaway program means tearing down the worker and letting
-                the next Run spin up a fresh one.
+                Added a Stop button next to Run on <code>/playground</code> that
+                terminates the code-runner worker mid-execution. The ristretto
+                VM has no in-band cancel, so interrupting a runaway program
+                means tearing down the worker and letting the next Run spin up a
+                fresh one.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-18"
                 title="Content package + runtime markdown projection."
               >
-                Moved <code>/content</code> into its own workspace package
-                (<code>@learnrobotics/content</code>) so it can declare
-                Solid and MDX dependencies directly, and exposed the lesson
-                index builder as <code>createContentRegistry</code>. The
-                plain-markdown projection consumed by the LLM output path
-                moved from a build-time MDX AST walk to a request-time
-                pipeline: SSR the lesson with a{" "}
-                <code>MarkdownRenderContext</code> flag set, then run the
-                HTML through turndown. New components (and interactive
+                Moved <code>/content</code> into its own workspace package (
+                <code>@learnrobotics/content</code>) so it can declare Solid and
+                MDX dependencies directly, and exposed the lesson index builder
+                as <code>createContentRegistry</code>. The plain-markdown
+                projection consumed by the LLM output path moved from a
+                build-time MDX AST walk to a request-time pipeline: SSR the
+                lesson with a <code>MarkdownRenderContext</code> flag set, then
+                run the HTML through turndown. New components (and interactive
                 figures) don&apos;t need bespoke AST handlers &mdash; they
                 either render semantic HTML or check{" "}
                 <code>useIsMarkdownRender()</code> to emit a summary variant.

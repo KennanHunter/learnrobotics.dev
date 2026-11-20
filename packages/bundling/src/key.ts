@@ -26,7 +26,12 @@ export type BundleKeyArgs = {
  *  `<kind>/` namespace — teavm's existing objects live at `teavm/<pin>/...`
  *  (no `bundles/` prefix), while new kinds use `bundles/<kind>/<pin>/...`.
  */
-export function bundleKey({ kind, pin, filename, prefix }: BundleKeyArgs): string {
+export function bundleKey({
+  kind,
+  pin,
+  filename,
+  prefix,
+}: BundleKeyArgs): string {
   const parts: string[] = [];
   if (prefix) parts.push(prefix.replace(/\/+$/, ""));
   parts.push(kind, pin);

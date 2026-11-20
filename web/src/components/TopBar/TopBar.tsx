@@ -41,10 +41,7 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
   });
 
   return (
-    <header
-      ref={headerEl}
-      class="border-b border-background-offset"
-    >
+    <header ref={headerEl} class="border-b border-background-offset">
       <div class="flex items-center justify-between gap-2.5 px-3 py-1.5">
         <div class="flex items-center gap-3">
           <a href={localizeHref("/")} class="block text-inherit">
@@ -102,9 +99,7 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
                   onClick={onGithub}
                 >
                   <AiFillGithub class="text-sm" />
-                  <span class="hidden sm:inline">
-                    {m.nav_sign_in_github()}
-                  </span>
+                  <span class="hidden sm:inline">{m.nav_sign_in_github()}</span>
                 </button>
                 <div class="group relative flex items-center">
                   <button
@@ -135,16 +130,10 @@ export function TopBar(props: { crumbs?: BreadcrumbCrumbs } = {}) {
       </Show>
       <Show when={!props.crumbs}>
         <div class="flex items-center gap-3 border-t border-background-offset/60 px-3 py-1.5 sm:hidden">
-          <a
-            href={localizeHref("/playground")}
-            class="text-xs hover:underline"
-          >
+          <a href={localizeHref("/playground")} class="text-xs hover:underline">
             {m.nav_playground()}
           </a>
-          <a
-            href={localizeHref("/discord")}
-            class="text-xs hover:underline"
-          >
+          <a href={localizeHref("/discord")} class="text-xs hover:underline">
             {m.nav_discord()}
           </a>
           <a href={localizeHref("/about")} class="text-xs hover:underline">

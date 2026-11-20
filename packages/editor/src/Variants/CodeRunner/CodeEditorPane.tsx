@@ -10,10 +10,11 @@ import { bindRecorder } from "../../CodeEditor/bind-recorder";
 import { getOrCreateModel } from "../../CodeEditor/utils";
 import type { EventDispatcher } from "@learnrobotics/events";
 import type { MonacoEditorProps } from "../../CodeEditor";
-import { useJavaCodeRunner } from "./playground-store";
+import { useCodeRunner } from "./code-runner-store";
 
 export type CodeEditorPaneProps = {
   monacoTheme: () => string;
+  tabSize: () => number;
   registerThemes?: MonacoEditorProps["registerThemes"];
   dispatcher?: EventDispatcher;
   loadingLabel?: string;
@@ -21,7 +22,7 @@ export type CodeEditorPaneProps = {
 
 export function CodeEditorPane(props: CodeEditorPaneProps) {
   console.log("[CodeEditorPane] body");
-  const store = useJavaCodeRunner();
+  const store = useCodeRunner();
   console.log("[CodeEditorPane] store ok", {
     activeFile: store.activeFile(),
     sourceLength: store.source()?.length,
@@ -89,7 +90,12 @@ export function CodeEditorPane(props: CodeEditorPaneProps) {
             });
           }
         }}
-        options={{ minimap: { enabled: false }, fontSize: 13 }}
+        options={{
+          minimap: { enabled: false },
+          fontSize: 13,
+          tabSize: props.tabSize(),
+          insertSpaces: true,
+        }}
       />
     </Show>
   );

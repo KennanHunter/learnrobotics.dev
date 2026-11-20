@@ -47,7 +47,7 @@
     color: var(--color-foreground-muted);
   }
   .prose p {
-    margin: 0;
+    margin: 0 0 1em 0;
   }
   .prose a {
     color: var(--color-blue);
@@ -91,14 +91,16 @@
     margin: 2em 0;
   }
   .prose code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.85em;
     background: var(--color-background-offset);
     padding: 0.1em 0.35em;
     border-radius: 3px;
   }
   .prose pre {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.85em;
     background: var(--color-background-offset);
     padding: 0.75em 1em;

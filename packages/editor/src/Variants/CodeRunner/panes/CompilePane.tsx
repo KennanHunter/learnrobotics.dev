@@ -1,8 +1,8 @@
 import { For, Show } from "solid-js";
-import { useJavaCodeRunner } from "../playground-store";
+import { useCodeRunner } from "../code-runner-store";
 
 export function CompilePane() {
-  const store = useJavaCodeRunner();
+  const store = useCodeRunner();
   const hasContent = () =>
     store.compileError() !== null || store.diagnostics().length > 0;
 

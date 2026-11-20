@@ -1,9 +1,4 @@
-import {
-  createContext,
-  useContext,
-  type Accessor,
-  type JSX,
-} from "solid-js";
+import { createContext, useContext, type Accessor, type JSX } from "solid-js";
 
 export type EditorData = {
   currentLesson: Accessor<null>;
@@ -27,7 +22,6 @@ export function EditorDataProvider(props: {
 
 export function useEditor(): EditorData {
   const ctx = useContext(EditorDataContext);
-  if (!ctx)
-    throw new Error("useEditor must be used within EditorDataProvider");
+  if (!ctx) throw new Error("useEditor must be used within EditorDataProvider");
   return ctx;
 }

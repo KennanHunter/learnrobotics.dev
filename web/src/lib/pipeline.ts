@@ -96,7 +96,8 @@ async function compileSource(
   ]);
   const teavm = await load(wasmBytes);
   const compiler = teavm.exports.createCompiler();
-  const sdk = sdkBytes instanceof Uint8Array ? sdkBytes : new Uint8Array(sdkBytes);
+  const sdk =
+    sdkBytes instanceof Uint8Array ? sdkBytes : new Uint8Array(sdkBytes);
   compiler.setSdk(new Int8Array(sdk.buffer, sdk.byteOffset, sdk.byteLength));
 
   const diagnostics: Diagnostic[] = [];

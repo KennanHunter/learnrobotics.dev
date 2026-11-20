@@ -31,7 +31,10 @@ async function ensureCacheDir(): Promise<void> {
   await mkdir(CACHE_DIR, { recursive: true });
 }
 
-async function downloadToCache(url: string, destName: string): Promise<Uint8Array> {
+async function downloadToCache(
+  url: string,
+  destName: string,
+): Promise<Uint8Array> {
   const destPath = path.join(CACHE_DIR, destName);
   if (existsSync(destPath)) {
     return new Uint8Array(await readFile(destPath));
@@ -65,7 +68,9 @@ export async function readTeavmSdk(): Promise<Uint8Array> {
   );
 }
 
-export async function readRistrettoCore(name: string): Promise<WebAssembly.Module> {
+export async function readRistrettoCore(
+  name: string,
+): Promise<WebAssembly.Module> {
   const bytes = await readLocalArtifact(`webassembly/runtime/dist/${name}`);
   return WebAssembly.compile(bytes);
 }

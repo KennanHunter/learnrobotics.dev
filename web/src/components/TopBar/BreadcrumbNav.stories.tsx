@@ -12,7 +12,11 @@ import type {
   IndexedUnit,
   LessonStatus,
 } from "~/lib/content";
-import { withEnvironment, withSession, anonymousSession } from "../../../.storybook/decorators";
+import {
+  withEnvironment,
+  withSession,
+  anonymousSession,
+} from "../../../.storybook/decorators";
 
 function lesson(
   order: number,
@@ -143,8 +147,8 @@ function Shell(props: { children: any }) {
         {props.children}
       </div>
       <div class="p-6 text-sm text-foreground-muted">
-        Lesson content here. Click the breadcrumb to open the mega-menu —
-        it lands over this region, not the top bar.
+        Lesson content here. Click the breadcrumb to open the mega-menu — it
+        lands over this region, not the top bar.
       </div>
     </ModalProvider>
   );

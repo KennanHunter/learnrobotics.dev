@@ -88,8 +88,8 @@ function QuizInner() {
       when={!allMastered()}
       fallback={
         <p class="rounded border border-background-offset bg-background-offset/20 p-6 text-sm">
-          You've already answered every question in this quiz correctly.
-          Reset below to go through them again.
+          You've already answered every question in this quiz correctly. Reset
+          below to go through them again.
         </p>
       }
     >
@@ -104,22 +104,42 @@ function QuizInner() {
               <Switch>
                 <Match when={question.kind === "multiple-choice"}>
                   <MultipleChoicePane
-                    question={question as Extract<QuizQuestion, { kind: "multiple-choice" }>}
+                    question={
+                      question as Extract<
+                        QuizQuestion,
+                        { kind: "multiple-choice" }
+                      >
+                    }
                   />
                 </Match>
                 <Match when={question.kind === "drag-to-reorder"}>
                   <DragReorderPane
-                    question={question as Extract<QuizQuestion, { kind: "drag-to-reorder" }>}
+                    question={
+                      question as Extract<
+                        QuizQuestion,
+                        { kind: "drag-to-reorder" }
+                      >
+                    }
                   />
                 </Match>
                 <Match when={question.kind === "code-unit-test"}>
                   <CodeQuestionStub
-                    question={question as Extract<QuizQuestion, { kind: "code-unit-test" }>}
+                    question={
+                      question as Extract<
+                        QuizQuestion,
+                        { kind: "code-unit-test" }
+                      >
+                    }
                   />
                 </Match>
                 <Match when={question.kind === "code-markdown"}>
                   <CodeMarkdownPane
-                    question={question as Extract<QuizQuestion, { kind: "code-markdown" }>}
+                    question={
+                      question as Extract<
+                        QuizQuestion,
+                        { kind: "code-markdown" }
+                      >
+                    }
                   />
                 </Match>
               </Switch>
@@ -145,7 +165,10 @@ function QuizHeader(props: { onSubmit: () => Promise<void> | void }) {
   const quiz = useQuiz();
   const submitted = () => quiz.status() === "submitted";
   return (
-    <Show when={submitted()} fallback={<ProgressHeader onSubmit={props.onSubmit} />}>
+    <Show
+      when={submitted()}
+      fallback={<ProgressHeader onSubmit={props.onSubmit} />}
+    >
       <SubmissionSummary />
     </Show>
   );
@@ -156,9 +179,7 @@ function ProgressHeader(props: { onSubmit: () => Promise<void> | void }) {
   const total = createMemo(() => quiz.visibleQuestions().length);
   const answered = createMemo(() => {
     const d = quiz.drafts();
-    return quiz
-      .visibleQuestions()
-      .filter((q) => d[q.id] !== undefined).length;
+    return quiz.visibleQuestions().filter((q) => d[q.id] !== undefined).length;
   });
   const pct = () => (total() === 0 ? 0 : (answered() / total()) * 100);
 
@@ -189,8 +210,8 @@ function ProgressHeader(props: { onSubmit: () => Promise<void> | void }) {
 
 function SubmissionSummary() {
   const quiz = useQuiz();
-  const correct = createMemo(() =>
-    quiz.results().filter((a) => a.correct).length,
+  const correct = createMemo(
+    () => quiz.results().filter((a) => a.correct).length,
   );
   const total = createMemo(() => quiz.results().length);
   const incorrect = () => total() - correct();
@@ -230,7 +251,9 @@ function SubmissionSummary() {
         <span class="text-green">
           <span class="text-lg font-semibold">{correct()}</span> correct
         </span>
-        <span aria-hidden="true" class="text-foreground-subtle">·</span>
+        <span aria-hidden="true" class="text-foreground-subtle">
+          ·
+        </span>
         <span class={incorrect() === 0 ? "text-foreground-subtle" : "text-red"}>
           <span class="text-lg font-semibold">{incorrect()}</span> incorrect
         </span>

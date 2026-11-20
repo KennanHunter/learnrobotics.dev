@@ -1,26 +1,32 @@
 import { createFileRoute, useNavigate } from "@tanstack/solid-router";
-import { createSignal, ErrorBoundary, Show } from "solid-js";
+import { createSignal, ErrorBoundary, onMount, Show, untrack } from "solid-js";
+import type { ProjectRecord } from "@learnrobotics/db";
 import * as v from "valibot";
 import { TopBar } from "~/components/TopBar/TopBar";
 import { EventDispatcher } from "@learnrobotics/events";
 import {
-  JavaCodeRunner,
-  JavaCodeRunnerProvider,
-  useJavaCodeRunner,
-} from "@learnrobotics/editor/variants/java-code-runner";
+  CodeRunner,
+  CodeRunnerProvider,
+  useCodeRunner,
+} from "@learnrobotics/editor/variants/code-runner";
 import { autoThemeFor, registerThemes } from "~/lib/monaco-themes";
-import { useTheme } from "@learnrobotics/db";
+import { useTabSize, useTheme } from "@learnrobotics/db";
 import { m } from "~/paraglide/messages";
 import { resolveStarter } from "~/lib/starters";
 import {
   StarterPicker,
-  DraftPersist,
+  ProjectPersist,
   DRAFT_STORAGE_PREFIX,
 } from "~/components/StarterPicker";
 import { createCodeRunnerWorker } from "~/workers/create-code-runner-worker";
+import { getUserProject } from "~/server/projects";
+import { AutosaveIndicator } from "~/components/AutosaveIndicator";
+import { ProjectFilesPanel } from "~/components/ProjectFilesPanel";
+import { EditorActionsMenu } from "~/components/EditorActionsMenu";
 
 const SearchSchema = v.object({
   s: v.optional(v.string()),
+  project: v.optional(v.string()),
 });
 
 export const Route = createFileRoute("/playground")({
@@ -28,12 +34,12 @@ export const Route = createFileRoute("/playground")({
   component: Playground,
 });
 
-type SavedDraft = {
-  activeFile: string;
+type SeededStarter = {
   files: Record<string, string>;
+  activeFile: string;
 };
 
-function loadDraft(starterId: string): SavedDraft | null {
+function loadLocalDraft(starterId: string): SeededStarter | null {
   if (typeof localStorage === "undefined") return null;
   const raw = localStorage.getItem(DRAFT_STORAGE_PREFIX + starterId);
   if (!raw) return null;
@@ -50,8 +56,8 @@ function Playground() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { effectiveTheme, monacoTheme } = useTheme();
-  const monacoThemeName = () =>
-    monacoTheme() ?? autoThemeFor(effectiveTheme());
+  const monacoThemeName = () => monacoTheme() ?? autoThemeFor(effectiveTheme());
+  const tabSize = useTabSize();
 
   return (
     <>
@@ -76,83 +82,61 @@ function Playground() {
                 </div>
               );
             }
-            const draft = loadDraft(starterId());
-            const starter = draft
-              ? { files: draft.files, activeFile: draft.activeFile }
-              : { files: resolved.files, activeFile: resolved.activeFile };
-            const dispatcher = new EventDispatcher();
-            const [savedAt, setSavedAt] = createSignal<number | null>(null);
-            const [dirtyAt, setDirtyAt] = createSignal<number | null>(null);
+
+            // Snapshot URL state at mount — later URL rewrites (e.g. the
+            // one ProjectPersist triggers after creating a row) must not
+            // remount the workbench and clobber the live Monaco buffer.
+            const initialProjectId = untrack(() => search().project ?? null);
+            // Client-only fetch so SSR renders the loading fallback and
+            // client hydration matches. Mirrors the pattern CodeRunnerShell
+            // uses for its own client-only mount gate.
+            const [serverProject, setServerProject] =
+              createSignal<ProjectRecord | null>(null);
+            const [loading, setLoading] = createSignal(
+              initialProjectId !== null,
+            );
+            onMount(async () => {
+              if (!initialProjectId) return;
+              try {
+                const row = await getUserProject({
+                  data: { id: initialProjectId },
+                });
+                setServerProject(row);
+              } catch {
+                /* fall back to starter/local draft */
+              } finally {
+                setLoading(false);
+              }
+            });
 
             return (
-              <ErrorBoundary
-                fallback={(err, reset) => (
-                  <div class="p-6 text-sm">
-                    <div class="font-mono text-red">
-                      Workbench crashed:{" "}
-                      {err instanceof Error ? err.message : String(err)}
-                    </div>
-                    <pre class="mt-3 max-h-96 overflow-auto whitespace-pre-wrap text-xs text-foreground-muted">
-                      {err instanceof Error ? err.stack : String(err)}
-                    </pre>
-                    <button
-                      type="button"
-                      onClick={reset}
-                      class="mt-3 rounded border border-background-offset px-3 py-1 text-xs"
-                    >
-                      retry
-                    </button>
+              <Show
+                when={!loading()}
+                fallback={
+                  <div class="p-6 text-sm text-foreground-muted">
+                    Loading project…
                   </div>
-                )}
+                }
               >
-                <JavaCodeRunnerProvider
-                  starter={starter}
-                  createWorker={createCodeRunnerWorker}
-                >
-                  <DraftPersist
-                    starterId={resolved.id}
-                    starterTitle={resolved.title}
-                    onSaved={setSavedAt}
-                    onDirty={setDirtyAt}
-                  />
-                  <JavaCodeRunner
-                    monacoTheme={monacoThemeName}
-                    registerThemes={registerThemes}
-                    dispatcher={dispatcher}
-                    toolbarLeft={() => (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            navigate({ to: "/playground", search: {} })
-                          }
-                          class="text-xs text-foreground-muted hover:text-foreground"
-                        >
-                          ← All starters
-                        </button>
-                        <span class="truncate text-sm font-semibold tracking-tight">
-                          {resolved.title}
-                        </span>
-                      </>
-                    )}
-                    toolbarRight={() => (
-                      <>
-                        <AutosaveIndicator
-                          savedAt={savedAt()}
-                          dirtyAt={dirtyAt()}
-                        />
-                        <ExportButton starterId={resolved.id} />
-                      </>
-                    )}
-                    labels={{
-                      run: m.playground_run(),
-                      compiling: m.playground_compiling(),
-                      running: m.playground_running(),
-                      loadingEditor: m.playground_loading_editor(),
-                    }}
-                  />
-                </JavaCodeRunnerProvider>
-              </ErrorBoundary>
+                <Workbench
+                  resolved={resolved}
+                  initialProjectId={initialProjectId}
+                  initialSeed={
+                    serverProject()
+                      ? {
+                          files: serverProject()!.files,
+                          activeFile: serverProject()!.activeFile,
+                        }
+                      : (loadLocalDraft(resolved.id) ?? {
+                          files: resolved.files,
+                          activeFile: resolved.activeFile,
+                        })
+                  }
+                  monacoThemeName={monacoThemeName}
+                  tabSize={tabSize}
+                  navigate={navigate}
+                />
+              </Show>
             );
           }}
         </Show>
@@ -161,26 +145,106 @@ function Playground() {
   );
 }
 
-function AutosaveIndicator(props: {
-  savedAt: number | null;
-  dirtyAt: number | null;
+function Workbench(props: {
+  resolved: ReturnType<typeof resolveStarter> & {};
+  initialProjectId: string | null;
+  initialSeed: SeededStarter;
+  monacoThemeName: () => string;
+  tabSize: () => number;
+  navigate: ReturnType<typeof useNavigate>;
 }) {
-  const label = () => {
-    const saved = props.savedAt;
-    const dirty = props.dirtyAt;
-    if (saved == null && dirty == null) return "Unsaved";
-    if (dirty != null && (saved == null || dirty > saved)) return "Saving…";
-    return "Saved";
+  const dispatcher = new EventDispatcher();
+  const [savedAt, setSavedAt] = createSignal<number | null>(null);
+  const [dirtyAt, setDirtyAt] = createSignal<number | null>(null);
+  const [projectId, setProjectId] = createSignal<string | null>(
+    props.initialProjectId,
+  );
+
+  const onCreated = (id: string) => {
+    setProjectId(id);
+    props.navigate({
+      to: "/playground",
+      search: { s: props.resolved.id, project: id },
+      replace: true,
+    });
   };
+
   return (
-    <span class="text-[11px] text-foreground-muted" aria-live="polite">
-      {label()}
-    </span>
+    <ErrorBoundary
+      fallback={(err, reset) => (
+        <div class="p-6 text-sm">
+          <div class="font-mono text-red">
+            Workbench crashed:{" "}
+            {err instanceof Error ? err.message : String(err)}
+          </div>
+          <pre class="mt-3 max-h-96 overflow-auto whitespace-pre-wrap text-xs text-foreground-muted">
+            {err instanceof Error ? err.stack : String(err)}
+          </pre>
+          <button
+            type="button"
+            onClick={reset}
+            class="mt-3 rounded border border-background-offset px-3 py-1 text-xs"
+          >
+            retry
+          </button>
+        </div>
+      )}
+    >
+      <CodeRunnerProvider
+        starter={props.initialSeed}
+        createWorker={createCodeRunnerWorker}
+      >
+        <ProjectPersist
+          starterId={props.resolved.id}
+          starterTitle={props.resolved.title}
+          projectId={projectId()}
+          onCreated={onCreated}
+          onSaved={setSavedAt}
+          onDirty={setDirtyAt}
+        />
+        <CodeRunner
+          monacoTheme={props.monacoThemeName}
+          tabSize={props.tabSize}
+          registerThemes={registerThemes}
+          dispatcher={dispatcher}
+          toolbarLeft={() => (
+            <>
+              <button
+                type="button"
+                onClick={() =>
+                  props.navigate({ to: "/playground", search: {} })
+                }
+                class="text-xs text-foreground-muted hover:text-foreground"
+              >
+                ← All starters
+              </button>
+              <span class="truncate text-sm font-semibold tracking-tight">
+                {props.resolved.title}
+              </span>
+            </>
+          )}
+          toolbarRight={() => <ExportButton starterId={props.resolved.id} />}
+          editorActions={() => (
+            <>
+              <AutosaveIndicator savedAt={savedAt()} dirtyAt={dirtyAt()} />
+              <EditorActionsMenu starter={props.resolved} />
+            </>
+          )}
+          filesSlot={() => <ProjectFilesPanel />}
+          labels={{
+            run: m.playground_run(),
+            compiling: m.playground_compiling(),
+            running: m.playground_running(),
+            loadingEditor: m.playground_loading_editor(),
+          }}
+        />
+      </CodeRunnerProvider>
+    </ErrorBoundary>
   );
 }
 
 function ExportButton(props: { starterId: string }) {
-  const store = useJavaCodeRunner();
+  const store = useCodeRunner();
   const onExport = () => {
     const payload = {
       starterId: props.starterId,

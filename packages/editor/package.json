@@ -10,10 +10,10 @@
     "./code-editor/types": "./src/CodeEditor/types.ts",
     "./mdx": "./src/Mdx/index.ts",
     "./mdx-provider": "./src/Mdx/provider.tsx",
+    "./prompt-bundles": "./src/Shared/PromptBundles/index.ts",
     "./panels": "./src/Panels/index.ts",
     "./variants/reading": "./src/Variants/Reading/index.ts",
-    "./variants/java-code-runner": "./src/Variants/JavaCodeRunner/index.ts",
-    "./variants/markdown-runner": "./src/Variants/MarkdownRunner/index.ts",
+    "./variants/code-runner": "./src/Variants/CodeRunner/index.ts",
     "./variants/quiz": "./src/Variants/Quiz/index.ts"
   },
   "scripts": {
@@ -26,6 +26,8 @@
     "@monaco-editor/loader": "^1.7.0",
     "marked": "^18.2.1",
     "monaco-editor": "^0.57.0",
+    "prettier": "^3.10.1",
+    "prettier-plugin-java": "2.9.7",
     "prismjs": "^1.30.0",
     "solid-icons": "catalog:",
     "solid-resizable-panels": "^0.5.4"

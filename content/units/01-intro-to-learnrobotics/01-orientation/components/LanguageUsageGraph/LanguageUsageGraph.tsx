@@ -137,7 +137,8 @@ export function LanguageUsageGraph(): JSX.Element {
 
   const rowsFor = (tabId: TabId, n: CountOption) =>
     sliceRows(TABS.find((t) => t.id === tabId)!.rows, n);
-  const chartHeight = () => Math.max(380, rowsFor(active(), count()).length * 38 + 140);
+  const chartHeight = () =>
+    Math.max(380, rowsFor(active(), count()).length * 38 + 140);
 
   const buildConfig = (
     tabId: TabId,
@@ -291,20 +292,14 @@ export function LanguageUsageGraph(): JSX.Element {
             }}
           >
             {COUNT_OPTIONS.map((o) => (
-              <option
-                value={String(o.value)}
-                selected={count() === o.value}
-              >
+              <option value={String(o.value)} selected={count() === o.value}>
                 {o.label}
               </option>
             ))}
           </select>
         </label>
       </div>
-      <div
-        class="relative w-full"
-        style={{ height: `${chartHeight()}px` }}
-      >
+      <div class="relative w-full" style={{ height: `${chartHeight()}px` }}>
         <canvas ref={canvas} />
       </div>
       <figcaption class="mt-4 text-xs text-foreground-muted">

@@ -17,9 +17,9 @@ earlier observations from a sub-agent didn't survive verification
 `teavm.ts`, `monaco-themes.ts`), SolidJS contexts (`session-context.tsx`,
 `theme-context.tsx`, `environment-context.tsx`), the `bundles/` subtree,
 `logger.ts`, `content.ts`, `use-localized-navigate.ts`, plus the
-BetterAuth *client* (`auth-client.ts`).
+BetterAuth _client_ (`auth-client.ts`).
 
-`web/src/server/` holds the BetterAuth *server* config, DB schema,
+`web/src/server/` holds the BetterAuth _server_ config, DB schema,
 admin queries, R2, cleanup, env.
 
 Having `auth-client.ts` in `lib/` while `auth.ts` sits in `server/` is

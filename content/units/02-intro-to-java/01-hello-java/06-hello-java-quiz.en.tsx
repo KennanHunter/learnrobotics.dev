@@ -7,8 +7,8 @@ export const printlnOutput = defineQuestion({
   kind: "multiple-choice",
   prompt: (
     <>
-      What does{" "}
-      <code>System.out.println("Hello, robot!")</code> print to the console?
+      What does <code>System.out.println("Hello, robot!")</code> print to the
+      console?
     </>
   ),
   choices: [
@@ -24,7 +24,12 @@ export const classKeyword = defineQuestion({
   id: "class-keyword",
   kind: "multiple-choice",
   prompt: <>Which keyword starts the definition of a Java class?</>,
-  choices: [<code>def</code>, <code>function</code>, <code>class</code>, <code>new</code>],
+  choices: [
+    <code>def</code>,
+    <code>function</code>,
+    <code>class</code>,
+    <code>new</code>,
+  ],
   answer: 2,
 });
 
@@ -33,15 +38,17 @@ export const orderOfExecution = defineQuestion({
   kind: "drag-to-reorder",
   prompt: (
     <>
-      Drag the lines into the order they'd run in a typical{" "}
-      <code>main</code> method.
+      Drag the lines into the order they'd run in a typical <code>main</code>{" "}
+      method.
     </>
   ),
   items: [
     <>Declare a variable</>,
     <>Assign it a value</>,
     <>Print the variable</>,
-    <>Return from <code>main</code></>,
+    <>
+      Return from <code>main</code>
+    </>,
   ],
 });
 
@@ -50,8 +57,7 @@ export const writeMainMethod = defineQuestion({
   kind: "code-unit-test",
   prompt: (
     <>
-      Write a <code>main</code> method that prints the number{" "}
-      <code>42</code>.
+      Write a <code>main</code> method that prints the number <code>42</code>.
     </>
   ),
 });

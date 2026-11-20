@@ -1,8 +1,8 @@
 import { Show } from "solid-js";
-import { useJavaCodeRunner } from "../playground-store";
+import { useCodeRunner } from "../code-runner-store";
 
 export function StdoutPane() {
-  const store = useJavaCodeRunner();
+  const store = useCodeRunner();
   return (
     <div
       class="h-full overflow-auto p-3 font-mono text-xs"

@@ -66,24 +66,19 @@ describe("htmlToMarkdown — links", () => {
   });
 
   it("preserves absolute URLs", async () => {
-    expect(
-      await md(
-        '<p><a href="https://example.com/x">example</a></p>',
-      ),
-    ).toBe("[example](https://example.com/x)");
+    expect(await md('<p><a href="https://example.com/x">example</a></p>')).toBe(
+      "[example](https://example.com/x)",
+    );
   });
 });
 
 describe("htmlToMarkdown — code", () => {
   it("renders inline code with backticks", async () => {
-    expect(await md("<p>Call <code>foo()</code></p>")).toBe(
-      "Call `foo()`",
-    );
+    expect(await md("<p>Call <code>foo()</code></p>")).toBe("Call `foo()`");
   });
 
   it("renders a fenced block from language-* class", async () => {
-    const html =
-      '<pre><code class="language-java">class Foo {}</code></pre>';
+    const html = '<pre><code class="language-java">class Foo {}</code></pre>';
     expect(await md(html)).toBe("```java\nclass Foo {}\n```");
   });
 
@@ -149,9 +144,9 @@ describe("htmlToMarkdown — blocks", () => {
   });
 
   it("renders an image with alt text", async () => {
-    expect(
-      await md('<p><img src="/a.png" alt="A diagram"></p>'),
-    ).toBe("![A diagram](/a.png)");
+    expect(await md('<p><img src="/a.png" alt="A diagram"></p>')).toBe(
+      "![A diagram](/a.png)",
+    );
   });
 
   it("renders an image with no alt", async () => {
@@ -188,9 +183,7 @@ describe("htmlToMarkdown — end-to-end", () => {
   });
 
   it("collapses runs of blank lines to a single blank line", async () => {
-    expect(await md("<h1>A</h1><p>B</p><p>C</p>")).toBe(
-      "# A\n\nB\n\nC",
-    );
+    expect(await md("<h1>A</h1><p>B</p><p>C</p>")).toBe("# A\n\nB\n\nC");
   });
 
   it("always ends with exactly one trailing newline", async () => {

@@ -11,7 +11,9 @@ import {
 } from "@learnrobotics/db/data/projects";
 
 async function anonUserId(): Promise<string> {
-  const result = await getAuth().api.signInAnonymous({ headers: new Headers() });
+  const result = await getAuth().api.signInAnonymous({
+    headers: new Headers(),
+  });
   const id = result?.user.id;
   if (!id) throw new Error("failed to create anonymous user");
   return id;

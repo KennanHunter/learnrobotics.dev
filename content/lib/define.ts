@@ -3,6 +3,7 @@ import type {
   LessonDef,
   QuizQuestion,
   SimulatorDef,
+  SnippetDef,
   StarterDef,
   UnitDef,
 } from "./types";
@@ -13,3 +14,4 @@ export const defineLesson = <const T extends LessonDef>(x: T): T => x;
 export const defineStarter = <const T extends StarterDef>(x: T): T => x;
 export const defineSimulator = <const T extends SimulatorDef>(x: T): T => x;
 export const defineQuestion = <const T extends QuizQuestion>(x: T): T => x;
+export const defineSnippet = <const T extends SnippetDef>(x: T): T => x;

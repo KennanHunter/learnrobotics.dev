@@ -451,6 +451,14 @@ function UserDetails(props: { userId: string }) {
                     </Show>
                     <KV k="Theme" v={c().theme ?? "—"} />
                     <KV k="Monaco theme" v={c().monacoTheme ?? "—"} />
+                    <KV
+                      k="Reading prompt"
+                      v={c().systemPrompt ? "custom" : "default"}
+                    />
+                    <KV
+                      k="Code prompt"
+                      v={c().codeSystemPrompt ? "custom" : "default"}
+                    />
                   </div>
                 )}
               </Show>

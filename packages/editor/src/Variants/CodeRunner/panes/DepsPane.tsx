@@ -1,5 +1,5 @@
 import { Show } from "solid-js";
-import { useJavaCodeRunner } from "../playground-store";
+import { useCodeRunner } from "../code-runner-store";
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -8,7 +8,7 @@ function formatBytes(n: number): string {
 }
 
 export function DepsPane() {
-  const store = useJavaCodeRunner();
+  const store = useCodeRunner();
   const progress = () => store.depsProgress();
   const percent = () => {
     const p = progress();

@@ -20,7 +20,7 @@ export type ResolvedStarter = {
 };
 
 /**
- * Resolve a starter id to the shape the JavaCodeRunner store wants
+ * Resolve a starter id to the shape the CodeRunner store wants
  * ({ files: Record<path, content>, activeFile, language }). Returns null
  * when the id doesn't match a known starter.
  */

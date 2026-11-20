@@ -124,8 +124,10 @@ function resolvePlacement(
 }
 
 const VARIANT_CLASSES: Record<OverlayVariant, string> = {
-  modal: "rounded-lg border border-background-offset/60 bg-background shadow-xl",
-  panel: "rounded-lg border border-background-offset/60 bg-background shadow-lg",
+  modal:
+    "rounded-lg border border-background-offset/60 bg-background shadow-xl",
+  panel:
+    "rounded-lg border border-background-offset/60 bg-background shadow-lg",
   bare: "",
 };
 

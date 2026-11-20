@@ -1,16 +1,24 @@
 import { defineLesson } from "../../../lib/define";
 import { LoremIpsum } from "../../../lib/components/LoremIpsum/LoremIpsum";
-import { Info } from "../../../lib/components/Info/Info"
+import { Info } from "../../../lib/components/Info/Info";
+import {
+  header,
+  emphasis,
+  bulletedList,
+  link,
+  codeBlock,
+} from "../../../snippets/markdown";
 
 export const meta = defineLesson({
-    id: "editor-tour",
-    title: "An introduction to the editor and writing markdown",
-    kind: "code",
-    estMinutes: 8,
-    difficulty: 1,
-    importance: "essential",
-    status: "done",
-    starter: "markdown-intro",
+  id: "editor-tour",
+  title: "An introduction to the editor and writing markdown",
+  kind: "code",
+  estMinutes: 8,
+  difficulty: 1,
+  importance: "essential",
+  status: "done",
+  starter: "markdown-intro",
+  snippets: [header, emphasis, bulletedList, link, codeBlock],
 });
 
 You can safely only read articles marked as "Essential" and have a perfectly
@@ -18,7 +26,7 @@ good time programming robots. The "Useful", "Niche" and "Deep" tags are in
 descending order of immediate importance, but I honestly recommend skimming all of them.
 If you arn't particularly interested in learning about a concept, you should still
 know the one sentence summary, so that when you come across a problem that requires them
-you'll know how to look.
+you'll know where to look.
 
 In reality most concepts in software development work like this. You learn just enough
 about a lot of things, such that when you encounter a problem that can use them, you

@@ -12,7 +12,13 @@ export type CodeRunnerShellProps = {
   articleTitle?: string;
   filesTitle?: string;
   editorTitle?: string;
+  /** Right-aligned content in the editor panel header. */
+  editorActions?: () => JSX.Element;
   rightTitle?: string;
+
+  /** Hide the article panel's title header. Pass true when the article slot
+   * already provides its own section header (e.g. a TabGroup tablist). */
+  articleBare?: boolean;
 
   /** Column widths (`fr` units). Defaults chosen by which slots are present. */
   columns?: {
@@ -80,7 +86,12 @@ export function CodeRunnerShell(props: CodeRunnerShellProps) {
             class="min-h-0 min-w-0"
             style={{ "grid-row": props.toolbarSlot ? "2" : "1" }}
           >
-            <PanelFrame title={props.articleTitle ?? "Lesson"}>
+            <PanelFrame
+              title={
+                props.articleBare ? undefined : (props.articleTitle ?? "Lesson")
+              }
+              bare={props.articleBare}
+            >
               {props.articleSlot!()}
             </PanelFrame>
           </div>
@@ -101,7 +112,10 @@ export function CodeRunnerShell(props: CodeRunnerShellProps) {
           class="min-h-0 min-w-0"
           style={{ "grid-row": props.toolbarSlot ? "2" : "1" }}
         >
-          <PanelFrame title={props.editorTitle ?? "Editor"}>
+          <PanelFrame
+            title={props.editorTitle ?? "Editor"}
+            actions={props.editorActions?.()}
+          >
             {props.editorSlot()}
           </PanelFrame>
         </div>

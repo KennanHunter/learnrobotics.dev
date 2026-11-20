@@ -2,3 +2,5 @@ crates/ristretto
 .wrangler
 dist
 web/src/paraglide
+storybook-static
+test-results

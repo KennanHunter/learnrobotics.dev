@@ -6,19 +6,19 @@ table, drizzle schema, server fns). What's missing is swapping the
 client's localStorage drafts for those server fns, and loading projects
 on the playground/lesson routes.
 
-Everything below is *as of now*; verify against the files it names before
+Everything below is _as of now_; verify against the files it names before
 making structural assumptions.
 
 ## Variants (the four lesson/editor kinds)
 
 The editor package exposes four variants through `packages/editor/src/Variants/`:
 
-| Variant | Purpose | Key files | Needs persistence? |
-|---|---|---|---|
-| `Reading` | MDX article only; no editor | `Variants/Reading/ReadingLesson.tsx` | No |
-| `JavaCodeRunner` | Monaco (java) + worker + console tabs | `Variants/JavaCodeRunner/*` | **Yes** |
-| `MarkdownRunner` | Monaco (markdown) + live HTML preview | `Variants/MarkdownRunner/*` | **Yes** (lightweight) |
-| `Quiz` | Multi-question quiz UI | `Variants/Quiz/*` | Yes — separate table `quiz_result` already exists |
+| Variant          | Purpose                               | Key files                            | Needs persistence?                                |
+| ---------------- | ------------------------------------- | ------------------------------------ | ------------------------------------------------- |
+| `Reading`        | MDX article only; no editor           | `Variants/Reading/ReadingLesson.tsx` | No                                                |
+| `JavaCodeRunner` | Monaco (java) + worker + console tabs | `Variants/JavaCodeRunner/*`          | **Yes**                                           |
+| `MarkdownRunner` | Monaco (markdown) + live HTML preview | `Variants/MarkdownRunner/*`          | **Yes** (lightweight)                             |
+| `Quiz`           | Multi-question quiz UI                | `Variants/Quiz/*`                    | Yes — separate table `quiz_result` already exists |
 
 Only JavaCodeRunner and MarkdownRunner need the project persistence slice
 below. Quiz has its own `saveQuizAttempt` server fn / `quiz_result`
@@ -32,8 +32,8 @@ The provider mounts a reactive store that owns everything on the screen.
 Persistable state is **only these three fields**:
 
 ```ts
-files: Accessor<Record<string, string>>   // path -> content
-activeFile: Accessor<string>              // which path the editor shows
+files: Accessor<Record<string, string>>; // path -> content
+activeFile: Accessor<string>; // which path the editor shows
 // (implicit from caller) starter id passed as prop at mount
 ```
 
@@ -52,8 +52,8 @@ Mutations enter through four accessors:
 Simpler. Single markdown string:
 
 ```ts
-source: Accessor<string>
-html: Accessor<string>   // derived: marked.parse(source())
+source: Accessor<string>;
+html: Accessor<string>; // derived: marked.parse(source())
 ```
 
 Persistable: just `source`. A markdown "project" is effectively `{
@@ -171,7 +171,7 @@ Key points to preserve:
 - Debounced (~300ms) — the editor fires `setSource` on every keystroke.
 - Reports lifecycle to the route via `onDirty` + `onSaved` callbacks
   (route uses them to drive the toolbar's autosave indicator).
-- Mounted *inside* the provider so it can `useJavaCodeRunner()` /
+- Mounted _inside_ the provider so it can `useJavaCodeRunner()` /
   `useMarkdownRunner()` to subscribe to `files()` + `activeFile()`.
 
 Replacement mounts the same way, but instead of writing localStorage
@@ -250,11 +250,12 @@ plugin fires `onLinkAccount` (`packages/db/src/auth.ts`) and
 ### 1. Workbench is client-only mounted
 
 `packages/editor/src/Panels/CodeRunnerShell.tsx` uses `createSignal(false)`
-+ `onMount(() => setMounted(true))` + `<Show when={mounted()}>` with a
-matching `Loading editor…` fallback. SSR and first client render both
-emit the fallback; the real tree mounts after hydration. **Do not**
-replace this with `<NoHydration>` — that freezes the signal on the
-client and the editor never appears.
+
+- `onMount(() => setMounted(true))` + `<Show when={mounted()}>` with a
+  matching `Loading editor…` fallback. SSR and first client render both
+  emit the fallback; the real tree mounts after hydration. **Do not**
+  replace this with `<NoHydration>` — that freezes the signal on the
+  client and the editor never appears.
 
 Any new persistence component (`ProjectPersist`, autosave indicator)
 should live inside the provider so it mounts in the same client-only
@@ -281,7 +282,7 @@ clear. Not strictly required — the data is low-value scratch.
 `useJavaCodeRunner()` returns a store whose `.files`, `.activeFile`
 are accessors — call them. Don't destructure `store.files` out and
 pass around; you'll lose reactivity. `ProjectPersist`'s `createEffect`
-must read `store.files()` / `store.activeFile()` *inside* the effect
+must read `store.files()` / `store.activeFile()` _inside_ the effect
 so the dependency tracker picks them up.
 
 ### 5. Verification harness
@@ -320,6 +321,7 @@ If it stays green, the mount chain is intact.
 ## Files to touch (expected set)
 
 Client:
+
 - `web/src/components/StarterPicker/DraftPersist.tsx` →
   rewrite as `ProjectPersist` that calls server fns.
 - `web/src/components/StarterPicker/StarterPicker.tsx` →
@@ -333,6 +335,49 @@ Server: none, unless deciding to add `lesson_slug` → one migration +
 a server fn update.
 
 Tests:
+
 - Extend `web/e2e/workbench-diag.spec.ts` or add a sibling spec that
   logs in (or uses anon session), edits, reloads, asserts content
   persists.
+
+## Recommended implementation order
+
+The DB side is already landed; the following sequence keeps each step
+independently shippable and verifiable so a regression surfaces against
+a small diff rather than the whole slice.
+
+1. **`ProjectPersist` component** (replaces `DraftPersist`) —
+   client-only, mounted inside the provider, same debounce + callback
+   shape as today. On first dirty tick with no `projectId` prop,
+   `createUserProject` and emit the new id via a new `onCreated(id)`
+   callback; subsequent ticks `updateUserProject`. Localstorage fallback
+   on failure so the buffer survives a server blip. Nothing else moves
+   yet — route still mounts `DraftPersist`.
+2. **Playground route wiring** — swap `<DraftPersist>` for
+   `<ProjectPersist>`; thread `project` id through the URL via
+   `search.project`; on `onCreated`, `navigate({ search: { s, project }
+})` so refreshes restore the same row.
+3. **StarterPicker "Your projects"** — `createResource(() =>
+listUserProjects())`; group by `starterId` with freeform
+   (`starterId === null`) as its own bucket. Keep localstorage drafts
+   section rendering only if any keys still exist, so returning users
+   see their old drafts until they migrate or drop them.
+4. **Lesson route wiring** — same `ProjectPersist`, keyed per lesson.
+   Needs the lesson-identity decision from "Open questions" #1 first;
+   recommend (a) `lesson_slug text` column + a one-line migration, as
+   it keeps `starterId` meaning what it says. Until that migration
+   lands, lesson persistence stays disabled.
+5. **Delete UX** — small X on each "Your projects" card calling
+   `deleteUserProject`. Low-risk, last.
+
+## Status of open questions after the DB landing
+
+1. **Lesson identity** — still open; recommend `lesson_slug` column.
+2. **One vs many per starter** — resolved: many. Schema allows it; the
+   playground URL now carries an explicit `project` id so "new draft"
+   is a route action, not a hidden slot.
+3. **Titles** — still open; starter title + short date is a reasonable
+   default for playground, lesson title for lessons.
+4. **Delete UX** — step 5 above.
+5. **Two-tab conflicts** — accept last-write-wins for v1; revisit only
+   if a user actually hits it.

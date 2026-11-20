@@ -1,5 +1,5 @@
 import { createEffect, onCleanup } from "solid-js";
-import { useJavaCodeRunner } from "@learnrobotics/editor/variants/java-code-runner";
+import { useCodeRunner } from "@learnrobotics/editor/variants/code-runner";
 import { DRAFT_STORAGE_PREFIX } from "./StarterPicker";
 
 export type DraftPersistProps = {
@@ -11,9 +11,9 @@ export type DraftPersistProps = {
   onDirty?: (ts: number) => void;
 };
 
-/** Mounts inside a JavaCodeRunnerProvider and persists edits to localStorage. */
+/** Mounts inside a CodeRunnerProvider and persists edits to localStorage. */
 export function DraftPersist(props: DraftPersistProps) {
-  const store = useJavaCodeRunner();
+  const store = useCodeRunner();
   let timer: ReturnType<typeof setTimeout> | null = null;
   let firstRun = true;
 
