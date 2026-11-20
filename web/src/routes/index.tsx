@@ -5,7 +5,7 @@ import * as v from "valibot";
 import { CourseRow } from "~/components/CourseRow/CourseRow";
 import { FIRST } from "~/components/FIRST/FIRST";
 import { Footer } from "~/components/Footer/Footer";
-import { Note } from "~/components/Note/Note";
+import { Note } from "@learnrobotics/content/components/Note";
 import { StatusIcon, statusLabel } from "~/components/StatusIcon/StatusIcon";
 import { TopBar } from "~/components/TopBar/TopBar";
 import type { LessonStatus } from "~/lib/content";

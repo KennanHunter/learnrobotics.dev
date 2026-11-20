@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import { FIRST } from "~/components/FIRST/FIRST";
 import { Footer } from "~/components/Footer/Footer";
-import { Note } from "~/components/Note/Note";
+import { Note } from "@learnrobotics/content/components/Note";
 import { TopBar } from "~/components/TopBar/TopBar";
 import { TransparencyLogEntry } from "~/components/TransparencyLogEntry/TransparencyLogEntry";
 

@@ -4,17 +4,19 @@ import { YouTube } from "../../../lib/components/YouTube/YouTube";
 import { Info } from "../../../lib/components/Info/Info";
 import { Citation } from "../../../lib/components/Citation/Citation";
 import { Figure } from "../../../lib/components/Figure/Figure";
+import { Note } from "../../../lib/components/Note/Note.tsx"
 import deepseekFig from "./images/deepseek-r1-reasoning.png";
 
 export const meta = defineLesson({
-  id: "why-by-hand",
-  title: "Why program by hand in the age of AI?",
-  kind: "reading",
-  estMinutes: 6,
-  difficulty: 1,
-  importance: "niche",
-  status: "done",
+    id: "why-by-hand",
+    title: "Should you program by hand in the age of AI?",
+    kind: "reading",
+    estMinutes: 6,
+    difficulty: 1,
+    importance: "niche",
+    status: "done",
 });
+
 
 Everybody is talking about AI right now. Is it a completely transformative technology
 that will bring a Utopia where machines and automation remove the need for work? Will
@@ -33,6 +35,15 @@ First, I want you to watch this video by JetBrains.
 > better for high school robotics than theirs, which seems to focus more on developing
 > UI-heavy android apps, but they're definitely worth checking out if you're willing
 > to spend some money.<Citation href="https://hyperskill.org/courses/8" title="JetBrains Academy — Hyperskill Java tracks" description="JetBrains' Hyperskill learning platform, Java course catalog." />
+
+<Note>
+    If you watch the video, you can consider this article done. The following are a collection
+    of personal thoughts on the value and impact of AI. My goal is not to give you an opinion
+    but to give you enough context on the topic for you to go out and make your own opinions.
+    Nobody really knows how this technology will shape development long term.
+</Note>
+
+
 
 # How strong is AI really
 
@@ -82,10 +93,9 @@ research in August 2026 <Citation href="https://blog.jetbrains.com/research/2026
 If I'm being honest, I think that these numbers are still a little bit low, and in newer,
 smaller projects, and projects that work as internal tools, the number is much higher.
 
-I don't think AI is going anywhere. There are arguments that perhaps where models
-are at, is where they will stay. Many people, myself included, think that pure
-generative large language models will have a natural limit to "intelligence". My
-personal worry is that that plateau will be well beyond what humans can match.<Info title="Can we match AI?">There's an argument that for certain AI focus points such as web development, few if any people can earnestly say they are faster/stronger developers than current flagship AI models.</Info>
+I don't think AI is going anywhere. I think that models will only get better. I think that
+there are a lot of economic factors that will lead to AI being used more and more in various
+domains.
 
 # Why for FIRST I'm still skeptical
 
@@ -119,6 +129,12 @@ where a single structural issue is fixed with a band-aid fix, then the issues ca
 band-aid warrant another band-aid. This is bad, especially when you don't have the experience
 to recognize a band-aid.
 
+## Where it works
+
+Where it works is still probably going to be one off applications. Things like scouting apps,
+student tracking, internal tools. Read [4414 HighTide's post on their tide apps](https://www.chiefdelphi.com/t/team-4414-hightide-2026-tech-binder-ripcurrent/519602/75)
+for more information on a very good teams thoughts on the subject.
+
 # Why programming is important even with AI
 
 ## Verification
@@ -137,6 +153,32 @@ a top hat? Probably in distribution. Firmware for your custom operating system?
 Probably not, and AI models will have a tougher time at the moment. Nobody can say how long that
 will be true.
 
+## Systems thinking
+
+>  “Underlying our approach to this subject is our conviction that 'computer science' is
+> not a science and that its significance has little to do with computers. The computer
+> revolution is a revolution in the way we think and in the way we express what we think.
+> The essence of this change is the emergence of what might best be called procedural
+> epistemology—the study of the structure of knowledge from an imperative point of view,
+> as opposed to the more declarative point of view taken by classical mathematical subjects.
+> Mathematics provides a framework for dealing precisely with notions of 'what is'.
+> Computation provides a framework for dealing precisely with notions of 'how to'.”
+> - Harold Abelson, Structures and Interpretation of Computer Programs <Citation
+>   href="https://mitp-content-server.mit.edu/books/content/sectbyfn/books_pres_0/6515/sicp.zip/full-text/book/book-Z-H-7.html#%_chap_Temp_4"
+>   title="Structure and Interpretation of Computer Programs — Preface to the First Edition"
+>   description="Abelson, Sussman & Sussman (MIT Press, 2nd ed.). Preface framing programming as procedural epistemology."
+> />
+
+Programming is the act of formalizing thinking. You take a complicated process, and you
+break it down into smaller problems. Those smaller problems themselves have problems
+inside them to be solved. That skill will always be useful.
+
+TODO: Flesh out
+
+## Impact of AI on learning
+
+TODO: possibly most important section
+
 # Understanding models
 
 If the hype is to be believed and Large Language Models will change the world,
@@ -144,6 +186,22 @@ it's probably a pretty good reason to learn them. For concepts, watch
 [3blue1brown's neural network series](https://www.3blue1brown.com/?topic=neural-networks),
 and if you're interested in learning how to write them yourself, check out
 [kaparthy's wonderful series](https://karpathy.ai/zero-to-hero.html).
+
+# The skeptics
+
+So far I've given a lot of credence to the idea that AI programming is going to be a meaningful
+game changer. I truly think it is. But there are plenty of very smart people who would disagree
+with me.
+
+> When people see an artifact, they make assumptions about the process that was used to create it.
+> Without even thinking about it, they assume the creator had a basically human state of mind.
+> This assumption is no longer true. Things can be broken in ways that weren’t previously possible,
+> and old proxies of underlying quality like syntax and grammar are useless. AI produced artifacts
+> are not produced by the same process as human ones, and this difference, while extremely subtle
+> in statistics, makes itself obvious when you try to interact with and build on the artifact in human ways.
+> - George Hotz, [Comma.AI founder](https://comma.ai/) and [edgy soundcloud rapper (Warning: Profanity)](https://soundcloud.com/tomcr00se/tracks)
+> <Citation href="https://geohot.github.io/blog/jekyll/update/2026/05/24/the-eternal-sloptember.html" title="The Eternal Sloptember" description="Argument that AI agents will not ever be able to code to the level of a trained software developer" />
+
 
 # The joy of programming
 

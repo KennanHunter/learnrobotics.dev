@@ -10,7 +10,8 @@
     "./placement": "./lib/placement.ts",
     "./index-builder": "./lib/index-builder.ts",
     "./components/LoremIpsum": "./lib/components/LoremIpsum/LoremIpsum.tsx",
-    "./components/Citation": "./lib/components/Citation/Citation.tsx"
+    "./components/Citation": "./lib/components/Citation/Citation.tsx",
+    "./components/Note": "./lib/components/Note/Note.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"

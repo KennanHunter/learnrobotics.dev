@@ -65,9 +65,7 @@ The biggest need we have is translations, particularly for languages often used 
 
 ## AI
 
-LLM Agents are allowed, but you gotta understand the code and be transparent about usage.
-
-Exactly how much slop is allowed will change depending on page, ex: the compiler has to be solid, some random frontend page doesn't.
+This codebase is total slop right now as I push towards getting a feel for exactly what actual content needs. When I'm confident I know the real requirements of the system I intend to unslop module by module, particularly editor, compiler, and runtime parts, as those are already clearly abstracted out in ways to support the migration.
 
 # Licensing
 
