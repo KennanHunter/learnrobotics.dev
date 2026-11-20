@@ -27,6 +27,7 @@ jobs:
   test:
     if: github.event_name != 'workflow_dispatch' || inputs.skip_unit_tests != true
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,6 +48,7 @@ jobs:
     needs: test
     if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -78,6 +80,7 @@ jobs:
       && needs.build.result == 'success'
       && (github.event_name != 'workflow_dispatch' || inputs.skip_playwright != true)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -139,6 +142,7 @@ jobs:
       always()
       && needs.build.result == 'success'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
