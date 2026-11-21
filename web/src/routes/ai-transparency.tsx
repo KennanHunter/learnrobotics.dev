@@ -141,7 +141,7 @@ function AITransparency() {
             <ul class="space-y-5">
               <TransparencyLogEntry
                 date="2026-11-20"
-                title="Quiz UX: run/stop toggle, answered-correctly section, drag-reorder progress fix, settings clear scope."
+                title="Quiz UX: run/stop toggle, answered-correctly section, drag-reorder progress fix, settings clear scope, implicit reading-lesson completion."
               >
                 The editor's Run button now toggles into a red Stop
                 button while a program is compiling or running, showing
@@ -158,7 +158,13 @@ function AITransparency() {
                 <code>quiz_result</code> table alongside the existing
                 lesson start/finish disable and project detachment, and
                 the settings copy was updated to describe the new
-                behavior.
+                behavior. Reading lessons now mount an invisible
+                completion sentinel at the bottom of{" "}
+                <code>ReadingLesson</code> so every reading lesson
+                records completion when the user scrolls to the end,
+                even without an explicit <code>MarkCompletion</code> in
+                the MDX; the route-level sessionStorage guard keeps the
+                firing idempotent when an explicit one is also present.
               </TransparencyLogEntry>
               <TransparencyLogEntry
                 date="2026-11-20"

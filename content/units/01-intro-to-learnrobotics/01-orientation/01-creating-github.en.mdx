@@ -1,0 +1,82 @@
+import { defineLesson } from "../../../lib/define";
+import { Info } from "../../../lib/components/Info/Info";
+import { Citation } from "../../../lib/components/Citation/Citation";
+import { Note } from "../../../lib/components/Note/Note";
+
+export const meta = defineLesson({
+    id: "creating-github",
+    title: "Creating a GitHub account",
+    kind: "reading",
+    estMinutes: 8,
+    difficulty: 1,
+    importance: "useful",
+});
+
+<Note>
+    This is a good idea and lets you save your progress in this course, however it is
+    not required and you may do it at any time you want. Logging in will save any progress
+    completed locally. Be aware you may lose your data if you don't log in.
+
+    If you're an organization that uses a different SSO, reach out to contact@kennan.dev to
+    set it up.
+</Note>
+
+# What is GitHub
+
+GitHub is a site owned my Microsoft that is used to store, share, and find codebases.
+It's been called "the Facebook for programming"
+
+We use GitHub for all our sign ins. I'd also **highly** recommend using it for any
+programming that you do, in and outside of FIRST.
+
+They have official documentation here:
+[Official GitHub documentation](https://docs.github.com/en/account-and-profile/how-tos/account-management/creating-an-account-on-github)
+
+Many people prefer to use their real name. This may at some point be a portfolio of your
+work, and you should treat it with a fair degree of professionalism. If you chose to go
+by a moniker, you should make sure it's professional. Applying to job with *"EliteHaxor123"*
+on your resume might look a little silly.
+
+## Gracious Professionalism
+
+Something good to point out is FRC Game Manual R303:
+
+> \*\***R303: Create new designs and software, unless they’re public.**\*\* ROBOT software and designs
+> created before Kickoff are only permitted if the source files (complete information
+> sufficient to produce the design) are available publicly prior to Kickoff.<Citation
+          href="https://firstfrc.blob.core.windows.net/frc2026/Manual/2026GameManual.pdf"
+          title="2026 Game Manual"
+          description="The 2026 FRC game manual"
+      />
+
+If you want to reuse your code between years, you should open source it. This rule is
+impossible to enforce, but you should follow it anyway. GitHub is
+a great place to do it. Here's a few teams you can find:
+
+[My old team: 3494 The Quadrangles](https://github.com/FRC3494)
+[2910 Jack in the Bot](https://github.com/FRCTeam2910/2025CompetitionRobot-Public)
+[118 Robonauts](https://github.com/ArchdukeTim/2025-Firefly)
+
+[Here's a full spreadsheet.](https://docs.google.com/spreadsheets/d/1ZOaepojGhez6A-37ZMln_O9KbCgQb--DadE6ziMTAzM/edit?gid=408396042#gid=408396042)
+
+FTC doesn't have the same rule, but it's a good idea to open source anyway. Reading
+other teams code is a great way to improve, and when you provide your code publicly,
+you contribute to the community at large.
+
+[My old team: 11329 I.C.E Robotics](https://github.com/FTC11329/)
+
+## Some people don't like GitHub
+
+It's worth mentioning that some people really don't like GitHub.
+Specifically they don't like it for storing their code, because
+GitHub does a lot of things with open source code that they don't
+agree with, such as using it to train AI models. Microsoft has had a lot of failures
+with the platform. While I don't feel
+as strongly as them, I think it's perfectly reasonable to only ever it treat GitHub like
+many use Google for, a place to have an Account so you can do "Sign In With GitHub"
+on the many sites that support it, but not a place to store code.
+
+If you feel moved by these arguments, check out [Codeberg.org](https://codeberg.org/)
+
+- [Important projects should not use GitHub](https://unixdigest.com/articles/important-open-source-projects-should-not-use-github.html)
+- [GNU's "What's wrong with GitHub"](https://www.gnu.org/philosophy/whats-wrong-with-github.html)

@@ -5,6 +5,7 @@ import {
   CitationsProvider,
   CitationList,
 } from "@learnrobotics/content/components/Citation";
+import { useCompletion } from "@learnrobotics/content/completion";
 import { HighlightOverlay } from "../../Panels";
 import { LessonNav, MarkdownCopy, type LessonNavLink } from "../../Shared";
 
@@ -92,6 +93,7 @@ export function ReadingLesson(props: ReadingLessonProps) {
         </div>
         <CitationList />
       </CitationsProvider>
+      <ImplicitCompletionSentinel />
       <LessonNav prev={props.prev} next={props.next} />
       <p class="-mt-2 text-center text-[11px] text-foreground-muted">
         Use <kbd class="font-mono">←</kbd> and <kbd class="font-mono">→</kbd> to
@@ -100,4 +102,36 @@ export function ReadingLesson(props: ReadingLessonProps) {
       <HighlightOverlay dispatcher={props.dispatcher} />
     </article>
   );
+}
+
+/**
+ * Fires `markFinished` once this div scrolls into view. Mounted
+ * unconditionally at the end of every reading lesson so authors don't need
+ * to drop an explicit `<MarkCompletion>`. Firing is idempotent at the
+ * route layer (sessionStorage guard in `fireMarkFinished`), so an explicit
+ * component earlier in the body still works — this one just fires later
+ * and the duplicate call is a no-op.
+ */
+function ImplicitCompletionSentinel() {
+  const completion = useCompletion();
+  let ref: HTMLDivElement | undefined;
+  onMount(() => {
+    if (!ref || !completion) return;
+    const el = ref;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            completion.markFinished();
+            observer.disconnect();
+            return;
+          }
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(el);
+    onCleanup(() => observer.disconnect());
+  });
+  return <div ref={ref} aria-hidden="true" />;
 }
