@@ -140,6 +140,57 @@ function AITransparency() {
 
             <ul class="space-y-5">
               <TransparencyLogEntry
+                date="2026-11-21"
+                title="Replay controls volume now uses a Tippy.js popover with a drag slider and percentage readout."
+              >
+                The volume button in <code>ReplayControls</code> now triggers an
+                interactive Tippy.js popover (via the shared{" "}
+                <code>HoverCard</code> primitive) containing a draggable range
+                slider and a live percentage readout, replacing the previous
+                inline hover slider.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-21"
+                title="Quiz lessons mark the lesson finished once every question is mastered; teavm compiler filters non-.java files."
+              >
+                Quiz lesson pages now fire the same{" "}
+                <code>markLessonFinished</code> flow that reading and code
+                lessons use: when the mastered-question set covers every
+                question in the quiz (either after a submission or on initial
+                load if the student already answered them all), the lesson is
+                recorded as complete. Separately, <code>compileJava</code> in{" "}
+                <code>web/src/lib/teavm.ts</code> filters its input list to{" "}
+                <code>.java</code> files before handing them to the TeaVM
+                compiler, so stray markdown files in a multi-file project no
+                longer get passed through to javac.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-21"
+                title="Admin-authored event replay: /dev/record pipeline, R2 bundle storage, horizontally-split audio-clocked playback."
+              >
+                Added a three-stage recorder under <code>/dev/record</code>{" "}
+                (admin-only, surfaced in the profile dropdown) that picks a
+                starter, captures Monaco edits alongside microphone audio via{" "}
+                <code>MediaRecorder</code>, and in a Stage 3 editor crops the
+                event stream or inserts highlight / auto-pause markers before
+                publishing to R2 as a content-addressed{" "}
+                <code>(events.jsonl, audio.webm, metadata.json)</code> bundle.
+                The hash of the bundle is the recording id — admins paste it
+                into a lesson's <code>recording:</code> frontmatter. Lesson
+                pages with a <code>recording:</code> value fetch the bundle on
+                mount and the editor column renders a horizontal split: the
+                student's live editable buffer on top, a readonly Monaco driven
+                by the new <code>ReplayEngine</code> + snapshot-seek machinery
+                in <code>@learnrobotics/events</code> on the bottom. An
+                <code>AudioClock</code> wrapping the <code>&lt;audio&gt;</code>{" "}
+                element is the authoritative timeline; the scrubber and volume
+                controls in <code>ReplayControls</code> now drive the audio
+                directly. Vitest coverage lands in{" "}
+                <code>packages/events/test/</code> for the codec/bundle,
+                snapshot engine, replay engine (including auto-pause), and the
+                Stage 3 edit helpers.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
                 date="2026-11-20"
                 title="Quiz UX: run/stop toggle, answered-correctly section, drag-reorder progress fix, settings clear scope, implicit reading-lesson completion."
               >

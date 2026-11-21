@@ -42,6 +42,8 @@ function formatTrace(event: ReplayEvent): string {
       return `${head} file=${event.file} ranges=${event.ranges.length}`;
     case "highlight":
       return `${head} target=${event.target} duration=${event.durationMs ?? 2500}`;
+    case "highlight-clear":
+      return `${head} target=${event.target ?? "*"}`;
     case "auto-pause":
       return `${head} resumeOn=${event.resumeOn ?? "button"}`;
     case "init":
@@ -64,6 +66,21 @@ export class EventDispatcher {
   private subscribers = new Set<EventSubscriber>();
   private paused = false;
   private traceOverride: boolean | null = null;
+  private clockFn: (() => number) | null = null;
+
+  /** Set the clock producers consult via `dispatcher.now()`. When the
+   * recorder owns the audio timeline, it calls this with a function that
+   * returns `(audioCtx.currentTime - t0) * 1000` so every emitted event
+   * shares a single origin with the recorded audio. */
+  setClock(fn: (() => number) | null): void {
+    this.clockFn = fn;
+  }
+
+  /** Current time in milliseconds on the dispatcher's clock. Returns 0 when
+   * no clock is set so callers can safely use this before recording starts. */
+  now(): number {
+    return this.clockFn ? this.clockFn() : 0;
+  }
 
   emit(event: ReplayEvent): void {
     if (this.paused) return;

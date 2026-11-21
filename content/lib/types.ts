@@ -24,6 +24,7 @@ type LessonBase = {
 
 export type ReadingLessonDef = LessonBase & {
   kind: "reading";
+  recording?: string;
 };
 
 export type CodeLessonDef = LessonBase & {

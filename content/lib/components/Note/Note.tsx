@@ -57,7 +57,7 @@ export function Note(props: NoteProps) {
   return (
     <aside
       role="note"
-      class={`not-prose my-4 rounded-md border-l-4 px-4 py-3 text-sm ${v().container} ${props.class ?? ""}`}
+      class={`not-prose my-2 rounded-md border-l-4 px-4 py-3 text-sm ${v().container} ${props.class ?? ""}`}
     >
       <Show when={showHeader()}>
         <header

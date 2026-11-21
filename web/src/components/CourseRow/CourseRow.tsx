@@ -42,7 +42,7 @@ export function CourseRow(props: { course: IndexedUnit }) {
   };
 
   return (
-    <section class="border-t border-background-offset py-6">
+    <section class="py-4">
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
@@ -173,7 +173,7 @@ function LessonRow(props: {
     <li>
       <a
         href={href()}
-        class="-mx-2 flex items-center gap-3 rounded px-2 py-1 text-sm transition-colors hover:bg-background-offset"
+        class="-mx-2 flex items-center gap-2 rounded px-2 py-1 text-sm transition-colors hover:bg-background-offset"
       >
         <StatusIcon status={props.lesson.status ?? "todo"} />
         <span class="w-10 shrink-0 font-mono text-[10px] uppercase tracking-wider text-foreground-subtle">
@@ -185,7 +185,7 @@ function LessonRow(props: {
         >
           {importanceLabel[props.lesson.importance]}
         </span>
-        <span class="w-10 shrink-0 pl-2 text-right font-mono text-xs text-foreground-subtle">
+        <span class="min-w-5 shrink-0 text-right font-mono text-xs text-foreground-subtle">
           <Show when={props.lesson.estMinutes != null}>
             {props.lesson.estMinutes}m
           </Show>

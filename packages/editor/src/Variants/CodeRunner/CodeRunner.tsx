@@ -1,5 +1,5 @@
-import { Show, type JSX } from "solid-js";
-import type { EventDispatcher } from "@learnrobotics/events";
+import { createSignal, Show, type JSX } from "solid-js";
+import type { EventDispatcher, ReplayEvent } from "@learnrobotics/events";
 import { CodeRunnerShell } from "../../Panels/CodeRunnerShell";
 import { PanelFrame } from "../../Panels/PanelFrame";
 import { ReplayControls } from "../../Panels/ReplayControls";
@@ -7,11 +7,19 @@ import { TabGroup, type TabDef } from "../../Panels/TabGroup";
 import type { MonacoEditorProps } from "../../CodeEditor";
 import { FormatButton, type FormatLanguage } from "../../Shared/Format";
 import { MarkdownPreview } from "../../Shared/MarkdownPreview";
+import type { ReplayController } from "../../replay";
 import { useCodeRunner, type ConsoleTab } from "./code-runner-store";
 import { CodeEditorPane } from "./CodeEditorPane";
+import { ReplayEditorPane } from "./ReplayEditorPane";
 import { StdoutPane } from "./panes/StdoutPane";
 import { CompilePane } from "./panes/CompilePane";
 import { DepsPane } from "./panes/DepsPane";
+
+export type RecordingPlayback = {
+  events: readonly ReplayEvent[];
+  audioUrl: string;
+  metadata?: Record<string, unknown>;
+};
 
 export type CodeRunnerProps = {
   monacoTheme: () => string;
@@ -27,6 +35,11 @@ export type CodeRunnerProps = {
    * to eagerly-instantiated JSX and crashes hydration. */
   toolbarLeft?: () => JSX.Element;
   toolbarRight?: () => JSX.Element;
+  /** When present, renders a horizontal split in the editor column:
+   *  top = the student's live editor, bottom = a readonly replay editor
+   *  driven by `ReplayEngine` + `AudioClock`. The toolbar's ReplayControls
+   *  bind to the resulting controller. */
+  recording?: RecordingPlayback;
   /** Right-aligned content in the editor panel header. Function-form for
    * the same hydration-key reason as the toolbar slots. */
   editorActions?: () => JSX.Element;
@@ -71,6 +84,8 @@ function activeFileMode(path: string): "java" | "markdown" {
 export function CodeRunner(props: CodeRunnerProps) {
   const store = useCodeRunner();
   const L = () => props.labels ?? {};
+  const [replayController, setReplayController] =
+    createSignal<ReplayController | undefined>(undefined);
 
   const tabs = (): TabDef[] => [
     {
@@ -150,7 +165,9 @@ export function CodeRunner(props: CodeRunnerProps) {
               {runLabel()}
             </button>
           </Show>
-          <ReplayControls />
+          <Show when={props.recording}>
+            <ReplayControls controller={replayController()} />
+          </Show>
         </div>
         <Show when={props.toolbarRight}>
           <div class="flex shrink-0 items-center gap-2 border-l border-background-offset px-4 py-2">
@@ -168,13 +185,47 @@ export function CodeRunner(props: CodeRunnerProps) {
       articleBare={props.articleBare}
       filesSlot={props.filesSlot}
       editorSlot={() => (
-        <CodeEditorPane
-          monacoTheme={props.monacoTheme}
-          tabSize={props.tabSize}
-          registerThemes={props.registerThemes}
-          dispatcher={props.dispatcher}
-          loadingLabel={L().loadingEditor}
-        />
+        <Show
+          when={props.recording}
+          fallback={
+            <CodeEditorPane
+              monacoTheme={props.monacoTheme}
+              tabSize={props.tabSize}
+              registerThemes={props.registerThemes}
+              dispatcher={props.dispatcher}
+              loadingLabel={L().loadingEditor}
+            />
+          }
+        >
+          {(rec) => (
+            <div
+              class="grid h-full min-h-0 w-full"
+              style={{ "grid-template-rows": "1fr 1px 1fr" }}
+            >
+              <div class="min-h-0 overflow-hidden">
+                <CodeEditorPane
+                  monacoTheme={props.monacoTheme}
+                  tabSize={props.tabSize}
+                  registerThemes={props.registerThemes}
+                  dispatcher={props.dispatcher}
+                  loadingLabel={L().loadingEditor}
+                />
+              </div>
+              <div class="bg-background-offset" />
+              <div class="min-h-0 overflow-hidden">
+                <ReplayEditorPane
+                  events={rec().events}
+                  audioUrl={rec().audioUrl}
+                  monacoTheme={props.monacoTheme}
+                  tabSize={props.tabSize}
+                  registerThemes={props.registerThemes}
+                  onReady={(c) => setReplayController(c)}
+                  loadingLabel={L().loadingEditor}
+                />
+              </div>
+            </div>
+          )}
+        </Show>
       )}
       rightSlot={() =>
         mode() === "markdown" ? (

@@ -100,8 +100,8 @@ function Landing() {
     <>
       <TopBar />
       <main>
-        <div class="mx-auto max-w-6xl px-8 pt-4">
-          <div class="mb-6 space-y-3">
+        <div class="mx-auto max-w-6xl max-md:px-2 min-md:px-4 pt-2">
+          <div class="mb-2 space-y-3">
             <Note>
               This content is very much in pre-alpha. Things may change, lesson
               progress may be lost. If you work on code you really care about,
@@ -177,7 +177,7 @@ function Landing() {
             </div>
           </section>
 
-          <ul class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 pb-2 text-xs text-foreground-muted">
+          <ul class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 pb-2 text-xs text-foreground-muted border-b border-background-offset mb-4">
             <For each={legendOrder}>
               {(status) => (
                 <li class="flex items-center gap-1.5">
@@ -191,6 +191,24 @@ function Landing() {
           <For each={index().units}>
             {(course) => <CourseRow course={course} />}
           </For>
+
+          <section class="mt-8 space-y-3 pt-6 text-center">
+            <h2 class="text-lg font-semibold tracking-tight text-foreground-muted">
+              More coming soon...
+            </h2>
+            <ol
+              start={2}
+              class="mx-auto grid max-w-xl grid-cols-1 gap-x-6 gap-y-1.5 list-decimal list-inside text-left text-sm text-foreground-muted sm:grid-cols-2"
+            >
+              <li>Programming a Tank Drive</li>
+              <li>Controlling Endofectors</li>
+              <li>Working with a Team: Git</li>
+              <li>Advanced Drivetrains: Mechanum + Swerve</li>
+              <li>Applying CS Concepts to Robotics</li>
+              <li>Controls from first principles</li>
+              <li>Path planning with Bézier Curves</li>
+            </ol>
+          </section>
         </div>
         <Footer />
       </main>

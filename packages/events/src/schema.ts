@@ -64,6 +64,13 @@ export type HighlightEvent = {
   target: string;
   durationMs?: number;
 };
+export type HighlightClearEvent = {
+  t: number;
+  type: "highlight-clear";
+  /** Optional: clear only highlights whose target matches. When omitted,
+   * clears every active highlight. */
+  target?: string;
+};
 export type AutoPauseEvent = {
   t: number;
   type: "auto-pause";
@@ -83,6 +90,7 @@ export type ReplayEvent =
   | FormatEvent
   | MarkerEvent
   | HighlightEvent
+  | HighlightClearEvent
   | AutoPauseEvent;
 
 export type ReplayEventType = ReplayEvent["type"];
@@ -100,5 +108,6 @@ export const KNOWN_EVENT_TYPES: ReadonlySet<ReplayEventType> = new Set([
   "format",
   "marker",
   "highlight",
+  "highlight-clear",
   "auto-pause",
 ]);

@@ -33,7 +33,12 @@ import {
   CodeRunnerProvider,
 } from "@learnrobotics/editor/variants/code-runner";
 import { QuizLesson } from "@learnrobotics/editor/variants/quiz";
-import { EventDispatcher } from "@learnrobotics/events";
+import {
+  EventDispatcher,
+  decodeEvents,
+  type ReplayEvent,
+} from "@learnrobotics/events";
+import { getRecording } from "~/server/recordings";
 import { loadQuizState, saveQuizAttempt } from "~/server/quizzes";
 import { ensureUserBoundProject } from "~/server/projects";
 import { ProjectPersist } from "~/components/StarterPicker";
@@ -192,12 +197,15 @@ function LessonPage() {
             <CompletionContext.Provider
               value={{ markFinished: fireMarkFinished }}
             >
-              <ReadingLesson
+              <ReadingLessonView
                 title={hit()!.lesson.title}
-                Body={hit()!.lesson.Body}
+                Body={hit()!.lesson.Body as import("solid-js").Component}
                 markdownUrl={markdownUrl()}
                 prev={neighborLink(neighbors().prev)}
                 next={neighborLink(neighbors().next)}
+                recordingId={
+                  (hit()!.lesson as { recording?: string }).recording
+                }
               />
             </CompletionContext.Provider>
           </main>
@@ -250,6 +258,7 @@ function LessonPage() {
               markdownUrl={markdownUrl()}
               prev={neighborLink(neighbors().prev)}
               next={neighborLink(neighbors().next)}
+              onMaybeFinished={fireMarkFinished}
             />
           </main>
         </Match>
@@ -404,6 +413,24 @@ function CodeLessonView(props: {
   const [savedAt, setSavedAt] = createSignal<number | null>(null);
   const [dirtyAt, setDirtyAt] = createSignal<number | null>(null);
 
+  // If the lesson declares a `recording:` id, fetch the R2 bundle client-side
+  // and hand it to CodeRunner. The CodeRunner renders the split playback UI.
+  const recordingId = (lesson as { recording?: string }).recording;
+  const [recordingPayload, setRecordingPayload] = createSignal<
+    | { events: readonly ReplayEvent[]; audioUrl: string }
+    | null
+  >(null);
+  onMount(async () => {
+    if (!recordingId) return;
+    try {
+      const rec = await getRecording({ data: { id: recordingId } });
+      const events = decodeEvents(rec.eventsText);
+      setRecordingPayload({ events, audioUrl: rec.audioUrl });
+    } catch (err) {
+      console.error("[lesson] failed to load recording", err);
+    }
+  });
+
   return (
     <Show
       when={!loading()}
@@ -439,6 +466,7 @@ function CodeLessonView(props: {
           tabSize={tabSize}
           registerThemes={registerThemes}
           dispatcher={dispatcher}
+          recording={recordingPayload() ?? undefined}
           articleSlot={articleSlot}
           articleBare={snippets.length > 0}
           toolbarLeft={toolbarLeft}
@@ -516,6 +544,7 @@ function QuizLessonView(props: {
   markdownUrl: string | undefined;
   prev: NeighborLink;
   next: NeighborLink;
+  onMaybeFinished: () => void;
 }) {
   const { effectiveTheme, monacoTheme } = useTheme();
   const monacoThemeName = () => monacoTheme() ?? autoThemeFor(effectiveTheme());
@@ -524,6 +553,13 @@ function QuizLessonView(props: {
     (quizId) => loadQuizState({ data: { quizId } }),
   );
   const mastered = () => new Set(state()?.mastered ?? []);
+  createEffect(() => {
+    const m = mastered();
+    if (props.lesson.questions.length === 0) return;
+    if (props.lesson.questions.every((q) => m.has(q.id))) {
+      props.onMaybeFinished();
+    }
+  });
 
   return (
     <Show
@@ -584,6 +620,49 @@ function NotFound() {
       </a>
     </section>
   );
+}
+
+function ReadingLessonView(props: {
+  title: string;
+  Body: import("solid-js").Component;
+  markdownUrl?: string;
+  prev?: ReturnType<typeof neighborLinkHelper>;
+  next?: ReturnType<typeof neighborLinkHelper>;
+  recordingId?: string;
+}) {
+  const [recording, setRecording] = createSignal<
+    { events: readonly ReplayEvent[]; audioUrl: string } | null
+  >(null);
+  onMount(async () => {
+    if (!props.recordingId) return;
+    try {
+      const rec = await getRecording({ data: { id: props.recordingId } });
+      setRecording({ events: decodeEvents(rec.eventsText), audioUrl: rec.audioUrl });
+    } catch (err) {
+      console.error("[lesson] failed to load reading recording", err);
+    }
+  });
+  return (
+    <ReadingLesson
+      title={props.title}
+      Body={props.Body}
+      markdownUrl={props.markdownUrl}
+      prev={props.prev}
+      next={props.next}
+      recording={recording() ?? undefined}
+    />
+  );
+}
+
+// Helper type used by ReadingLessonView; `neighborLink` is declared inside
+// LessonPage above and its return type isn't exported, so this inline
+// function lets TypeScript infer it for the ReadingLessonView props.
+function neighborLinkHelper(
+  n?: { unitSlug: string; chapterSlug: string; lessonSlug: string; title: string },
+) {
+  return n
+    ? { href: `/units/${n.unitSlug}/${n.chapterSlug}/${n.lessonSlug}`, title: n.title }
+    : undefined;
 }
 
 function Placeholder(props: { kind: string; title: string }) {

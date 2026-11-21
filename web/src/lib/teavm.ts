@@ -102,8 +102,9 @@ async function instantiate(): Promise<Compiler> {
 export async function compileJava(
   files: SourceFile[] | string,
 ): Promise<CompileResult> {
-  const sources: SourceFile[] =
-    typeof files === "string" ? [{ name: "Main.java", content: files }] : files;
+  const sources: SourceFile[] = (
+    typeof files === "string" ? [{ name: "Main.java", content: files }] : files
+  ).filter((f) => f.name.endsWith(".java"));
 
   const compiler = await getCompiler();
   compiler.clearSourceFiles();

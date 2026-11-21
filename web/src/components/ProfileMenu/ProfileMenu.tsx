@@ -50,6 +50,11 @@ export function ProfileMenu() {
     navigate("/admin");
   }
 
+  function onRecord() {
+    setOpen(false);
+    navigate("/dev/record");
+  }
+
   return (
     <div class="relative" ref={rootRef}>
       <button
@@ -96,6 +101,14 @@ export function ProfileMenu() {
               onClick={onAdmin}
             >
               {m.menu_admin()}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              class="block w-full px-2.5 py-1.5 text-left hover:bg-background-offset"
+              onClick={onRecord}
+            >
+              Record
             </button>
           </Show>
           <button

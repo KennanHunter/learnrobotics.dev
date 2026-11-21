@@ -66,6 +66,7 @@
   .prose ul,
   .prose ol {
     padding-left: 1.5em;
+    margin-bottom: 1em;
   }
   .prose ul {
     list-style: disc;

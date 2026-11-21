@@ -1,13 +1,28 @@
-import { onCleanup, onMount, Show, type Component } from "solid-js";
+import {
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+  type Component,
+} from "solid-js";
 import { Dynamic, isServer } from "solid-js/web";
-import type { EventDispatcher } from "@learnrobotics/events";
+import type { EventDispatcher, ReplayEvent } from "@learnrobotics/events";
 import {
   CitationsProvider,
   CitationList,
 } from "@learnrobotics/content/components/Citation";
 import { useCompletion } from "@learnrobotics/content/completion";
-import { HighlightOverlay } from "../../Panels";
+import { HighlightOverlay, ReplayControls } from "../../Panels";
+import {
+  createReadingReplayHost,
+  type ReadingReplayHost,
+} from "../../replay";
 import { LessonNav, MarkdownCopy, type LessonNavLink } from "../../Shared";
+
+export type ReadingRecording = {
+  events: readonly ReplayEvent[];
+  audioUrl: string;
+};
 
 export type ReadingLessonProps = {
   title: string;
@@ -21,6 +36,10 @@ export type ReadingLessonProps = {
   next?: LessonNavLink;
   /** Optional replay dispatcher; omitted = no replay. */
   dispatcher?: EventDispatcher;
+  /** When present, the lesson mounts a hidden audio element + ReplayControls
+   * and routes highlight / highlight-clear events through its overlay. The
+   * `dispatcher` prop is ignored when a recording is active. */
+  recording?: ReadingRecording;
 };
 
 // Elements where arrow keys mean "move the cursor," not "navigate away."
@@ -79,6 +98,20 @@ export function ReadingLesson(props: ReadingLessonProps) {
     });
   }
 
+  // When a recording is present, build the replay host once the hidden
+  // <audio> element mounts. The host owns an `overlayDispatcher` that the
+  // HighlightOverlay subscribes to; it overrides `props.dispatcher`.
+  const [host, setHost] = createSignal<ReadingReplayHost | null>(null);
+  let audioEl: HTMLAudioElement | undefined;
+
+  onMount(() => {
+    if (!props.recording || !audioEl) return;
+    setHost(createReadingReplayHost({ events: props.recording.events, audio: audioEl }));
+  });
+
+  const overlayDispatcher = () =>
+    host()?.overlayDispatcher ?? props.dispatcher;
+
   return (
     <article class="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-10">
       <header class="flex items-center justify-between gap-4 border-b border-background-offset/60 pb-5 mb-5">
@@ -87,6 +120,21 @@ export function ReadingLesson(props: ReadingLessonProps) {
           <MarkdownCopy markdownUrl={props.markdownUrl!} />
         </Show>
       </header>
+      <Show when={props.recording}>
+        {(rec) => (
+          <>
+            <div class="sticky top-0 z-30 -mx-6 flex items-center gap-3 border-b border-background-offset bg-background px-6 py-2">
+              <ReplayControls controller={host() ?? undefined} />
+            </div>
+            <audio
+              ref={(el) => (audioEl = el)}
+              src={rec().audioUrl}
+              preload="auto"
+              class="hidden"
+            />
+          </>
+        )}
+      </Show>
       <CitationsProvider>
         <div class="prose max-w-none">
           <Dynamic component={props.Body} />
@@ -99,7 +147,7 @@ export function ReadingLesson(props: ReadingLessonProps) {
         Use <kbd class="font-mono">←</kbd> and <kbd class="font-mono">→</kbd> to
         move between lessons.
       </p>
-      <HighlightOverlay dispatcher={props.dispatcher} />
+      <HighlightOverlay dispatcher={overlayDispatcher()} />
     </article>
   );
 }

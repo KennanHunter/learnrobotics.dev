@@ -43,19 +43,28 @@ export function bindRecorder(
   modelOverride?: ModelLike | null,
 ): Disposer {
   const throttleMs = opts.throttleMs ?? 100;
+  // Prefer an explicit `now` override, then the dispatcher's clock (which the
+  // recorder sets to track the audio timeline once capture begins), then a
+  // bind-time performance.now fallback. The fallback is only for tests /
+  // non-recording use — the recorder always sets dispatcher.setClock before
+  // resuming, so real events ride the audio clock.
   const t0 =
     typeof performance !== "undefined" && typeof performance.now === "function"
       ? performance.now()
       : Date.now();
+  const localNow = () => {
+    const current =
+      typeof performance !== "undefined" &&
+      typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+    return Math.round(current - t0);
+  };
   const now =
     opts.now ??
     (() => {
-      const current =
-        typeof performance !== "undefined" &&
-        typeof performance.now === "function"
-          ? performance.now()
-          : Date.now();
-      return Math.round(current - t0);
+      const dispatcherT = dispatcher.now();
+      return dispatcherT > 0 ? dispatcherT : localNow();
     });
 
   const model: ModelLike | null = modelOverride ?? editor.getModel();

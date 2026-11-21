@@ -24,6 +24,20 @@ const ARTIFACT_KINDS = {
     maxBytes: 256 * 1024 * 1024,
     visibility: "public",
   },
+  // Admin-authored lesson recordings. Each recording is three objects
+  // under `recordings/<id>/{events.jsonl, audio.webm, metadata.json}`.
+  "lesson-recording": {
+    bucket: "learn-robotics-dev-storage",
+    prefix: "recordings/",
+    contentTypes: [
+      "application/jsonl",
+      "application/x-ndjson",
+      "audio/webm",
+      "application/json",
+    ],
+    maxBytes: 128 * 1024 * 1024,
+    visibility: "public",
+  },
 } as const satisfies Record<string, ArtifactKindConfig>;
 
 type ArtifactKindConfig = {
