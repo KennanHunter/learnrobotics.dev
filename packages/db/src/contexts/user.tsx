@@ -14,6 +14,7 @@ type UserDataCtx = {
   effectiveTheme: () => Theme;
   monacoTheme: () => string | null;
   tabSize: () => number;
+  showMarkdownCopy: () => boolean;
 };
 
 export const DEFAULT_TAB_SIZE = 4;
@@ -54,6 +55,11 @@ export function UserDataProvider(props: {
       : DEFAULT_TAB_SIZE;
   };
 
+  const showMarkdownCopy = (): boolean => {
+    const v = props.session()?.showMarkdownCopy;
+    return typeof v === "boolean" ? v : true;
+  };
+
   return (
     <UserDataContext.Provider
       value={{
@@ -61,6 +67,7 @@ export function UserDataProvider(props: {
         effectiveTheme,
         monacoTheme,
         tabSize,
+        showMarkdownCopy,
       }}
     >
       {props.children}
@@ -88,4 +95,8 @@ export function useTheme(): {
 
 export function useTabSize(): () => number {
   return useUserData().tabSize;
+}
+
+export function useShowMarkdownCopy(): () => boolean {
+  return useUserData().showMarkdownCopy;
 }

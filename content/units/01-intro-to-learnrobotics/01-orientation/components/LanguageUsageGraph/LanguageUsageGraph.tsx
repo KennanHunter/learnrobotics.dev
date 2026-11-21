@@ -17,6 +17,7 @@ import {
 } from "chart.js";
 import soData from "./stack-overflow-data.json";
 import tiobeData from "./tiobe-data.json";
+import { Info } from "../../../../../lib/components/Info/Info";
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip);
 
@@ -129,8 +130,10 @@ function createChartColors(): Accessor<ChartColors> {
 }
 
 export function LanguageUsageGraph(): JSX.Element {
-  const [active, setActive] = createSignal<TabId>("stackoverflow");
-  const [count, setCount] = createSignal<CountOption>(10);
+  const [active, setActive] = createSignal<TabId>("tiobe");
+  const [count, setCount] = createSignal<CountOption>(
+    COUNT_OPTIONS[0]?.value || 7,
+  );
   const colors = createChartColors();
   let canvas: HTMLCanvasElement | undefined;
   let chart: Chart<"bar", number[], string> | undefined;
@@ -339,7 +342,12 @@ export function LanguageUsageGraph(): JSX.Element {
           >
             survey.stackoverflow.co
           </a>
-          .
+          .{" "}
+          <Info title="Stack Overflow?">
+            I think stack overflow's developer survey has substantial sampling
+            bias towards "hipper" developers, particularly web development, that
+            might not be as indicative of the industry as a whole.
+          </Info>
         </li>
       </ol>
     </figure>

@@ -11,7 +11,7 @@ export type LessonDifficulty = 1 | 2 | 3 | 4 | 5;
 type LessonBase = {
   id: string;
   title: string;
-  estMinutes: number;
+  estMinutes?: number;
   difficulty: LessonDifficulty;
   importance: LessonImportance;
   status?: LessonStatus;
@@ -28,6 +28,9 @@ export type CodeLessonDef = LessonBase & {
   language?: string;
   /** Snippets attached to this lesson. Import from `content/snippets/*`. */
   snippets?: readonly SnippetDef[];
+  /** When true, mounts the full file-tree panel (rename / create /
+   *  delete) with a show/hide toggle in the editor header. */
+  showFileTree?: boolean;
 };
 
 export type SnippetLanguage = "java" | "markdown";

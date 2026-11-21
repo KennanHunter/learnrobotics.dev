@@ -31,6 +31,12 @@ export type CodeRunnerProps = {
   /** Right-aligned content in the editor panel header. Function-form for
    * the same hydration-key reason as the toolbar slots. */
   editorActions?: () => JSX.Element;
+  /** Rendered before the editor panel's title (e.g. a sidebar-toggle
+   * button). Function-form for the same hydration-key reason. */
+  editorTitleLeading?: () => JSX.Element;
+  /** Right-aligned content in the files panel header (e.g. a close
+   * button). Function-form for the same hydration-key reason. */
+  filesActions?: () => JSX.Element;
   /** Override the built-in flat file list with a richer picker (e.g. the
    * tree component in the web app). Function-form so JSX creation defers
    * until the shell's client-only mount gate opens. */
@@ -171,7 +177,9 @@ export function CodeRunner(props: CodeRunnerProps) {
       }
       articleTitle={L().article ?? "Lesson"}
       filesTitle={L().files ?? "Files"}
+      filesActions={props.filesActions}
       editorTitle={store.activeFile() || (L().editor ?? "Editor")}
+      editorTitleLeading={props.editorTitleLeading}
       editorActions={props.editorActions}
       rightTitle={
         mode() === "markdown"

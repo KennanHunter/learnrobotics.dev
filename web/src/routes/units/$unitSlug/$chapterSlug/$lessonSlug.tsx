@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { Match, Switch, createResource, ErrorBoundary, Show } from "solid-js";
+import {
+  Match,
+  Switch,
+  createResource,
+  ErrorBoundary,
+  Show,
+  createEffect,
+} from "solid-js";
 import * as v from "valibot";
 import { createSignal, onMount } from "solid-js";
+import { isServer } from "solid-js/web";
+import { markLessonStarted, loadLessonsStarted } from "~/server/lesson-started";
+import { applyStatuses } from "~/lib/lesson-progress";
+import { useRouter } from "@tanstack/solid-router";
 import type { ProjectRecord } from "@learnrobotics/db";
 import {
   LessonArticlePane,
@@ -20,13 +31,17 @@ import { loadQuizState, saveQuizAttempt } from "~/server/quizzes";
 import { ensureUserLessonProject } from "~/server/projects";
 import { ProjectPersist } from "~/components/StarterPicker";
 import { AutosaveIndicator } from "~/components/AutosaveIndicator";
+import { EditorActionsMenu } from "~/components/EditorActionsMenu";
+import { ProjectFilesPanel } from "~/components/ProjectFilesPanel/ProjectFilesPanel";
 import { TopBar } from "~/components/TopBar/TopBar";
+import { AiOutlineClose } from "solid-icons/ai/AiOutlineClose";
+import { AiOutlineMenuUnfold } from "solid-icons/ai/AiOutlineMenuUnfold";
 import { findAdjacentLessons } from "@learnrobotics/content";
 import { findLesson, getContentIndex } from "~/lib/content";
 import { resolveStarter } from "~/lib/starters";
 import { createCodeRunnerWorker } from "~/workers/create-code-runner-worker";
 import { autoThemeFor, registerThemes } from "~/lib/monaco-themes";
-import { useTabSize, useTheme } from "@learnrobotics/db";
+import { useShowMarkdownCopy, useTabSize, useTheme } from "@learnrobotics/db";
 import { m } from "~/paraglide/messages";
 import { getLocale, localizeHref } from "~/paraglide/runtime";
 
@@ -36,12 +51,24 @@ export const Route = createFileRoute(
   "/units/$unitSlug/$chapterSlug/$lessonSlug",
 )({
   validateSearch: (search) => v.parse(SearchSchema, search),
+  loader: async () => {
+    try {
+      const started = await loadLessonsStarted();
+      return { startedIds: started.map((r) => r.lessonId) };
+    } catch {
+      return { startedIds: [] as string[] };
+    }
+  },
   component: LessonPage,
 });
 
 function LessonPage() {
   const params = Route.useParams();
-  const index = () => getContentIndex(getLocale());
+  const router = useRouter();
+  const loaderData = Route.useLoaderData();
+  const startedIds = () => new Set(loaderData().startedIds);
+  const index = () =>
+    applyStatuses(getContentIndex(getLocale()), startedIds());
   const hit = () =>
     findLesson(
       index(),
@@ -80,10 +107,28 @@ function LessonPage() {
           title: n.title,
         }
       : undefined;
-  const markdownUrl = () =>
-    localizeHref(
-      `/api/content/md/${params().unitSlug}/${params().chapterSlug}/${params().lessonSlug}?for=copy`,
-    );
+  createEffect(() => {
+    if (isServer) return;
+    const h = hit();
+    if (!h) return;
+    const lessonId = `${params().unitSlug}/${params().chapterSlug}/${params().lessonSlug}`;
+    const key = `lesson-started:${lessonId}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    void markLessonStarted({ data: { lessonId } })
+      .then(() => router.invalidate())
+      .catch(() => {
+        sessionStorage.removeItem(key);
+      });
+  });
+
+  const showMarkdownCopy = useShowMarkdownCopy();
+  const markdownUrl = (): string | undefined =>
+    showMarkdownCopy()
+      ? localizeHref(
+          `/api/content/md/${params().unitSlug}/${params().chapterSlug}/${params().lessonSlug}?for=copy`,
+        )
+      : undefined;
 
   return (
     <div class="grid h-screen grid-rows-[auto_1fr]">
@@ -173,7 +218,7 @@ type NeighborLink = { href: string; title: string } | undefined;
 function CodeLessonView(props: {
   lesson: NonNullable<ReturnType<typeof findLesson>>["lesson"];
   lessonSlug: string;
-  markdownUrl: string;
+  markdownUrl: string | undefined;
   prev: NeighborLink;
   next: NeighborLink;
 }) {
@@ -185,6 +230,9 @@ function CodeLessonView(props: {
   const lesson = props.lesson;
   const starterId = (lesson as { starter?: string }).starter;
   const resolved = starterId ? resolveStarter(starterId) : null;
+  const showFileTree =
+    (lesson as { showFileTree?: boolean }).showFileTree === true;
+  const [fileTreeOpen, setFileTreeOpen] = createSignal(true);
 
   const snippets =
     (
@@ -316,13 +364,56 @@ function CodeLessonView(props: {
           articleSlot={articleSlot}
           articleBare={snippets.length > 0}
           toolbarLeft={toolbarLeft}
-          editorActions={
-            project()
+          filesSlot={
+            showFileTree && fileTreeOpen()
+              ? () => <ProjectFilesPanel />
+              : undefined
+          }
+          filesActions={
+            showFileTree && fileTreeOpen()
               ? () => (
-                  <AutosaveIndicator savedAt={savedAt()} dirtyAt={dirtyAt()} />
+                  <button
+                    type="button"
+                    aria-label="Hide file tree"
+                    title="Hide file tree"
+                    onClick={() => setFileTreeOpen(false)}
+                    class="text-foreground-muted hover:text-foreground"
+                  >
+                    <AiOutlineClose class="h-3.5 w-3.5" />
+                  </button>
                 )
               : undefined
           }
+          editorTitleLeading={
+            showFileTree && !fileTreeOpen()
+              ? () => (
+                  <button
+                    type="button"
+                    aria-label="Show file tree"
+                    title="Show file tree"
+                    onClick={() => setFileTreeOpen(true)}
+                    class="text-foreground-muted hover:text-foreground"
+                  >
+                    <AiOutlineMenuUnfold class="h-3.5 w-3.5" />
+                  </button>
+                )
+              : undefined
+          }
+          editorActions={() => (
+            <>
+              <Show when={project()}>
+                <AutosaveIndicator savedAt={savedAt()} dirtyAt={dirtyAt()} />
+              </Show>
+              <EditorActionsMenu
+                starter={{
+                  id: starterId ?? "lesson",
+                  title: lesson.title,
+                  files: starterSeed.files,
+                  activeFile: starterSeed.activeFile,
+                }}
+              />
+            </>
+          )}
           labels={{
             article: "Lesson",
             run: m.playground_run(),
@@ -343,10 +434,12 @@ type QuizLessonType = Extract<
 
 function QuizLessonView(props: {
   lesson: QuizLessonType;
-  markdownUrl: string;
+  markdownUrl: string | undefined;
   prev: NeighborLink;
   next: NeighborLink;
 }) {
+  const { effectiveTheme, monacoTheme } = useTheme();
+  const monacoThemeName = () => monacoTheme() ?? autoThemeFor(effectiveTheme());
   const [state, { refetch }] = createResource(
     () => props.lesson.id,
     (quizId) => loadQuizState({ data: { quizId } }),
@@ -370,6 +463,8 @@ function QuizLessonView(props: {
         markdownUrl={props.markdownUrl}
         prev={props.prev}
         next={props.next}
+        monacoTheme={monacoThemeName}
+        registerThemes={registerThemes}
         onSubmit={async (result) => {
           await saveQuizAttempt({
             data: {

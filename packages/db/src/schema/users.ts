@@ -86,6 +86,8 @@ export const userConfig = sqliteTable("user_config", {
   codeSystemPrompt: text("code_system_prompt"),
   // Monaco / snippet indentation width. NULL = default (4).
   tabSize: integer("tab_size"),
+  // Show the "Copy Markdown" button in lesson headers. NULL = default (true).
+  showMarkdownCopy: integer("show_markdown_copy", { mode: "boolean" }),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });

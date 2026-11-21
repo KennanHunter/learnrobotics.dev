@@ -141,6 +141,112 @@ function AITransparency() {
             <ul class="space-y-5">
               <TransparencyLogEntry
                 date="2026-11-20"
+                title="Monaco theme sync in quiz code-markdown questions."
+              >
+                The Monaco editor embedded in <code>code-markdown</code> quiz
+                questions wasn't following the app theme because{" "}
+                <code>QuizLessonView</code> didn't pass{" "}
+                <code>monacoTheme</code> or <code>registerThemes</code> down to{" "}
+                <code>QuizLesson</code>. Added those two props to{" "}
+                <code>QuizLessonProps</code>, threaded them through{" "}
+                <code>QuizBody</code> and <code>QuizInner</code> into{" "}
+                <code>CodeMarkdownPane</code>, and the route now reads from{" "}
+                <code>useTheme()</code> (same pattern as{" "}
+                <code>CodeLessonView</code>).
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Optional file tree in code lessons."
+              >
+                Code lessons can now opt into the full file-tree panel
+                (rename / create / delete), the same{" "}
+                <code>ProjectFilesPanel</code> the playground uses, via a
+                new <code>showFileTree</code> boolean on{" "}
+                <code>CodeLessonDef</code>. When set, the files column
+                mounts open by default with a close (X) button in its
+                header; closing hides the column and surfaces a
+                sidebar-toggle icon before the editor pane's title to
+                reopen it. The plumbing adds a <code>titleLeading</code>{" "}
+                slot to <code>PanelFrame</code> and threads{" "}
+                <code>editorTitleLeading</code> plus{" "}
+                <code>filesActions</code> through{" "}
+                <code>CodeRunnerShell</code> and <code>CodeRunner</code>.
+                Lessons without the flag render exactly as before.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Lesson progress on home + soft clear in settings."
+              >
+                Extended the <code>lesson_started</code> table with a
+                nullable <code>disabled</code> flag (migration 0013) and
+                added <code>disableAllLessonsStarted</code> plus{" "}
+                <code>detachAllLessonProjects</code> (which nulls{" "}
+                <code>project.lesson_slug</code> for the user's lesson
+                projects). The home-page index and in-lesson breadcrumb
+                navigator both get a route loader that fetches the user's
+                started-lesson ids and feeds them through a new{" "}
+                <code>applyStatuses</code> helper so lessons render as
+                "in progress" on first visit. After{" "}
+                <code>markLessonStarted</code> succeeds the lesson route
+                invalidates to refresh the breadcrumb. Settings gets a new{" "}
+                <code>#lesson-progress</code> section with a two-step
+                "Clear all lesson progress" button; clearing fires a new{" "}
+                <code>clearAllLessonProgress</code> server fn, wipes the
+                per-tab <code>lesson-started:</code> session-storage
+                guards, and invalidates — lesson projects stay accessible
+                from the playground with their titles intact.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Three-dot editor menu in code lessons."
+              >
+                The three-dot <code>EditorActionsMenu</code> that already
+                lived in the playground editor header is now mounted in
+                code-lesson views too, next to the autosave indicator. The
+                lesson route builds a starter descriptor from the lesson's
+                resolved starter (falling back to a synthesized{" "}
+                <code>lesson</code>-id entry when a lesson has no starter),
+                so Reset-to-starter and Export work the same way they do
+                on the playground.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Lesson-started D1 table."
+              >
+                Added a <code>lesson_started</code> table (migration 0012)
+                keyed by <code>id</code> with <code>user_id</code>,{" "}
+                <code>lesson_id</code>, and <code>created_at</code>, plus an
+                index on <code>user_id</code>. New data helpers{" "}
+                <code>recordLessonStarted</code>,{" "}
+                <code>listLessonsStarted</code>, and{" "}
+                <code>hasStartedLesson</code>, exposed via{" "}
+                <code>markLessonStarted</code> /{" "}
+                <code>loadLessonsStarted</code> server fns. The lesson route
+                fires <code>markLessonStarted</code> once per lesson per
+                browser session (guarded by <code>sessionStorage</code>) on
+                client-side mount, swallowing errors so unauthenticated
+                visits don't break the page.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Copy Markdown visibility toggle in settings."
+              >
+                Added a nullable <code>show_markdown_copy</code> column on{" "}
+                <code>user_config</code> (migration 0011; NULL = default
+                shown) with a <code>setShowMarkdownCopy</code> server fn and
+                a <code>useShowMarkdownCopy()</code> hook on the shared
+                user context. Settings page gets a new, id-anchored{" "}
+                <code>#markdown-copy</code> section with a switch, and the
+                existing Language / Editor theme / Tab size sections
+                picked up section <code>id</code>s for deep-linking. The
+                lesson route computes <code>markdownUrl</code> only when
+                the setting is on — <code>LessonArticlePane</code> and{" "}
+                <code>QuizLesson</code> already guard on a truthy URL;{" "}
+                <code>ReadingLesson.markdownUrl</code> became optional with
+                a <code>&lt;Show&gt;</code> around <code>MarkdownCopy</code>.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
                 title="Unified CodeRunner (merged MarkdownRunner)."
               >
                 Merged the <code>MarkdownRunner</code> variant into the renamed{" "}

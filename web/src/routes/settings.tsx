@@ -23,9 +23,11 @@ import { useSession } from "@learnrobotics/db";
 import {
   setCodeSystemPrompt,
   setMonacoTheme,
+  setShowMarkdownCopy,
   setSystemPrompt,
   setTabSize,
 } from "~/server/session";
+import { clearAllLessonProgress } from "~/server/lesson-started";
 import { DEFAULT_TAB_SIZE } from "@learnrobotics/db";
 import { THEMES, type ThemeId } from "~/lib/monaco-themes";
 import { logger } from "~/lib/logger";
@@ -87,7 +89,7 @@ function Settings() {
         <h1 class="text-4xl font-semibold tracking-tight">
           {m.settings_heading()}
         </h1>
-        <section>
+        <section id="language" class="scroll-mt-20">
           <h2 class="text-xl font-medium mb-3">
             {m.settings_language_heading()}
           </h2>
@@ -125,7 +127,7 @@ function Settings() {
           </div>
         </section>
 
-        <section>
+        <section id="editor-theme" class="scroll-mt-20">
           <h2 class="text-xl font-medium mb-3">
             {m.settings_editor_theme_heading()}
           </h2>
@@ -179,6 +181,10 @@ function Settings() {
         </section>
 
         <TabSizeSection session={session} />
+
+        <MarkdownCopySection session={session} />
+
+        <LessonProgressSection />
 
         <section id="prompts" class="space-y-8 scroll-mt-20">
           <h2 class="text-xl font-medium">{m.settings_prompts_heading()}</h2>
@@ -239,6 +245,16 @@ function SystemPromptSection(props: SystemPromptSectionProps) {
       { defer: true },
     ),
   );
+  // Solid's `value` prop on <textarea> serializes to an HTML attribute,
+  // which browsers ignore — the initial content has to be the child text.
+  // Render draft as a child for SSR/hydration, and mirror draft → .value via
+  // a ref for programmatic updates (e.g. the Reset button) so user typing
+  // doesn't desync.
+  let textareaRef: HTMLTextAreaElement | undefined;
+  createEffect(() => {
+    const v = draft();
+    if (textareaRef && textareaRef.value !== v) textareaRef.value = v;
+  });
   const draftMatchesSaved = createMemo(() => {
     const d = draft();
     const s = props.saved();
@@ -284,11 +300,13 @@ function SystemPromptSection(props: SystemPromptSectionProps) {
       </div>
       <p class="mb-3 text-sm text-foreground-muted">{props.hint}</p>
       <textarea
+        ref={textareaRef}
         class="block w-full min-h-[14rem] rounded border border-background-offset bg-background-offset/30 p-3 font-mono text-sm leading-relaxed focus:outline-none focus:ring-1 focus:ring-primary"
-        value={draft()}
         onInput={(e) => setDraft(e.currentTarget.value)}
         spellcheck={false}
-      />
+      >
+        {draft()}
+      </textarea>
       <div class="mt-3 flex items-center gap-2">
         <button
           type="button"
@@ -363,7 +381,7 @@ function TabSizeSection(props: {
   }
 
   return (
-    <section>
+    <section id="tab-size" class="scroll-mt-20">
       <h2 class="text-xl font-medium mb-3">Tab size</h2>
       <p class="mb-3 text-sm text-foreground-muted">
         Controls indentation width in the editor, snippet copy output, and the
@@ -444,4 +462,145 @@ function TabSizeSection(props: {
 function isValidCustom(s: string): boolean {
   const n = Number.parseInt(s, 10);
   return Number.isInteger(n) && n >= 1 && n <= 64;
+}
+
+function MarkdownCopySection(props: {
+  session: () => { showMarkdownCopy: boolean | null } | null | undefined;
+}) {
+  const router = useRouter();
+  // NULL = default (shown). Any explicit boolean is a user choice.
+  const enabled = (): boolean => props.session()?.showMarkdownCopy ?? true;
+  const [pending, setPending] = createSignal(false);
+
+  async function toggle() {
+    const next = !enabled();
+    log.info({ from: enabled(), to: next }, "markdown copy toggle");
+    setPending(true);
+    try {
+      await setShowMarkdownCopy({ data: { showMarkdownCopy: next } });
+      await router.invalidate();
+    } catch (err) {
+      log.error({ err }, "setShowMarkdownCopy failed");
+      throw err;
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <section id="markdown-copy" class="scroll-mt-20">
+      <h2 class="text-xl font-medium mb-3">Copy Markdown button</h2>
+      <p class="mb-3 text-sm text-foreground-muted">
+        Shows a "Copy Markdown" button in lesson headers that grabs the lesson's
+        source for pasting into another tool.
+      </p>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled()}
+        disabled={pending()}
+        onClick={toggle}
+        class="inline-flex items-center gap-3 rounded border border-background-offset px-3 py-2 text-sm hover:bg-background-offset disabled:opacity-60"
+      >
+        <span
+          aria-hidden="true"
+          class="relative inline-block h-5 w-9 rounded-full transition-colors"
+          classList={{
+            "bg-primary": enabled(),
+            "bg-background-offset": !enabled(),
+          }}
+        >
+          <span
+            class="absolute top-0.5 h-4 w-4 rounded-full bg-background transition-all"
+            classList={{
+              "left-4": enabled(),
+              "left-0.5": !enabled(),
+            }}
+          />
+        </span>
+        <span>{enabled() ? "Shown" : "Hidden"}</span>
+      </button>
+    </section>
+  );
+}
+
+function LessonProgressSection() {
+  const router = useRouter();
+  const [confirming, setConfirming] = createSignal(false);
+  const [pending, setPending] = createSignal(false);
+  const [result, setResult] = createSignal<string | null>(null);
+
+  async function doClear() {
+    setPending(true);
+    try {
+      const res = await clearAllLessonProgress();
+      log.info({ res }, "clearAllLessonProgress");
+      // Reset per-tab session-storage guards so revisits log fresh events.
+      for (let i = sessionStorage.length - 1; i >= 0; i--) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith("lesson-started:")) sessionStorage.removeItem(key);
+      }
+      await router.invalidate();
+      setResult(
+        res.detached > 0
+          ? `Cleared. ${res.detached} lesson project${res.detached === 1 ? "" : "s"} moved to playground.`
+          : "Cleared.",
+      );
+      setConfirming(false);
+    } catch (err) {
+      log.error({ err }, "clearAllLessonProgress failed");
+      setResult("Failed. Try again.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <section id="lesson-progress" class="scroll-mt-20">
+      <h2 class="text-xl font-medium mb-3">Lesson progress</h2>
+      <p class="mb-3 text-sm text-foreground-muted">
+        Clear every lesson's "in progress" marker on the home page. Any
+        project you created from a lesson stays available from the
+        playground; revisiting the lesson starts from the starter again.
+      </p>
+      <div class="flex items-center gap-3">
+        <Show
+          when={confirming()}
+          fallback={
+            <button
+              type="button"
+              disabled={pending()}
+              onClick={() => {
+                setResult(null);
+                setConfirming(true);
+              }}
+              class="rounded border border-background-offset px-3 py-2 text-sm hover:bg-background-offset disabled:opacity-60"
+            >
+              Clear all lesson progress
+            </button>
+          }
+        >
+          <button
+            type="button"
+            disabled={pending()}
+            onClick={doClear}
+            class="rounded border border-red/50 bg-red/10 px-3 py-2 text-sm text-red hover:bg-red/20 disabled:opacity-60"
+          >
+            {pending() ? "Clearing…" : "Really clear"}
+          </button>
+          <button
+            type="button"
+            disabled={pending()}
+            onClick={() => setConfirming(false)}
+            class="rounded border border-background-offset px-3 py-2 text-sm hover:bg-background-offset disabled:opacity-60"
+          >
+            Cancel
+          </button>
+        </Show>
+        <Show when={result()}>
+          <span class="text-sm text-foreground-muted">{result()}</span>
+        </Show>
+      </div>
+    </section>
+  );
 }

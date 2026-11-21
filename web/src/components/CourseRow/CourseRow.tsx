@@ -1,4 +1,4 @@
-import { createSignal, For } from "solid-js";
+import { createSignal, For, Show } from "solid-js";
 import { AiOutlineRight } from "solid-icons/ai/AiOutlineRight";
 import { StatusIcon } from "~/components/StatusIcon/StatusIcon";
 import type {
@@ -170,7 +170,9 @@ function LessonRow(props: {
           {importanceLabel[props.lesson.importance]}
         </span>
         <span class="w-10 shrink-0 pl-2 text-right font-mono text-xs text-foreground-subtle">
-          {props.lesson.estMinutes}m
+          <Show when={props.lesson.estMinutes != null}>
+            {props.lesson.estMinutes}m
+          </Show>
         </span>
       </a>
     </li>

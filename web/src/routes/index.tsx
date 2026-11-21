@@ -10,6 +10,8 @@ import { StatusIcon, statusLabel } from "~/components/StatusIcon/StatusIcon";
 import { TopBar } from "~/components/TopBar/TopBar";
 import type { LessonStatus } from "~/lib/content";
 import { getContentIndex } from "~/lib/content";
+import { applyStatuses } from "~/lib/lesson-progress";
+import { loadLessonsStarted } from "~/server/lesson-started";
 import { getLocale, localizeHref } from "~/paraglide/runtime";
 
 const legendOrder: LessonStatus[] = [
@@ -23,11 +25,21 @@ const SearchSchema = v.object({});
 
 export const Route = createFileRoute("/")({
   validateSearch: (search) => v.parse(SearchSchema, search),
+  loader: async () => {
+    try {
+      const started = await loadLessonsStarted();
+      return { startedIds: started.map((r) => r.lessonId) };
+    } catch {
+      return { startedIds: [] as string[] };
+    }
+  },
   component: Landing,
 });
 
 function Landing() {
-  const index = () => getContentIndex(getLocale());
+  const loaderData = Route.useLoaderData();
+  const startedIds = () => new Set(loaderData().startedIds);
+  const index = () => applyStatuses(getContentIndex(getLocale()), startedIds());
   const resumeAnchor = () => {
     for (const unit of index().units) {
       for (const chapter of unit.chapters) {

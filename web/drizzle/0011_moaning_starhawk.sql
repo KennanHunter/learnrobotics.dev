@@ -1,0 +1,1 @@
+ALTER TABLE `user_config` ADD `show_markdown_copy` integer;

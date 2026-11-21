@@ -25,6 +25,7 @@ export {
   useSession,
   useTheme,
   useTabSize,
+  useShowMarkdownCopy,
   DEFAULT_TAB_SIZE,
 } from "./contexts/user";
 export { EditorDataProvider, useEditor } from "./contexts/editor";

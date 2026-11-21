@@ -21,6 +21,7 @@ export type SessionSummary = {
   systemPrompt: string | null;
   codeSystemPrompt: string | null;
   tabSize: number | null;
+  showMarkdownCopy: boolean | null;
 } | null;
 
 type AuthUser = {
@@ -97,6 +98,7 @@ export async function summarizeSession(
       systemPrompt: userConfig.systemPrompt,
       codeSystemPrompt: userConfig.codeSystemPrompt,
       tabSize: userConfig.tabSize,
+      showMarkdownCopy: userConfig.showMarkdownCopy,
       adminAccountId: account.id,
     })
     .from(userConfig)
@@ -119,6 +121,8 @@ export async function summarizeSession(
     typeof row?.tabSize === "number" && Number.isInteger(row.tabSize)
       ? row.tabSize
       : null;
+  const showMarkdownCopy =
+    typeof row?.showMarkdownCopy === "boolean" ? row.showMarkdownCopy : null;
   const isAdmin = Boolean(row?.adminAccountId);
   return {
     userId: user.id,
@@ -131,6 +135,7 @@ export async function summarizeSession(
     systemPrompt,
     codeSystemPrompt,
     tabSize,
+    showMarkdownCopy,
   };
 }
 
@@ -205,6 +210,26 @@ export async function writeTabSize(userId: string, tabSize: number | null) {
     .onConflictDoUpdate({
       target: userConfig.userId,
       set: { tabSize, updatedAt: now },
+    });
+}
+
+export async function writeShowMarkdownCopy(
+  userId: string,
+  showMarkdownCopy: boolean | null,
+) {
+  const db = getDb();
+  const now = new Date();
+  await db
+    .insert(userConfig)
+    .values({
+      userId,
+      showMarkdownCopy,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: userConfig.userId,
+      set: { showMarkdownCopy, updatedAt: now },
     });
 }
 

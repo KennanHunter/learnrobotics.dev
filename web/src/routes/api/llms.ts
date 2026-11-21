@@ -31,9 +31,11 @@ function buildLlmsTxt(origin: string, locale: string): string {
         const note = [
           chapter.title,
           lesson.kind,
-          `${lesson.estMinutes}m`,
+          lesson.estMinutes != null ? `${lesson.estMinutes}m` : null,
           lesson.importance,
-        ].join(" · ");
+        ]
+          .filter((v): v is string => v !== null)
+          .join(" · ");
         lines.push(`- [${lesson.title}](${mdUrl}): ${note}`);
       }
     }

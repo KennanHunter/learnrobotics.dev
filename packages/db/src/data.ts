@@ -9,6 +9,7 @@ export {
   writeSystemPrompt,
   writeCodeSystemPrompt,
   writeTabSize,
+  writeShowMarkdownCopy,
 } from "./data/session";
 export {
   listProjects,
@@ -18,6 +19,7 @@ export {
   deleteProject,
   getOrCreateLessonProject,
   migrateProjectsOwner,
+  detachAllLessonProjects,
 } from "./data/projects";
 export type {
   ProjectSummary,
@@ -31,3 +33,10 @@ export {
   masteredQuestionIds,
 } from "./data/quizzes";
 export type { StoredQuizResult, QuizResultRecord } from "./data/quizzes";
+export {
+  recordLessonStarted,
+  listLessonsStarted,
+  hasStartedLesson,
+  disableAllLessonsStarted,
+} from "./data/lesson-started";
+export type { LessonStartedRecord } from "./data/lesson-started";

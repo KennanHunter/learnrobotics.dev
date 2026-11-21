@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { getDb } from "../client";
 import { logger } from "../log";
 import { project } from "../schema";
@@ -186,6 +186,17 @@ export async function getOrCreateLessonProject(
     .limit(1);
   if (existing[0]) return toRecord(existing[0]);
   return createProject(userId, { ...seed, lessonSlug });
+}
+
+export async function detachAllLessonProjects(userId: string): Promise<number> {
+  const now = new Date();
+  const result = await getDb()
+    .update(project)
+    .set({ lessonSlug: null, updatedAt: now })
+    .where(and(eq(project.userId, userId), isNotNull(project.lessonSlug)))
+    .returning({ id: project.id });
+  log.info({ userId, detached: result.length }, "detachAllLessonProjects");
+  return result.length;
 }
 
 export async function migrateProjectsOwner(

@@ -8,6 +8,7 @@ import {
   type JSX,
 } from "solid-js";
 import type { QuizQuestion } from "@learnrobotics/content/types";
+import type { MonacoEditorProps } from "../../CodeEditor";
 import { LessonNav, type LessonNavLink } from "../../Shared";
 import { MarkdownCopy } from "../../Shared/MarkdownCopy";
 import { MultipleChoicePane } from "./MultipleChoicePane";
@@ -29,6 +30,8 @@ export type QuizLessonProps = {
   next?: LessonNavLink;
   /** Optional intro content (JSX, no MDX dep). */
   intro?: JSX.Element;
+  monacoTheme?: () => string;
+  registerThemes?: MonacoEditorProps["registerThemes"];
 };
 
 export function QuizLesson(props: QuizLessonProps) {
@@ -66,12 +69,18 @@ function QuizBody(props: QuizLessonProps) {
       mastered={props.mastered}
       onSubmit={props.onSubmit}
     >
-      <QuizInner />
+      <QuizInner
+        monacoTheme={props.monacoTheme}
+        registerThemes={props.registerThemes}
+      />
     </QuizProvider>
   );
 }
 
-function QuizInner() {
+function QuizInner(props: {
+  monacoTheme?: () => string;
+  registerThemes?: MonacoEditorProps["registerThemes"];
+}) {
   const quiz = useQuiz();
   let topRef: HTMLDivElement | undefined;
   const allMastered = () => quiz.visibleQuestions().length === 0;
@@ -140,6 +149,8 @@ function QuizInner() {
                         { kind: "code-markdown" }
                       >
                     }
+                    monacoTheme={props.monacoTheme}
+                    registerThemes={props.registerThemes}
                   />
                 </Match>
               </Switch>

@@ -2,6 +2,8 @@ import { Show, type JSX } from "solid-js";
 
 export type PanelFrameProps = {
   title?: string;
+  /** Rendered in the header before the title (e.g. a sidebar-toggle button). */
+  titleLeading?: JSX.Element;
   actions?: JSX.Element;
   children: JSX.Element;
   /** Hide the header entirely. Use for toolbar-shaped panels. */
@@ -11,8 +13,13 @@ export type PanelFrameProps = {
 export function PanelFrame(props: PanelFrameProps) {
   return (
     <section class="flex h-full min-h-0 flex-col overflow-hidden border border-background-offset bg-background">
-      <Show when={!props.bare && (props.title || props.actions)}>
+      <Show
+        when={
+          !props.bare && (props.title || props.actions || props.titleLeading)
+        }
+      >
         <header class="flex h-7 shrink-0 items-center gap-2 border-b border-background-offset px-3 text-xs font-medium text-foreground-subtle">
+          {props.titleLeading}
           <Show when={props.title}>
             <span class="flex-1 truncate">{props.title}</span>
           </Show>

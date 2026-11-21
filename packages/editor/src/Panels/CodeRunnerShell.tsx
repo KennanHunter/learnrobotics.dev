@@ -14,6 +14,10 @@ export type CodeRunnerShellProps = {
   editorTitle?: string;
   /** Right-aligned content in the editor panel header. */
   editorActions?: () => JSX.Element;
+  /** Rendered before the editor panel's title (e.g. a sidebar-toggle button). */
+  editorTitleLeading?: () => JSX.Element;
+  /** Right-aligned content in the files panel header (e.g. a close button). */
+  filesActions?: () => JSX.Element;
   rightTitle?: string;
 
   /** Hide the article panel's title header. Pass true when the article slot
@@ -102,7 +106,10 @@ export function CodeRunnerShell(props: CodeRunnerShellProps) {
             class="min-h-0 min-w-0"
             style={{ "grid-row": props.toolbarSlot ? "2" : "1" }}
           >
-            <PanelFrame title={props.filesTitle ?? "Files"}>
+            <PanelFrame
+              title={props.filesTitle ?? "Files"}
+              actions={props.filesActions?.()}
+            >
               {props.filesSlot!()}
             </PanelFrame>
           </div>
@@ -114,6 +121,7 @@ export function CodeRunnerShell(props: CodeRunnerShellProps) {
         >
           <PanelFrame
             title={props.editorTitle ?? "Editor"}
+            titleLeading={props.editorTitleLeading?.()}
             actions={props.editorActions?.()}
           >
             {props.editorSlot()}

@@ -1,0 +1,1 @@
+ALTER TABLE `lesson_started` ADD `disabled` integer;

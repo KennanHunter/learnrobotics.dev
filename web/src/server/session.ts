@@ -5,6 +5,7 @@ import {
   summarizeSession,
   writeCodeSystemPrompt,
   writeMonacoTheme,
+  writeShowMarkdownCopy,
   writeSystemPrompt,
   writeTabSize,
   writeTheme,
@@ -72,6 +73,22 @@ export const setTabSize = createServerFn({ method: "POST" })
     );
     await writeTabSize(user.id, data.tabSize);
     return { tabSize: data.tabSize };
+  });
+
+const SetShowMarkdownCopySchema = v.object({
+  showMarkdownCopy: v.nullable(v.boolean()),
+});
+
+export const setShowMarkdownCopy = createServerFn({ method: "POST" })
+  .validator((data: unknown) => v.parse(SetShowMarkdownCopySchema, data))
+  .handler(async ({ data }) => {
+    const user = await requireUser();
+    log.info(
+      { userId: user.id, showMarkdownCopy: data.showMarkdownCopy },
+      "setShowMarkdownCopy: persisting Copy Markdown visibility",
+    );
+    await writeShowMarkdownCopy(user.id, data.showMarkdownCopy);
+    return { showMarkdownCopy: data.showMarkdownCopy };
   });
 
 // Caps the stored override so a pasted megabyte of text can't balloon the
