@@ -41,6 +41,8 @@ export type CodeRunnerStore = {
 
   bundleState: Accessor<BundleState>;
   runState: Accessor<RunState>;
+  /** Seconds since the current run started. 0 when idle. */
+  runElapsedSeconds: Accessor<number>;
 
   activeConsoleTab: Accessor<ConsoleTab>;
   setActiveConsoleTab: (id: ConsoleTab) => void;
@@ -143,6 +145,28 @@ export function CodeRunnerProvider(props: CodeRunnerProviderProps) {
   } | null>(null);
   const [bundleState, setBundleState] = createSignal<BundleState>("unknown");
   const [runState, setRunState] = createSignal<RunState>("idle");
+  const [runElapsedSeconds, setRunElapsedSeconds] = createSignal(0);
+  let runStartedAt: number | null = null;
+  let elapsedTimer: ReturnType<typeof setInterval> | null = null;
+
+  function startElapsedTimer() {
+    if (elapsedTimer) return;
+    runStartedAt = Date.now();
+    setRunElapsedSeconds(0);
+    elapsedTimer = setInterval(() => {
+      if (runStartedAt == null) return;
+      setRunElapsedSeconds(Math.floor((Date.now() - runStartedAt) / 1000));
+    }, 250);
+  }
+
+  function stopElapsedTimer() {
+    if (elapsedTimer) {
+      clearInterval(elapsedTimer);
+      elapsedTimer = null;
+    }
+    runStartedAt = null;
+    setRunElapsedSeconds(0);
+  }
   const [activeConsoleTab, setActiveTabSignal] =
     createSignal<ConsoleTab>("stdout");
   const [tabBadges, setTabBadges] = createSignal<Record<ConsoleTab, number>>({
@@ -217,15 +241,18 @@ export function CodeRunnerProvider(props: CodeRunnerProviderProps) {
             autoPromote("compile");
           }
           setRunState("idle");
+          stopElapsedTimer();
           break;
         case "done":
           setRunState("idle");
+          stopElapsedTimer();
           break;
       }
     });
     w.addEventListener("error", (event: ErrorEvent) => {
       setCompileError(event.message || "worker crashed");
       setRunState("idle");
+      stopElapsedTimer();
       if (bundleState() === "fetching") setBundleState("failed");
     });
     worker = w;
@@ -239,6 +266,7 @@ export function CodeRunnerProvider(props: CodeRunnerProviderProps) {
   onCleanup(() => {
     worker?.terminate();
     worker = null;
+    stopElapsedTimer();
   });
 
   function isBusy() {
@@ -254,6 +282,7 @@ export function CodeRunnerProvider(props: CodeRunnerProviderProps) {
     sawFirstLogThisRun = false;
     setTabBadges({ stdout: 0, compile: 0, deps: 0 });
     if (bundleState() !== "ready") setBundleState("fetching");
+    startElapsedTimer();
     const map = files();
     const sourceFiles = Object.entries(map).map(([name, content]) => ({
       name,
@@ -272,6 +301,7 @@ export function CodeRunnerProvider(props: CodeRunnerProviderProps) {
     setRunState("idle");
     setBundleState("unknown");
     setDepsProgress(null);
+    stopElapsedTimer();
   }
 
   function retryDeps() {
@@ -299,6 +329,7 @@ export function CodeRunnerProvider(props: CodeRunnerProviderProps) {
     depsProgress,
     bundleState,
     runState,
+    runElapsedSeconds,
     activeConsoleTab,
     setActiveConsoleTab,
     tabBadges,

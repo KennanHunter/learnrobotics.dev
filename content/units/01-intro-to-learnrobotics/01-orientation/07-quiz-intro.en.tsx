@@ -1,5 +1,3 @@
-// Placeholder questions — seeded for UI verification. Author will replace
-// with real pedagogy; keep ids stable if the shape of a question changes.
 import { defineLesson, defineQuestion } from "../../../lib/define";
 
 export const printlnOutput = defineQuestion({
@@ -11,7 +9,7 @@ export const printlnOutput = defineQuestion({
     <>Prove you're stupid</>,
     <>Help you identify where you can still learn</>,
   ],
-  answer: 0,
+  answer: 2,
 });
 
 export const classKeyword = defineQuestion({

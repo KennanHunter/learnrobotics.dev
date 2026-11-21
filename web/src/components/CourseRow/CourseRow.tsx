@@ -37,7 +37,8 @@ export function CourseRow(props: { course: IndexedUnit }) {
     const done = lessons.filter(
       (l) => l.status === "done" || l.status === "placement-passed",
     ).length;
-    return { done, total: lessons.length };
+    const started = lessons.filter((l) => l.status === "in-progress").length;
+    return { done, started, total: lessons.length };
   };
 
   return (
@@ -57,7 +58,11 @@ export function CourseRow(props: { course: IndexedUnit }) {
             <h2 class="text-3xl font-semibold tracking-tight">
               {props.course.title}
             </h2>
-            <CourseProgress done={progress().done} total={progress().total} />
+            <CourseProgress
+              done={progress().done}
+              started={progress().started}
+              total={progress().total}
+            />
           </div>
           <p class="mt-2 text-base text-foreground-muted">
             {props.course.blurb}
@@ -93,12 +98,19 @@ export function CourseRow(props: { course: IndexedUnit }) {
   );
 }
 
-function CourseProgress(props: { done: number; total: number }) {
-  const pct = () => (props.total === 0 ? 0 : (props.done / props.total) * 100);
+function CourseProgress(props: {
+  done: number;
+  started: number;
+  total: number;
+}) {
+  const donePct = () =>
+    props.total === 0 ? 0 : (props.done / props.total) * 100;
+  const startedPct = () =>
+    props.total === 0 ? 0 : (props.started / props.total) * 100;
   return (
     <div class="flex flex-1 items-center gap-3">
       <div
-        class="h-2 flex-1 overflow-hidden rounded-full bg-background-offset"
+        class="flex h-2 flex-1 overflow-hidden rounded-full bg-background-offset"
         role="progressbar"
         aria-valuenow={props.done}
         aria-valuemin="0"
@@ -106,7 +118,11 @@ function CourseProgress(props: { done: number; total: number }) {
       >
         <div
           class="h-full bg-green transition-all"
-          style={{ width: `${pct()}%` }}
+          style={{ width: `${donePct()}%` }}
+        />
+        <div
+          class="h-full bg-[#e5b800] transition-all"
+          style={{ width: `${startedPct()}%` }}
         />
       </div>
       <span class="shrink-0 font-mono text-xs text-foreground-muted">

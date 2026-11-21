@@ -11,7 +11,10 @@
     "./index-builder": "./lib/index-builder.ts",
     "./components/LoremIpsum": "./lib/components/LoremIpsum/LoremIpsum.tsx",
     "./components/Citation": "./lib/components/Citation/Citation.tsx",
-    "./components/Note": "./lib/components/Note/Note.tsx"
+    "./components/Note": "./lib/components/Note/Note.tsx",
+    "./components/MarkCompletion": "./lib/components/MarkCompletion/MarkCompletion.tsx",
+    "./components/HoverCard": "./lib/components/HoverCard/HoverCard.tsx",
+    "./completion": "./lib/completion.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
@@ -22,7 +25,9 @@
   "dependencies": {
     "@learnrobotics/editor": "workspace:*",
     "chart.js": "^4.6.1",
-    "solid-icons": "catalog:"
+    "solid-icons": "catalog:",
+    "solid-tippy": "^0.2.1",
+    "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "solid-js": "^1.9.19",

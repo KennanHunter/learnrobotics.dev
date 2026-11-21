@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { For } from "solid-js";
+import { createMemo, For } from "solid-js";
 import { NoHydration } from "solid-js/web";
 import * as v from "valibot";
 import { CourseRow } from "~/components/CourseRow/CourseRow";
@@ -10,8 +10,11 @@ import { StatusIcon, statusLabel } from "~/components/StatusIcon/StatusIcon";
 import { TopBar } from "~/components/TopBar/TopBar";
 import type { LessonStatus } from "~/lib/content";
 import { getContentIndex } from "~/lib/content";
-import { applyStatuses } from "~/lib/lesson-progress";
-import { loadLessonsStarted } from "~/server/lesson-started";
+import { applyStatuses, buildProgress } from "~/lib/lesson-progress";
+import {
+  loadLessonsStarted,
+  loadLessonsFinished,
+} from "~/server/lesson-started";
 import { getLocale, localizeHref } from "~/paraglide/runtime";
 
 const legendOrder: LessonStatus[] = [
@@ -25,12 +28,36 @@ const SearchSchema = v.object({});
 
 export const Route = createFileRoute("/")({
   validateSearch: (search) => v.parse(SearchSchema, search),
+  // Prevent the client from re-running this loader after hydration.
+  // The server-rendered value is authoritative for progress icons; a
+  // client re-run returns a new JSON identity for the same data and
+  // tears down the hydrated <For> children, which Solid can't destroy
+  // cleanly against the SSR'd DOM — the result is the chapter rendering
+  // twice. Server fns we care about (markLessonStarted etc.) do their
+  // own router.invalidate() when they want fresh data.
+  staleTime: Infinity,
+  shouldReload: false,
   loader: async () => {
     try {
-      const started = await loadLessonsStarted();
-      return { startedIds: started.map((r) => r.lessonId) };
+      const [started, finished] = await Promise.all([
+        loadLessonsStarted(),
+        loadLessonsFinished(),
+      ]);
+      return {
+        startedEntries: started.map((r) => ({
+          lessonId: r.lessonId,
+          startedAt: r.createdAt,
+        })),
+        finishedEntries: finished.map((r) => ({
+          lessonId: r.lessonId,
+          finishedAt: r.createdAt,
+        })),
+      };
     } catch {
-      return { startedIds: [] as string[] };
+      return {
+        startedEntries: [] as { lessonId: string; startedAt: number }[],
+        finishedEntries: [] as { lessonId: string; finishedAt: number }[],
+      };
     }
   },
   component: Landing,
@@ -38,8 +65,15 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const loaderData = Route.useLoaderData();
-  const startedIds = () => new Set(loaderData().startedIds);
-  const index = () => applyStatuses(getContentIndex(getLocale()), startedIds());
+  const progress = createMemo(() =>
+    buildProgress(
+      loaderData().startedEntries ?? [],
+      loaderData().finishedEntries ?? [],
+    ),
+  );
+  const index = createMemo(() =>
+    applyStatuses(getContentIndex(getLocale()), progress()),
+  );
   const resumeAnchor = () => {
     for (const unit of index().units) {
       for (const chapter of unit.chapters) {

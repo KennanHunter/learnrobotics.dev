@@ -84,13 +84,53 @@ function QuizInner(props: {
   const quiz = useQuiz();
   let topRef: HTMLDivElement | undefined;
   const allMastered = () => quiz.visibleQuestions().length === 0;
-  const hasUnlocked = () =>
-    quiz.visibleQuestions().some((q) => !quiz.isLocked(q.id));
+  const activeQuestions = createMemo(() =>
+    quiz.visibleQuestions().filter((q) => !quiz.isLocked(q.id)),
+  );
+  const correctQuestions = createMemo(() =>
+    quiz.visibleQuestions().filter((q) => quiz.isLocked(q.id)),
+  );
+  const hasUnlocked = () => activeQuestions().length > 0;
 
   const handleSubmit = async () => {
     await quiz.submit();
     topRef?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  const renderQuestionPane = (question: QuizQuestion) => (
+    <Switch>
+      <Match when={question.kind === "multiple-choice"}>
+        <MultipleChoicePane
+          question={
+            question as Extract<QuizQuestion, { kind: "multiple-choice" }>
+          }
+        />
+      </Match>
+      <Match when={question.kind === "drag-to-reorder"}>
+        <DragReorderPane
+          question={
+            question as Extract<QuizQuestion, { kind: "drag-to-reorder" }>
+          }
+        />
+      </Match>
+      <Match when={question.kind === "code-unit-test"}>
+        <CodeQuestionStub
+          question={
+            question as Extract<QuizQuestion, { kind: "code-unit-test" }>
+          }
+        />
+      </Match>
+      <Match when={question.kind === "code-markdown"}>
+        <CodeMarkdownPane
+          question={
+            question as Extract<QuizQuestion, { kind: "code-markdown" }>
+          }
+          monacoTheme={props.monacoTheme}
+          registerThemes={props.registerThemes}
+        />
+      </Match>
+    </Switch>
+  );
 
   return (
     <Show
@@ -104,56 +144,13 @@ function QuizInner(props: {
     >
       <div ref={topRef} class="flex flex-col gap-6 scroll-mt-20">
         <QuizHeader onSubmit={handleSubmit} />
-        <For each={quiz.visibleQuestions()}>
+        <For each={activeQuestions()}>
           {(question, index) => (
             <section class="flex flex-col gap-3 rounded border border-background-offset bg-background p-4">
               <p class="font-mono text-[10px] uppercase tracking-widest text-foreground-muted">
-                Question {index() + 1} of {quiz.visibleQuestions().length}
+                Question {index() + 1} of {activeQuestions().length}
               </p>
-              <Switch>
-                <Match when={question.kind === "multiple-choice"}>
-                  <MultipleChoicePane
-                    question={
-                      question as Extract<
-                        QuizQuestion,
-                        { kind: "multiple-choice" }
-                      >
-                    }
-                  />
-                </Match>
-                <Match when={question.kind === "drag-to-reorder"}>
-                  <DragReorderPane
-                    question={
-                      question as Extract<
-                        QuizQuestion,
-                        { kind: "drag-to-reorder" }
-                      >
-                    }
-                  />
-                </Match>
-                <Match when={question.kind === "code-unit-test"}>
-                  <CodeQuestionStub
-                    question={
-                      question as Extract<
-                        QuizQuestion,
-                        { kind: "code-unit-test" }
-                      >
-                    }
-                  />
-                </Match>
-                <Match when={question.kind === "code-markdown"}>
-                  <CodeMarkdownPane
-                    question={
-                      question as Extract<
-                        QuizQuestion,
-                        { kind: "code-markdown" }
-                      >
-                    }
-                    monacoTheme={props.monacoTheme}
-                    registerThemes={props.registerThemes}
-                  />
-                </Match>
-              </Switch>
+              {renderQuestionPane(question)}
             </section>
           )}
         </For>
@@ -166,6 +163,20 @@ function QuizInner(props: {
           >
             {quiz.status() === "submitted" ? "Resubmit" : "Submit"}
           </button>
+        </Show>
+        <Show when={correctQuestions().length > 0}>
+          <section class="flex flex-col gap-3 border-t border-background-offset pt-6">
+            <h2 class="font-mono text-[10px] uppercase tracking-widest text-green">
+              Answered correctly · {correctQuestions().length}
+            </h2>
+            <For each={correctQuestions()}>
+              {(question) => (
+                <section class="flex flex-col gap-3 rounded border border-green/40 bg-green/5 p-4">
+                  {renderQuestionPane(question)}
+                </section>
+              )}
+            </For>
+          </section>
         </Show>
       </div>
     </Show>

@@ -16,7 +16,7 @@ export function AutosaveIndicator(props: {
       case "saved":
         return "Saved";
       default:
-        return "Unsaved";
+        return "Waiting for change";
     }
   };
   const dotClass = () => {

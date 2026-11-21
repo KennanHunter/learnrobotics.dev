@@ -47,3 +47,15 @@
     background-color: transparent;
   }
 }
+
+/* Tippy.js ships its own dark-pill chrome; our HoverCard puts a fully
+ * styled panel inside the tippy-box, so strip the wrapper visuals. */
+.tippy-box {
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+  border-radius: 0;
+}
+.tippy-content {
+  padding: 0;
+}

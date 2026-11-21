@@ -141,6 +141,119 @@ function AITransparency() {
             <ul class="space-y-5">
               <TransparencyLogEntry
                 date="2026-11-20"
+                title="Quiz UX: run/stop toggle, answered-correctly section, drag-reorder progress fix, settings clear scope."
+              >
+                The editor's Run button now toggles into a red Stop
+                button while a program is compiling or running, showing
+                an elapsed <code>Running Ns</code> status driven by a
+                timer in the code-runner store. Quiz pages now split
+                visible questions into an active list at the top and an
+                "Answered correctly" section below the Submit button,
+                keeping already-correct answers visible but out of the
+                way. Drag-to-reorder questions no longer count toward
+                the "N of M answered" progress until the user actually
+                drags an item (the initial shuffle was previously
+                treated as an answer). Settings' Clear lesson progress
+                action now additionally deletes every row from the{" "}
+                <code>quiz_result</code> table alongside the existing
+                lesson start/finish disable and project detachment, and
+                the settings copy was updated to describe the new
+                behavior.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="One editor project can bind to multiple lessons."
+              >
+                The lesson-to-project binding used to be 1:1 — each
+                lesson row got its own <code>project</code> table entry
+                keyed by the full lesson slug. Authors now have an
+                optional <code>project</code> field on{" "}
+                <code>CodeLessonDef</code> / <code>SimLessonDef</code>;
+                any lessons sharing a <code>project</code> value
+                resolve to the same persisted row for a given user,
+                letting a multi-page walkthrough share one working copy.
+                DB column <code>project.lesson_slug</code> was renamed
+                to <code>binding_key</code> (migration 0015) along with
+                the <code>(user, binding_key)</code> index. The{" "}
+                <code>clearAllLessonProgress</code> detach path now
+                also suffixes the project title with{" "}
+                <code>" (archived YYYY-MM-DD)"</code> so an archived
+                row is visually distinguishable from a freshly-created
+                one in My Projects after a clear + revisit.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Resizable editor panels with localStorage persistence."
+              >
+                Added drag handles between every column of the editor
+                workbench (<code>CodeRunnerShell</code>) so users can
+                rebalance article / files / editor / output widths.
+                Three adjacent-pair resize handles, 6px grid columns with
+                <code>pointer-events</code> and
+                <code>setPointerCapture</code>; widths are clamped to a
+                5fr minimum. Each panel-layout combination (4-panel,
+                3-panel, editor+right) gets its own{" "}
+                <code>editor-panel-widths:&lt;signature&gt;</code> key
+                in <code>localStorage</code>, persisted on
+                <code>pointerup</code>. No new deps.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Shared HoverCard primitive (Tippy.js)."
+              >
+                Both the content <code>Info</code> component and the
+                lesson status-icon popover were clipping at the viewport
+                edge because they were <code>position: absolute</code>{" "}
+                inside a <code>relative</code> parent. Introduced a new
+                shared <code>HoverCard</code> primitive at{" "}
+                <code>content/lib/components/HoverCard/HoverCard.tsx</code>{" "}
+                wrapping <code>solid-tippy</code> / Tippy.js: portaled to{" "}
+                <code>document.body</code>, flips and shifts to stay in
+                viewport, and renders our own Solid content (no Tippy
+                default CSS). <code>Info</code> and{" "}
+                <code>StatusIconHover</code> both consume it; dropped the
+                <code>z-[9999]</code> hack. New deps live on the{" "}
+                <code>@learnrobotics/content</code> package since Info
+                lives there.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
+                title="Lesson completion + MarkCompletion + status popover."
+              >
+                Added a parallel <code>lesson_finished</code> table
+                (migration 0014) mirroring <code>lesson_started</code>'s
+                shape and <code>disabled</code> flag, backed by{" "}
+                <code>recordLessonFinished</code> /{" "}
+                <code>listLessonsFinished</code> /{" "}
+                <code>disableAllLessonsFinished</code> and the{" "}
+                <code>markLessonFinished</code> +{" "}
+                <code>loadLessonsFinished</code> server fns. The index and
+                in-lesson loaders now fetch started + finished in parallel
+                via a new <code>buildProgress</code> helper, and{" "}
+                <code>applyStatuses</code> sets{" "}
+                <code>status = "done"</code> (with <code>finishedAt</code>)
+                when a finish row exists. Dropped the hardcoded{" "}
+                <code>status</code> frontmatter from all content lessons
+                so the UI reflects real per-user state instead of mock
+                values. New content component{" "}
+                <code>MarkCompletion</code> fires{" "}
+                <code>CompletionContext.markFinished</code> once
+                scrolled into view. Reading lessons wire it straight to
+                the server fn; code lessons gate on{" "}
+                <code>completionCondition</code> (<code>finish</code>{" "}
+                requires a run event + scroll past MarkCompletion;{" "}
+                <code>tests</code> is a stub). The status icon in{" "}
+                <code>CourseRow</code> now has an Info-style hover popover
+                (<code>z-[9999]</code>) reading "You have completed this
+                lesson. Started: X · Finished: Y" or the in-progress
+                equivalent with a nudge for code lessons. The settings
+                clear button also wipes finished rows and matching
+                sessionStorage keys. Wrapped the "If you watch the
+                video…" note in <code>why-by-hand</code> with{" "}
+                <code>MarkCompletion</code>.
+              </TransparencyLogEntry>
+              <TransparencyLogEntry
+                date="2026-11-20"
                 title="Monaco theme sync in quiz code-markdown questions."
               >
                 The Monaco editor embedded in <code>code-markdown</code> quiz

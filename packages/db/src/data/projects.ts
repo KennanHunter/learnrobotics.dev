@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { getDb } from "../client";
 import { logger } from "../log";
 import { project } from "../schema";
@@ -9,7 +9,7 @@ export type ProjectSummary = {
   id: string;
   title: string;
   starterId: string | null;
-  lessonSlug: string | null;
+  bindingKey: string | null;
   activeFile: string;
   createdAt: number;
   updatedAt: number;
@@ -22,7 +22,7 @@ export type ProjectRecord = ProjectSummary & {
 export type CreateProjectInput = {
   title: string;
   starterId?: string | null;
-  lessonSlug?: string | null;
+  bindingKey?: string | null;
   activeFile: string;
   files: Record<string, string>;
 };
@@ -43,7 +43,7 @@ function toSummary(row: {
   id: string;
   title: string;
   starterId: string | null;
-  lessonSlug: string | null;
+  bindingKey: string | null;
   activeFile: string;
   createdAt: Date | number;
   updatedAt: Date | number;
@@ -52,7 +52,7 @@ function toSummary(row: {
     id: row.id,
     title: row.title,
     starterId: row.starterId ?? null,
-    lessonSlug: row.lessonSlug ?? null,
+    bindingKey: row.bindingKey ?? null,
     activeFile: row.activeFile,
     createdAt: toMs(row.createdAt),
     updatedAt: toMs(row.updatedAt),
@@ -63,7 +63,7 @@ function toRecord(row: {
   id: string;
   title: string;
   starterId: string | null;
-  lessonSlug: string | null;
+  bindingKey: string | null;
   activeFile: string;
   files: Record<string, string>;
   createdAt: Date | number;
@@ -81,7 +81,7 @@ export async function listProjects(userId: string): Promise<ProjectSummary[]> {
       id: project.id,
       title: project.title,
       starterId: project.starterId,
-      lessonSlug: project.lessonSlug,
+      bindingKey: project.bindingKey,
       activeFile: project.activeFile,
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
@@ -118,7 +118,7 @@ export async function createProject(
       userId,
       title: input.title,
       starterId: input.starterId ?? null,
-      lessonSlug: input.lessonSlug ?? null,
+      bindingKey: input.bindingKey ?? null,
       activeFile: input.activeFile,
       files: input.files,
       createdAt: now,
@@ -167,35 +167,47 @@ export async function deleteProject(
 }
 
 /**
- * Returns the user's existing project for this lesson, or creates one from
- * `seed` if none exists. Two concurrent calls for the same (userId,
- * lessonSlug) can race and both create a row — SQLite can't express that
+ * Returns the user's existing project for this binding key, or creates one
+ * from `seed` if none exists. Two concurrent calls for the same (userId,
+ * bindingKey) can race and both create a row — SQLite can't express that
  * uniqueness without a partial index, and the lesson UI only ever issues
  * one at a time per mount. Later mounts pick the newest.
  */
-export async function getOrCreateLessonProject(
+export async function getOrCreateBoundProject(
   userId: string,
-  lessonSlug: string,
-  seed: Omit<CreateProjectInput, "lessonSlug">,
+  bindingKey: string,
+  seed: Omit<CreateProjectInput, "bindingKey">,
 ): Promise<ProjectRecord> {
   const existing = await getDb()
     .select()
     .from(project)
-    .where(and(eq(project.userId, userId), eq(project.lessonSlug, lessonSlug)))
+    .where(and(eq(project.userId, userId), eq(project.bindingKey, bindingKey)))
     .orderBy(desc(project.updatedAt))
     .limit(1);
   if (existing[0]) return toRecord(existing[0]);
-  return createProject(userId, { ...seed, lessonSlug });
+  return createProject(userId, { ...seed, bindingKey });
 }
 
-export async function detachAllLessonProjects(userId: string): Promise<number> {
+/**
+ * Unbinds all of the user's bound projects: nulls `bindingKey` so future
+ * lesson visits create fresh rows, and suffixes the title with
+ * " (archived YYYY-MM-DD)" so detached rows are visually distinguishable
+ * from freshly-created bound ones in My Projects.
+ */
+export async function detachAllBoundProjects(userId: string): Promise<number> {
   const now = new Date();
+  const stamp = now.toISOString().slice(0, 10);
+  const suffix = ` (archived ${stamp})`;
   const result = await getDb()
     .update(project)
-    .set({ lessonSlug: null, updatedAt: now })
-    .where(and(eq(project.userId, userId), isNotNull(project.lessonSlug)))
+    .set({
+      bindingKey: null,
+      title: sql`${project.title} || ${suffix}`,
+      updatedAt: now,
+    })
+    .where(and(eq(project.userId, userId), isNotNull(project.bindingKey)))
     .returning({ id: project.id });
-  log.info({ userId, detached: result.length }, "detachAllLessonProjects");
+  log.info({ userId, detached: result.length }, "detachAllBoundProjects");
   return result.length;
 }
 

@@ -10,6 +10,7 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
     quiz.shuffledOrderFor(props.question.id, props.question.items.length),
   );
   const [dragging, setDragging] = createSignal<number | null>(null);
+  const [moved, setMoved] = createSignal(false);
 
   // Re-shuffle whenever the quiz returns to the in-progress state
   // (first mount + every Retake). `shuffledOrderFor`'s cache was cleared
@@ -19,11 +20,16 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
       setOrder(
         quiz.shuffledOrderFor(props.question.id, props.question.items.length),
       );
+      setMoved(false);
     }
   });
 
   // Mirror local order into the quiz draft so submission can grade it.
+  // Only write a draft once the user has actually dragged something —
+  // otherwise the initial shuffle would count as an "answered" question
+  // for progress purposes.
   createEffect(() => {
+    if (!moved()) return;
     quiz.setDraft(props.question.id, {
       kind: "drag-to-reorder",
       order: order(),
@@ -47,6 +53,7 @@ export function DragReorderPane(props: { question: DragReorderQuestion }) {
       next.splice(toSlot, 0, picked!);
       return next;
     });
+    setMoved(true);
   };
 
   return (

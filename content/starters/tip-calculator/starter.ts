@@ -5,5 +5,5 @@ export default defineStarter({
   title: "Tip calculator skeleton",
   language: "java",
   activeFile: "Main.java",
-  files: ["Main.java"],
+  files: ["Main.java", "README.md"],
 });

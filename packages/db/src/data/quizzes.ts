@@ -56,6 +56,15 @@ export async function saveQuizResult(
   };
 }
 
+export async function deleteAllQuizResults(userId: string): Promise<number> {
+  const deleted = await getDb()
+    .delete(quizResult)
+    .where(eq(quizResult.userId, userId))
+    .returning({ id: quizResult.id });
+  log.info({ userId, count: deleted.length }, "deleteAllQuizResults");
+  return deleted.length;
+}
+
 export async function listQuizResults(
   userId: string,
   quizId: string,

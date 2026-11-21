@@ -9,7 +9,6 @@ import { FormatButton, type FormatLanguage } from "../../Shared/Format";
 import { MarkdownPreview } from "../../Shared/MarkdownPreview";
 import { useCodeRunner, type ConsoleTab } from "./code-runner-store";
 import { CodeEditorPane } from "./CodeEditorPane";
-import { FilesPane } from "./FilesPane";
 import { StdoutPane } from "./panes/StdoutPane";
 import { CompilePane } from "./panes/CompilePane";
 import { DepsPane } from "./panes/DepsPane";
@@ -37,9 +36,9 @@ export type CodeRunnerProps = {
   /** Right-aligned content in the files panel header (e.g. a close
    * button). Function-form for the same hydration-key reason. */
   filesActions?: () => JSX.Element;
-  /** Override the built-in flat file list with a richer picker (e.g. the
-   * tree component in the web app). Function-form so JSX creation defers
-   * until the shell's client-only mount gate opens. */
+  /** Opt-in files panel (e.g. the tree component in the web app). When
+   * omitted the files column is hidden entirely. Function-form so JSX
+   * creation defers until the shell's client-only mount gate opens. */
   filesSlot?: () => JSX.Element;
   labels?: {
     article?: string;
@@ -94,10 +93,18 @@ export function CodeRunner(props: CodeRunnerProps) {
     },
   ];
 
+  const isRunning = () =>
+    store.runState() === "compiling" || store.runState() === "running";
+
   const runLabel = () => {
     const l = L();
-    if (store.runState() === "compiling") return l.compiling ?? "Compiling…";
-    if (store.runState() === "running") return l.running ?? "Running…";
+    if (store.runState() === "compiling") {
+      return `${l.stop ?? "Stop"} · ${l.compiling ?? "Compiling…"}`;
+    }
+    if (store.runState() === "running") {
+      const running = l.running ?? "Running";
+      return `${l.stop ?? "Stop"} · ${running} ${store.runElapsedSeconds()}s`;
+    }
     return l.run ?? "Run";
   };
 
@@ -131,9 +138,14 @@ export function CodeRunner(props: CodeRunnerProps) {
               type="button"
               data-testid="playground-run"
               data-phase={store.runState()}
-              disabled={store.isBusy()}
-              onClick={() => store.onRun()}
-              class="inline-flex items-center gap-1.5 rounded border border-background-offset bg-primary px-3 py-1 text-xs font-medium text-background shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={!isRunning() && store.isBusy()}
+              onClick={() => (isRunning() ? store.onStop() : store.onRun())}
+              classList={{
+                "inline-flex items-center gap-1.5 rounded border border-background-offset px-3 py-1 text-xs font-medium text-background shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-60":
+                  true,
+                "bg-primary hover:bg-primary/90": !isRunning(),
+                "bg-red-500 hover:bg-red-500/90": isRunning(),
+              }}
             >
               {runLabel()}
             </button>
@@ -154,7 +166,7 @@ export function CodeRunner(props: CodeRunnerProps) {
       toolbarSlot={toolbarSlot}
       articleSlot={props.articleSlot}
       articleBare={props.articleBare}
-      filesSlot={props.filesSlot ?? (() => <FilesPane />)}
+      filesSlot={props.filesSlot}
       editorSlot={() => (
         <CodeEditorPane
           monacoTheme={props.monacoTheme}

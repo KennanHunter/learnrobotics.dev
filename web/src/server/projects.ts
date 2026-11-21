@@ -3,7 +3,7 @@ import * as v from "valibot";
 import {
   createProject,
   deleteProject,
-  getOrCreateLessonProject,
+  getOrCreateBoundProject,
   getProject,
   listProjects,
   requireUser,
@@ -34,18 +34,18 @@ const IdSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
 
 const GetProjectSchema = v.object({ id: IdSchema });
 
-const LessonSlugSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(200));
+const BindingKeySchema = v.pipe(v.string(), v.minLength(1), v.maxLength(200));
 
 const CreateProjectSchema = v.object({
   title: TitleSchema,
   starterId: v.optional(v.nullable(StarterIdSchema)),
-  lessonSlug: v.optional(v.nullable(LessonSlugSchema)),
+  bindingKey: v.optional(v.nullable(BindingKeySchema)),
   activeFile: ActiveFileSchema,
   files: FilesSchema,
 });
 
-const EnsureLessonProjectSchema = v.object({
-  lessonSlug: LessonSlugSchema,
+const EnsureBoundProjectSchema = v.object({
+  bindingKey: BindingKeySchema,
   seed: v.object({
     title: TitleSchema,
     starterId: v.optional(v.nullable(StarterIdSchema)),
@@ -90,17 +90,17 @@ export const createUserProject = createServerFn({ method: "POST" })
     return createProject(user.id, {
       title: data.title,
       starterId: data.starterId ?? null,
-      lessonSlug: data.lessonSlug ?? null,
+      bindingKey: data.bindingKey ?? null,
       activeFile: data.activeFile,
       files: data.files,
     });
   });
 
-export const ensureUserLessonProject = createServerFn({ method: "POST" })
-  .validator((data: unknown) => v.parse(EnsureLessonProjectSchema, data))
+export const ensureUserBoundProject = createServerFn({ method: "POST" })
+  .validator((data: unknown) => v.parse(EnsureBoundProjectSchema, data))
   .handler(async ({ data }): Promise<ProjectRecord> => {
     const user = await requireUser();
-    return getOrCreateLessonProject(user.id, data.lessonSlug, {
+    return getOrCreateBoundProject(user.id, data.bindingKey, {
       title: data.seed.title,
       starterId: data.seed.starterId ?? null,
       activeFile: data.seed.activeFile,

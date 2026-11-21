@@ -17,9 +17,9 @@ export {
   createProject,
   updateProject,
   deleteProject,
-  getOrCreateLessonProject,
+  getOrCreateBoundProject,
   migrateProjectsOwner,
-  detachAllLessonProjects,
+  detachAllBoundProjects,
 } from "./data/projects";
 export type {
   ProjectSummary,
@@ -31,6 +31,7 @@ export {
   saveQuizResult,
   listQuizResults,
   masteredQuestionIds,
+  deleteAllQuizResults,
 } from "./data/quizzes";
 export type { StoredQuizResult, QuizResultRecord } from "./data/quizzes";
 export {
@@ -40,3 +41,9 @@ export {
   disableAllLessonsStarted,
 } from "./data/lesson-started";
 export type { LessonStartedRecord } from "./data/lesson-started";
+export {
+  recordLessonFinished,
+  listLessonsFinished,
+  disableAllLessonsFinished,
+} from "./data/lesson-finished";
+export type { LessonFinishedRecord } from "./data/lesson-finished";

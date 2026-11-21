@@ -6,13 +6,20 @@ import {
   ErrorBoundary,
   Show,
   createEffect,
+  onCleanup,
 } from "solid-js";
 import * as v from "valibot";
-import { createSignal, onMount } from "solid-js";
+import { createMemo, createSignal, onMount } from "solid-js";
 import { isServer } from "solid-js/web";
-import { markLessonStarted, loadLessonsStarted } from "~/server/lesson-started";
-import { applyStatuses } from "~/lib/lesson-progress";
+import {
+  markLessonStarted,
+  markLessonFinished,
+  loadLessonsStarted,
+  loadLessonsFinished,
+} from "~/server/lesson-started";
+import { applyStatuses, buildProgress } from "~/lib/lesson-progress";
 import { useRouter } from "@tanstack/solid-router";
+import { CompletionContext } from "@learnrobotics/content/completion";
 import type { ProjectRecord } from "@learnrobotics/db";
 import {
   LessonArticlePane,
@@ -28,7 +35,7 @@ import {
 import { QuizLesson } from "@learnrobotics/editor/variants/quiz";
 import { EventDispatcher } from "@learnrobotics/events";
 import { loadQuizState, saveQuizAttempt } from "~/server/quizzes";
-import { ensureUserLessonProject } from "~/server/projects";
+import { ensureUserBoundProject } from "~/server/projects";
 import { ProjectPersist } from "~/components/StarterPicker";
 import { AutosaveIndicator } from "~/components/AutosaveIndicator";
 import { EditorActionsMenu } from "~/components/EditorActionsMenu";
@@ -51,12 +58,31 @@ export const Route = createFileRoute(
   "/units/$unitSlug/$chapterSlug/$lessonSlug",
 )({
   validateSearch: (search) => v.parse(SearchSchema, search),
+  staleTime: Infinity,
+  // Loader only re-runs when explicitly invalidated (by markLessonStarted /
+  // markLessonFinished), not on every client-side mount.
+  shouldReload: false,
   loader: async () => {
     try {
-      const started = await loadLessonsStarted();
-      return { startedIds: started.map((r) => r.lessonId) };
+      const [started, finished] = await Promise.all([
+        loadLessonsStarted(),
+        loadLessonsFinished(),
+      ]);
+      return {
+        startedEntries: started.map((r) => ({
+          lessonId: r.lessonId,
+          startedAt: r.createdAt,
+        })),
+        finishedEntries: finished.map((r) => ({
+          lessonId: r.lessonId,
+          finishedAt: r.createdAt,
+        })),
+      };
     } catch {
-      return { startedIds: [] as string[] };
+      return {
+        startedEntries: [] as { lessonId: string; startedAt: number }[],
+        finishedEntries: [] as { lessonId: string; finishedAt: number }[],
+      };
     }
   },
   component: LessonPage,
@@ -66,9 +92,15 @@ function LessonPage() {
   const params = Route.useParams();
   const router = useRouter();
   const loaderData = Route.useLoaderData();
-  const startedIds = () => new Set(loaderData().startedIds);
-  const index = () =>
-    applyStatuses(getContentIndex(getLocale()), startedIds());
+  const progress = createMemo(() =>
+    buildProgress(
+      loaderData()?.startedEntries ?? [],
+      loaderData()?.finishedEntries ?? [],
+    ),
+  );
+  const index = createMemo(() =>
+    applyStatuses(getContentIndex(getLocale()), progress()),
+  );
   const hit = () =>
     findLesson(
       index(),
@@ -122,6 +154,22 @@ function LessonPage() {
       });
   });
 
+  const lessonId = () =>
+    `${params().unitSlug}/${params().chapterSlug}/${params().lessonSlug}`;
+
+  function fireMarkFinished() {
+    if (isServer) return;
+    const id = lessonId();
+    const key = `lesson-finished:${id}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+    void markLessonFinished({ data: { lessonId: id } })
+      .then(() => router.invalidate())
+      .catch(() => {
+        sessionStorage.removeItem(key);
+      });
+  }
+
   const showMarkdownCopy = useShowMarkdownCopy();
   const markdownUrl = (): string | undefined =>
     showMarkdownCopy()
@@ -141,13 +189,17 @@ function LessonPage() {
         </Match>
         <Match when={hit() && hit()!.lesson.kind === "reading"}>
           <main class="overflow-y-auto pb-24">
-            <ReadingLesson
-              title={hit()!.lesson.title}
-              Body={hit()!.lesson.Body}
-              markdownUrl={markdownUrl()}
-              prev={neighborLink(neighbors().prev)}
-              next={neighborLink(neighbors().next)}
-            />
+            <CompletionContext.Provider
+              value={{ markFinished: fireMarkFinished }}
+            >
+              <ReadingLesson
+                title={hit()!.lesson.title}
+                Body={hit()!.lesson.Body}
+                markdownUrl={markdownUrl()}
+                prev={neighborLink(neighbors().prev)}
+                next={neighborLink(neighbors().next)}
+              />
+            </CompletionContext.Provider>
           </main>
         </Match>
         <Match when={hit() && hit()!.lesson.kind === "code"}>
@@ -181,6 +233,7 @@ function LessonPage() {
                 markdownUrl={markdownUrl()}
                 prev={neighborLink(neighbors().prev)}
                 next={neighborLink(neighbors().next)}
+                onMaybeFinished={fireMarkFinished}
               />
             </ErrorBoundary>
           </main>
@@ -221,6 +274,7 @@ function CodeLessonView(props: {
   markdownUrl: string | undefined;
   prev: NeighborLink;
   next: NeighborLink;
+  onMaybeFinished: () => void;
 }) {
   const { effectiveTheme, monacoTheme } = useTheme();
   const monacoThemeName = () => monacoTheme() ?? autoThemeFor(effectiveTheme());
@@ -230,6 +284,29 @@ function CodeLessonView(props: {
   const lesson = props.lesson;
   const starterId = (lesson as { starter?: string }).starter;
   const resolved = starterId ? resolveStarter(starterId) : null;
+  const bindingKey =
+    (lesson as { project?: string }).project ?? props.lessonSlug;
+  const completionCondition = (
+    lesson as {
+      completionCondition?: { kind: "finish" } | { kind: "tests" };
+    }
+  ).completionCondition ?? { kind: "finish" };
+
+  // "finish" needs both: code ran at least once AND user scrolled past
+  // the <MarkCompletion> sentinel in the article. "tests" is a stub.
+  const [hasRun, setHasRun] = createSignal(false);
+  const [scrolledEnd, setScrolledEnd] = createSignal(false);
+  createEffect(() => {
+    if (completionCondition.kind !== "finish") return;
+    if (hasRun() && scrolledEnd()) props.onMaybeFinished();
+  });
+  onMount(() => {
+    const unsub = dispatcher.subscribe((e) => {
+      if (e.type === "run") setHasRun(true);
+    });
+    onCleanup(unsub);
+  });
+  const completionCtxValue = { markFinished: () => setScrolledEnd(true) };
   const showFileTree =
     (lesson as { showFileTree?: boolean }).showFileTree === true;
   const [fileTreeOpen, setFileTreeOpen] = createSignal(true);
@@ -305,9 +382,9 @@ function CodeLessonView(props: {
   const [loading, setLoading] = createSignal(true);
   onMount(async () => {
     try {
-      const row = await ensureUserLessonProject({
+      const row = await ensureUserBoundProject({
         data: {
-          lessonSlug: props.lessonSlug,
+          bindingKey,
           seed: {
             title: lesson.title,
             starterId: starterId ?? null,
@@ -336,6 +413,7 @@ function CodeLessonView(props: {
         </div>
       }
     >
+      <CompletionContext.Provider value={completionCtxValue}>
       <CodeRunnerProvider
         starter={
           project()
@@ -350,7 +428,7 @@ function CodeLessonView(props: {
               starterId={starterId ?? "lesson"}
               starterTitle={lesson.title}
               projectId={row().id}
-              lessonSlug={props.lessonSlug}
+              bindingKey={bindingKey}
               onSaved={setSavedAt}
               onDirty={setDirtyAt}
             />
@@ -423,6 +501,7 @@ function CodeLessonView(props: {
           }}
         />
       </CodeRunnerProvider>
+      </CompletionContext.Provider>
     </Show>
   );
 }

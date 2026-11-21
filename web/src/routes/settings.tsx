@@ -538,14 +538,27 @@ function LessonProgressSection() {
       // Reset per-tab session-storage guards so revisits log fresh events.
       for (let i = sessionStorage.length - 1; i >= 0; i--) {
         const key = sessionStorage.key(i);
-        if (key && key.startsWith("lesson-started:")) sessionStorage.removeItem(key);
+        if (!key) continue;
+        if (
+          key.startsWith("lesson-started:") ||
+          key.startsWith("lesson-finished:")
+        ) {
+          sessionStorage.removeItem(key);
+        }
       }
       await router.invalidate();
-      setResult(
-        res.detached > 0
-          ? `Cleared. ${res.detached} lesson project${res.detached === 1 ? "" : "s"} moved to playground.`
-          : "Cleared.",
-      );
+      const parts: string[] = [];
+      if (res.detached > 0) {
+        parts.push(
+          `${res.detached} lesson project${res.detached === 1 ? "" : "s"} moved to playground`,
+        );
+      }
+      if (res.deletedQuizResults > 0) {
+        parts.push(
+          `${res.deletedQuizResults} quiz result${res.deletedQuizResults === 1 ? "" : "s"} deleted`,
+        );
+      }
+      setResult(parts.length > 0 ? `Cleared. ${parts.join("; ")}.` : "Cleared.");
       setConfirming(false);
     } catch (err) {
       log.error({ err }, "clearAllLessonProgress failed");
@@ -559,8 +572,10 @@ function LessonProgressSection() {
     <section id="lesson-progress" class="scroll-mt-20">
       <h2 class="text-xl font-medium mb-3">Lesson progress</h2>
       <p class="mb-3 text-sm text-foreground-muted">
-        Clear every lesson's "in progress" marker on the home page. Any
-        project you created from a lesson stays available from the
+        Clears every lesson's "in progress" marker on the home page and
+        deletes every quiz result on your account (so questions you'd
+        already answered correctly show up again on the next retake).
+        Projects you created from a lesson stay available from the
         playground; revisiting the lesson starts from the starter again.
       </p>
       <div class="flex items-center gap-3">

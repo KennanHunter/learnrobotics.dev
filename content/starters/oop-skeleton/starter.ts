@@ -5,5 +5,5 @@ export default defineStarter({
   title: "OOP skeleton",
   language: "java",
   activeFile: "Main.java",
-  files: ["Main.java"],
+  files: ["Main.java", "README.md"],
 });

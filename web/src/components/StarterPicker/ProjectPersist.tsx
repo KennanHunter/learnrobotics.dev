@@ -8,10 +8,10 @@ export type ProjectPersistProps = {
   starterTitle: string;
   /** If set, updates this project; if null, creates a new one on first edit. */
   projectId: string | null;
-  /** Optional: scopes new projects to a lesson. Used when the lesson route
-   * pre-provisions a project id via ensureUserLessonProject but can also be
-   * passed alongside a null projectId for a fresh lesson project. */
-  lessonSlug?: string | null;
+  /** Optional: scopes new projects to a binding key. Used when the lesson
+   * route pre-provisions a project id via ensureUserBoundProject but can
+   * also be passed alongside a null projectId for a fresh bound project. */
+  bindingKey?: string | null;
   /** Fired once after a successful create, with the new project id. */
   onCreated?: (id: string) => void;
   /** Called with Date.now() after each successful server save. */
@@ -70,7 +70,7 @@ export function ProjectPersist(props: ProjectPersistProps) {
           data: {
             title: props.starterTitle,
             starterId: props.starterId,
-            lessonSlug: props.lessonSlug ?? null,
+            bindingKey: props.bindingKey ?? null,
             activeFile,
             files,
           },

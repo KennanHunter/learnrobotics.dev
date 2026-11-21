@@ -5,5 +5,5 @@ export default defineStarter({
   title: "Variables skeleton",
   language: "java",
   activeFile: "Main.java",
-  files: ["Main.java"],
+  files: ["Main.java", "README.md"],
 });

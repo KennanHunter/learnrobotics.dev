@@ -72,7 +72,6 @@ export function FileTreeRow(props: FileTreeRowProps) {
     >
       <Show
         when={props.node.isDirectory}
-        fallback={<span class="inline-block w-4 flex-shrink-0" />}
       >
         <span
           class="inline-flex w-4 flex-shrink-0 items-center justify-center transition-transform"

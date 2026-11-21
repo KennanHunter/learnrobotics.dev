@@ -15,6 +15,11 @@ type LessonBase = {
   difficulty: LessonDifficulty;
   importance: LessonImportance;
   status?: LessonStatus;
+  /** UX-only: ms epoch when the signed-in user first visited this lesson.
+   * Set by `applyStatuses` at render time, not authored content. */
+  startedAt?: number;
+  /** UX-only: ms epoch when the signed-in user first finished this lesson. */
+  finishedAt?: number;
 };
 
 export type ReadingLessonDef = LessonBase & {
@@ -24,6 +29,10 @@ export type ReadingLessonDef = LessonBase & {
 export type CodeLessonDef = LessonBase & {
   kind: "code";
   starter?: string;
+  /** Shared project binding key. When set, every lesson with the same
+   * `project` value resolves to the same persisted project row for a
+   * given user. When unset, the lesson binds to its own slug. */
+  project?: string;
   recording?: string;
   language?: string;
   /** Snippets attached to this lesson. Import from `content/snippets/*`. */
@@ -31,7 +40,16 @@ export type CodeLessonDef = LessonBase & {
   /** When true, mounts the full file-tree panel (rename / create /
    *  delete) with a show/hide toggle in the editor header. */
   showFileTree?: boolean;
+  /** Decides what counts as "finished" for this code lesson. Default is
+   * `{ kind: "finish" }` — run once + scroll through the article. */
+  completionCondition?: CodeCompletionCondition;
 };
+
+/** Discriminated union so we can add richer completion kinds later
+ * without a breaking rename. */
+export type CodeCompletionCondition =
+  | { kind: "finish" }
+  | { kind: "tests" };
 
 export type SnippetLanguage = "java" | "markdown";
 
@@ -44,6 +62,8 @@ export type SnippetDef = {
 export type SimLessonDef = LessonBase & {
   kind: "sim";
   starter?: string;
+  /** See `CodeLessonDef.project`. */
+  project?: string;
   simulator?: string;
   recording?: string;
 };
